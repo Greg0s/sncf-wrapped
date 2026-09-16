@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+/*
+ * Tokens de design du Wrapped. Volontairement minimal pour l'instant :
+ * la palette définitive sera fixée avec le design des sections du récit.
+ */
+@theme {
+  --color-nuit: #07070f;
+  --color-nuit-clair: #14142b;
+  --color-violet-wrapped: #8b5cf6;
+  --color-cyan-wrapped: #22d3ee;
+
+  /* Polices système : aucune requête vers un CDN de polices, et pas de
+     risque de canvas "tainted" à l'export d'image (cf. STACK.md §5). */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-nuit);
+    color: white;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}

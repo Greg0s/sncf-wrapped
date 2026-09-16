@@ -24,4 +24,14 @@ L'utilisateur importe son CSV, et le site affiche des statistiques et visualisat
 
 ## État actuel
 
-Projet pas encore démarré — pas de code écrit. Ce fichier sert de mémo de contexte pour les prochaines sessions.
+Scaffold initial en place (React 18 + Vite + TypeScript + Tailwind v4, pnpm) — voir [STACK.md](STACK.md) pour les choix techniques et [README.md](README.md) pour la structure des dossiers et les scripts.
+
+Fait :
+- arborescence `src/` complète (dossiers créés, la plupart encore vides) ;
+- landing temporaire : bouton « Importer mon CSV » qui ouvre le sélecteur de fichier ;
+- `src/lib/csv/parseCsv.ts` : wrapper PapaParse prêt, pas encore branché sur l'UI ;
+- workflow GitHub Pages (`.github/workflows/deploy.yml`).
+
+Reste à faire : mapping des colonnes du CSV réel → types métier, agrégations (`lib/stats/`), carte (`components/map/` + données dans `public/data/`), récit scrollé GSAP, export d'image.
+
+Points tranchés en plus de STACK.md : Tailwind CSS v4 pour le styling, pnpm comme gestionnaire de paquets.
