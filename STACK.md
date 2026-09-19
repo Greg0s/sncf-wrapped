@@ -105,4 +105,15 @@ Hors des 6 points demandés, mais nécessaires pour scaffolder :
 
 ---
 
-*Aucune dépendance n'a été installée ni aucun projet scaffoldé à ce stade — ce fichier fixe uniquement les choix.*
+## Écarts constatés à l'implémentation
+
+Le projet est maintenant scaffoldé. Ce qui diffère de ce document :
+
+- **Dossiers** : `src/lib/parsing/` (lecture du CSV, calculs, référentiel des gares) et `src/lib/wrapped/` (modèle d'affichage) remplacent `lib/csv`, `lib/stats` et `lib/geo`. Le référentiel des gares est `src/lib/parsing/data/gares.json`, chargé par import dynamique (et non `public/data/`).
+- **Animations** : CSS + IntersectionObserver, portés tels quels de la maquette (pas de GSAP pour l'instant).
+- **Styling** : ni Tailwind ni autre framework CSS ; les styles en ligne de la maquette sont conservés (`src/lib/css.ts`).
+- **Carte** : SVG schématique de la maquette (projection affine des coordonnées), pas `react-simple-maps`.
+- **Polices** : Schibsted Grotesk auto-hébergée (`@fontsource`), aucun service de polices tiers.
+- **Export d'image** (`html-to-image`) : pas encore fait, voir l'issue #3. **Déploiement Pages** : voir l'issue #10.
+
+Architecture à jour : `docs/architecture.md`.
