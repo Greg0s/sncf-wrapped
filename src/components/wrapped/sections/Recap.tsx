@@ -6,9 +6,9 @@ import { FranceMap } from '../FranceMap'
 
 // Formats of the shareable card: preview dimensions (px) and exported image size (exportW/exportH).
 const FORMATS = [
-  { key: 'square', label: 'Carré', dims: '1080 × 1080', w: 400, h: 400, exportW: 1080, exportH: 1080 },
-  { key: 'wide', label: '4:5', dims: '1080 × 1350', w: 400, h: 500, exportW: 1080, exportH: 1350 },
   { key: 'story', label: 'Story', dims: '1080 × 1920', w: 320, h: 569, exportW: 1080, exportH: 1920 },
+  { key: 'wide', label: '4:5', dims: '1080 × 1350', w: 400, h: 500, exportW: 1080, exportH: 1350 },
+  { key: 'square', label: 'Carré', dims: '1080 × 1080', w: 400, h: 400, exportW: 1080, exportH: 1080 },
 ] as const
 
 // A horizontal drag shorter than this is a tap or a scroll attempt, not a format swipe.
@@ -27,7 +27,7 @@ function slugify(text: string): string {
 
 export function Recap({ index, label, view, replay }: { index: number; label?: string | null; view: WrappedView; replay: () => void }) {
   const { d, franceMap, cardCities, cardRoutes, recapNote } = view
-  const [format, setFormat] = useState<(typeof FORMATS)[number]['key']>('square')
+  const [format, setFormat] = useState<(typeof FORMATS)[number]['key']>(FORMATS[0].key)
   const [availH, setAvailH] = useState(300)
   const [downloading, setDownloading] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
