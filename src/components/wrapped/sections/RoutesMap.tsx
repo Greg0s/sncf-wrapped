@@ -41,7 +41,7 @@ export function RoutesMap({ index, label, model, mapRef }: { index: number; labe
   const { frame } = model
   const hub = model.cities.find((c) => c.isHub)
   const mapTicks = state.ticks.map((t) => ({ color: TICK_COLORS[t] }))
-  const { legend: mapLegend, arcs: mapArcs, dots: mapDots, labels: mapLabels, km: mapKm, phase: mapPhase } = state
+  const { recentTrips: mapRecentTrips, arcs: mapArcs, dots: mapDots, labels: mapLabels, km: mapKm, phase: mapPhase } = state
 
   return (
     <section
@@ -69,12 +69,12 @@ export function RoutesMap({ index, label, model, mapRef }: { index: number; labe
             </div>
           </div>
           <div style={css(`display: flex; flex-direction: column; gap: 7px;`)}>
-            {mapLegend.map((l, i) => (
+            {mapRecentTrips.map((t, i) => (
               <Fragment key={i}>
-                <div style={css(`display: flex; align-items: center; gap: 10px; opacity: ${l.o}; transition: opacity .5s ease;`)}>
-                  <span style={css(`width: 22px; flex: 0 0 auto; height: ${l.w}px; border-radius: 2px; background: var(--ac);`)} />
-                  <span style={css(`flex: 1 1 auto; min-width: 0; font-size: 14px; font-weight: 600; overflow-wrap: anywhere;`)}>{l.name}</span>
-                  <span style={css(`flex: 0 0 auto; font-size: 13px; color: #8A93A6;`)}>{l.trips}</span>
+                <div style={css(`display: flex; align-items: center; gap: 10px;`)}>
+                  <span style={css(`width: 6px; height: 6px; flex: 0 0 auto; border-radius: 999px; background: var(--ac);`)} />
+                  <span style={css(`flex: 1 1 auto; min-width: 0; font-size: 14px; font-weight: 600; overflow-wrap: anywhere;`)}>{t.label}</span>
+                  <span style={css(`flex: 0 0 auto; font-size: 13px; color: #8A93A6;`)}>{t.date}</span>
                 </div>
               </Fragment>
             ))}

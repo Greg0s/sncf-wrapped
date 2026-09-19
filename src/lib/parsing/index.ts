@@ -17,10 +17,10 @@ export { createStationIndex, loadStationIndex } from './stations'
 export { buildTripDataset, legCount, listPeriods } from './dataset'
 export type { CityRef, Period, PeriodOption, PlaceUsage, ResolvedTrip, TripDataset, TripPlace } from './dataset'
 export { computeWrappedStats } from './computeWrappedStats'
-export type { Anticipation, CityVisit, MonthBucket, RouteStat, StatsOptions, TripHighlight, WrappedStats } from './computeWrappedStats'
+export type { Anticipation, CityVisit, MonthBucket, RouteStat, StatsOptions, TravelLeg, TripHighlight, WrappedStats } from './computeWrappedStats'
 export { CARD_TOP, MAX_TOP, rankTop, type Ranked } from './ranking'
 export { EARTH_CIRCUMFERENCE_KM, RAIL_DETOUR_FACTOR, haversineKm, projectToFranceMap } from './geo'
-export { MONTHS_FR, WEEKDAYS_FR, localToday } from './dates'
+export { MONTHS_FR, WEEKDAYS_FR, dayNumber, daysInMonth, localToday, monthOf } from './dates'
 export type * from './types'
 
 /** Maximum size accepted for the import (the mockup advertises "20 MB max"). */
