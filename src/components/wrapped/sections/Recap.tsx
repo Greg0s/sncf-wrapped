@@ -1,19 +1,33 @@
-import { Fragment, useEffect, useState } from 'react'
+import { toPng } from 'html-to-image'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { css } from '../../../lib/css'
 import type { WrappedView } from '../../../lib/wrapped'
 import { FranceMap } from '../FranceMap'
 
-// Formats of the shareable card: preview dimensions (px) and exported image size.
+// Formats of the shareable card: preview dimensions (px) and exported image size (exportW/exportH).
 const FORMATS = [
-  { key: 'square', label: 'Carré', dims: '1080 × 1080', w: 400, h: 400, iconW: 11, iconH: 11 },
-  { key: 'wide', label: '4:5', dims: '1080 × 1350', w: 400, h: 500, iconW: 11, iconH: 13.75 },
-  { key: 'story', label: 'Story', dims: '1080 × 1920', w: 320, h: 569, iconW: 8, iconH: 14 },
+  { key: 'square', label: 'Carré', dims: '1080 × 1080', w: 400, h: 400, iconW: 11, iconH: 11, exportW: 1080, exportH: 1080 },
+  { key: 'wide', label: '4:5', dims: '1080 × 1350', w: 400, h: 500, iconW: 11, iconH: 13.75, exportW: 1080, exportH: 1350 },
+  { key: 'story', label: 'Story', dims: '1080 × 1920', w: 320, h: 569, iconW: 8, iconH: 14, exportW: 1080, exportH: 1920 },
 ] as const
+
+// Readable filename from the displayed period ("Édition 2024" -> "edition-2024").
+function slugify(text: string): string {
+  const slug = text
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return slug || 'export'
+}
 
 export function Recap({ index, label, view, replay }: { index: number; label?: string | null; view: WrappedView; replay: () => void }) {
   const { d, franceMap, cardCities, cardRoutes, recapNote } = view
   const [format, setFormat] = useState<(typeof FORMATS)[number]['key']>('square')
   const [availH, setAvailH] = useState(300)
+  const [downloading, setDownloading] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const measure = () => setAvailH(Math.max(220, (window.innerHeight || 600) - 240))
     measure()
@@ -38,7 +52,32 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
   const [isSquare, isWide, isStory] = [fmt.key === 'square', fmt.key === 'wide', fmt.key === 'story']
   const [cardW, cardH] = [fmt.w, fmt.h]
   const [boxW, boxH] = [Math.round(fmt.w * Number(fit)), Math.round(fmt.h * Number(fit))]
-  const dlLabel = `Télécharger · ${fmt.dims}`
+  const dlLabel = downloading ? 'Génération…' : `Télécharger · ${fmt.dims}`
+
+  const handleDownload = async () => {
+    const node = cardRef.current
+    if (!node || downloading) return
+    setDownloading(true)
+    try {
+      // The font is self-hosted but may not be ready if the screen just appeared.
+      await document.fonts.ready
+      const dataUrl = await toPng(node, {
+        canvasWidth: fmt.exportW,
+        canvasHeight: fmt.exportH,
+        pixelRatio: 1, // otherwise the canvas size would depend on the device's pixel ratio
+        backgroundColor: '#0E1219',
+        style: { transform: 'none' }, // ignore the preview's scale(fit), export at native size
+      })
+      const link = document.createElement('a')
+      link.href = dataUrl
+      link.download = `sncf-wrapped-${slugify(d.period)}.png`
+      link.click()
+    } catch (error) {
+      console.error('Failed to generate the shareable card', error)
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   return (
     <section
@@ -72,6 +111,7 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
       </div>
       <div data-anim="scale" data-delay="120" style={css(`width: ${boxW}px; height: ${boxH}px;`)}>
         <div
+          ref={cardRef}
           style={css(
             `width: ${cardW}px; height: ${cardH}px; transform: scale(${fit}); transform-origin: top left; background: #0E1219; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column;`,
           )}
@@ -474,8 +514,10 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
       <div data-anim="up" data-delay="300" style={css(`display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;`)}>
         <button
           type="button"
+          onClick={handleDownload}
+          disabled={downloading}
           style={css(
-            `font-family: 'Schibsted Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: #0E1219; background: #8DE8FD; border: none; border-radius: 999px; padding: 15px 26px; cursor: pointer; transition: transform .18s ease, filter .2s ease; background: var(--ac);`,
+            `font-family: 'Schibsted Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: #0E1219; background: #8DE8FD; border: none; border-radius: 999px; padding: 15px 26px; cursor: pointer; transition: transform .18s ease, filter .2s ease; background: var(--ac); opacity: ${downloading ? 0.7 : 1};`,
           )}
           className="hv-cta"
         >
