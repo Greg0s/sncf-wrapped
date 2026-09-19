@@ -120,6 +120,8 @@ export interface WrappedStats {
   hub: (CityRef & { appearances: number }) | null
   destinations: Ranked<CityVisit>
   routes: Ranked<RouteStat>
+  /** All distinct routes, unranked (unlike `routes`, never truncated): what the map draws. */
+  allRoutes: RouteStat[]
   anticipation: Anticipation | null
   /** One bucket per month (12 for a year), including empty months. */
   timeline: MonthBucket[]
@@ -368,6 +370,7 @@ export function computeWrappedStats(ds: TripDataset, period: Period, options: St
     hub,
     destinations,
     routes,
+    allRoutes: routeList,
     anticipation,
     timeline,
     quality: {

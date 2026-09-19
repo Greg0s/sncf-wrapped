@@ -286,6 +286,13 @@ describe('carte des trajets', () => {
     const shown = model.cities.filter((c) => !c.label.hidden)
     expect(shown.length).toBeGreaterThanOrEqual(3)
   })
+
+  it('dessine tous les itinéraires géolocalisés, même au-delà du top 5 affiché sur l’écran de classement', () => {
+    const cities = ['ROANNE', 'LYON PART DIEU', 'PARIS GARE DE LYON', 'ANNECY', 'MONTPELLIER SAINT ROCH', 'BORDEAUX SAINT JEAN']
+    const many = viewOf(cities.map((dest, i) => ({ departure: `2026-02-0${i + 1}T10:00:00.000Z`, origin: SEC, destination: dest })))
+    expect(many.view.routes).toHaveLength(5) // ranking screen stays capped
+    expect(many.view.map!.routes).toHaveLength(6) // the map draws every geolocated route
+  })
 })
 
 describe('cadrage de la carte', () => {
