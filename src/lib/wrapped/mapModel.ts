@@ -1,4 +1,4 @@
-import { dayNumber, daysInMonth, monthOf, type CityRef, type RouteStat, type WrappedStats } from '../parsing'
+import { monthOf, type CityRef, type RouteStat, type WrappedStats } from '../parsing'
 import { fmtNum, plural } from './format'
 import { dayMonthLabel, monthName } from './phrases'
 import { regionOf, type Region } from './regions'
@@ -109,11 +109,16 @@ export interface MapModel {
   totalKm: number
   maxLegs: number
   doneLabel: string
-  /** Relative animation duration: longer when the period spans many months. */
-  durationFactor: number
+  /** Wall-clock duration of each month's playback, one entry per `months` (500-4000ms, see `buildMapModel`). */
+  monthDurationsMs: number[]
   /** Every travel leg drawn on the map, oldest first: feeds the "last trips" list. */
   log: MapLeg[]
 }
+
+/** A line's minimum time on screen, and a month's floor/ceiling, so playback stays readable whatever the volume. */
+const PER_EVENT_MS = 500
+const MIN_MONTH_MS = 500
+const MAX_MONTH_MS = 4000
 
 interface DrawnRoute {
   route: RouteStat
@@ -220,16 +225,49 @@ export function buildMapModel(stats: WrappedStats): MapModel | null {
   const totals = new Map<string, number>()
   for (const m of months) for (const [k, n] of Object.entries(m.legs)) totals.set(k, (totals.get(k) ?? 0) + n)
 
-  // Position each travel leg on the same progress axis as the animation (month index + fraction of the month elapsed).
-  const monthIndexOf = new Map(stats.timeline.map((m, i) => [m.month, i]))
-  const log: MapLeg[] = stats.travelLegs
-    .filter((l) => keys.has(l.routeKey))
-    .map((l) => {
-      const month = monthOf(l.date)
-      const idx = monthIndexOf.get(month) ?? 0
-      const frac = (dayNumber(l.date) - dayNumber(`${month}-01`)) / daysInMonth(month)
-      return { pos: idx + frac, label: `${l.from} → ${l.to}`, date: dayMonthLabel(l.date, all) }
-    })
+  // Group each month's legs into readable lines: two consecutive legs on the same route, opposite
+  // directions, within the same month, are one aller-retour line ("Paris ↔ Lyon") instead of two.
+  // This keeps the line count (hence the month's duration, below) down without hiding a trip.
+  interface MapEvent {
+    month: string
+    label: string
+    date: string
+  }
+  const relevantLegs = stats.travelLegs.filter((l) => keys.has(l.routeKey))
+  const events: MapEvent[] = []
+  for (let i = 0; i < relevantLegs.length; i++) {
+    const leg = relevantLegs[i]
+    const next = relevantLegs[i + 1]
+    const month = monthOf(leg.date)
+    const isRoundTrip = next && next.routeKey === leg.routeKey && next.from === leg.to && next.to === leg.from && monthOf(next.date) === month
+    if (isRoundTrip) {
+      const date = leg.date === next.date ? dayMonthLabel(leg.date, all) : `${dayMonthLabel(leg.date, all)} – ${dayMonthLabel(next.date, all)}`
+      events.push({ month, label: `${leg.from} ↔ ${leg.to}`, date })
+      i++
+    } else {
+      events.push({ month, label: `${leg.from} → ${leg.to}`, date: dayMonthLabel(leg.date, all) })
+    }
+  }
+  const eventsByMonth = new Map<string, MapEvent[]>()
+  for (const e of events) {
+    const list = eventsByMonth.get(e.month)
+    if (list) list.push(e)
+    else eventsByMonth.set(e.month, [e])
+  }
+
+  // Each month plays for as long as its lines need to be readable (500ms each), clamped so an empty
+  // month doesn't stall and a very busy one doesn't drag the whole animation out.
+  const monthDurationsMs = stats.timeline.map((m) => {
+    const n = eventsByMonth.get(m.month)?.length ?? 0
+    return Math.min(MAX_MONTH_MS, Math.max(MIN_MONTH_MS, n * PER_EVENT_MS))
+  })
+
+  // Lines are spread evenly across their month's playback (not at their real calendar date), so every
+  // one gets the same time on screen regardless of how the trips happened to fall in the month.
+  const log: MapLeg[] = stats.timeline.flatMap((m, idx) => {
+    const monthEvents = eventsByMonth.get(m.month) ?? []
+    return monthEvents.map((e, j) => ({ pos: idx + (j + 0.5) / monthEvents.length, label: e.label, date: e.date }))
+  })
 
   return {
     frame,
@@ -240,7 +278,7 @@ export function buildMapModel(stats: WrappedStats): MapModel | null {
     totalKm: stats.distance.estimatedKm,
     maxLegs: Math.max(1, ...totals.values()),
     doneLabel: `${all ? 'Toute la période' : "Toute l'année"}, ${routes.length} ${plural(routes.length, 'ligne', 'lignes')}`,
-    durationFactor: Math.min(2, Math.max(1, months.length / 12)),
+    monthDurationsMs,
     log,
   }
 }

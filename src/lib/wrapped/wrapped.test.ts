@@ -281,22 +281,21 @@ describe('carte des trajets', () => {
     expect(mid.arcs[paris].o).toBe(1)
     expect(mid.arcs[paris].off).toBe(50)
     expect(mid.phase).toBe('Février')
-    // only the 3 legs that occurred by mid-February so far (fewer than 5: adapts, doesn't overclaim), most recent first
+    // only the 2 lines that occurred by mid-February so far (fewer than 5: adapts, doesn't overclaim), most recent
+    // first; each is an aller-retour merged into one line since both legs fall in the same month
     expect(mid.recentTrips).toEqual([
-      { label: 'Saint-Étienne → Paris', date: '14 février' },
-      { label: 'Roanne → Saint-Étienne', date: '12 janvier' },
-      { label: 'Saint-Étienne → Roanne', date: '10 janvier' },
+      { label: 'Saint-Étienne ↔ Paris', date: '14 février – 16 février' },
+      { label: 'Saint-Étienne ↔ Roanne', date: '10 janvier – 12 janvier' },
     ])
     const end = evaluateMap(model, 12)
     expect(end.km).toBe(fmtNum(stats.distance.estimatedKm))
     expect(end.phase).toBe("Toute l'année, 4 lignes")
     expect(end.arcs.every((a) => a.off === 0)).toBe(true)
     expect(end.recentTrips).toEqual([
-      { label: 'Annecy → Saint-Étienne', date: '5 avril' },
-      { label: 'Saint-Étienne → Annecy', date: '5 avril' },
+      { label: 'Saint-Étienne ↔ Annecy', date: '5 avril' }, // same-day round trip: a single date, not a range
       { label: 'Saint-Étienne → Lyon', date: '1 mars' },
-      { label: 'Paris → Saint-Étienne', date: '16 février' },
-      { label: 'Saint-Étienne → Paris', date: '14 février' },
+      { label: 'Saint-Étienne ↔ Paris', date: '14 février – 16 février' },
+      { label: 'Saint-Étienne ↔ Roanne', date: '10 janvier – 12 janvier' },
     ])
     expect(end.ticks.every((t) => t === 'done')).toBe(true)
   })

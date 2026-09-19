@@ -1,7 +1,6 @@
 import { Fragment, useEffect, useImperativeHandle, useRef, useState, type Ref } from 'react'
 import { css } from '../../../lib/css'
 import { evaluateMap, showsOutline, type MapModel } from '../../../lib/wrapped'
-import { REVEAL_SPEED } from '../animation'
 import { CORSICA_OUTLINE, FRANCE_OUTLINE } from '../franceOutline'
 
 /** Animation control by the parent screen: play when the section becomes visible, reset when it leaves. */
@@ -23,13 +22,20 @@ export function RoutesMap({ index, label, model, mapRef }: { index: number; labe
   }
   const play = () => {
     cancelAnimationFrame(raf.current)
+    // Each month plays for its own duration (see `monthDurationsMs`): boundaries[i] is the elapsed
+    // time (ms) at which month i ends, so a given elapsed time falls in exactly one month's span.
+    const durations = model.monthDurationsMs
+    const boundaries = durations.reduce<number[]>((acc, d) => [...acc, acc[acc.length - 1] + d], [0])
+    const total = boundaries[boundaries.length - 1]
     const t0 = performance.now()
-    const duration = (5200 / REVEAL_SPEED) * model.durationFactor
     const step = (now: number) => {
-      // rAF can provide a timestamp earlier than t0 on the first frame: we clamp progress to [0, 1].
-      const k = Math.min(1, Math.max(0, (now - t0) / duration))
-      setP((1 - Math.pow(1 - k, 1.6)) * months)
-      if (k < 1) raf.current = requestAnimationFrame(step)
+      // rAF can provide a timestamp earlier than t0 on the first frame: we clamp elapsed to [0, total].
+      const elapsed = Math.min(total, Math.max(0, now - t0))
+      let i = 0
+      while (i < durations.length - 1 && elapsed >= boundaries[i + 1]) i++
+      const frac = durations[i] > 0 ? (elapsed - boundaries[i]) / durations[i] : 1
+      setP(Math.min(months, i + frac))
+      if (elapsed < total) raf.current = requestAnimationFrame(step)
     }
     setP(0)
     raf.current = requestAnimationFrame(step)
