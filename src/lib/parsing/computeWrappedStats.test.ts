@@ -190,6 +190,7 @@ describe('classements adaptatifs', () => {
     expect(s.destinations.items).toHaveLength(5)
     expect(s.destinations.totalDistinct).toBe(8)
     expect(s.routes.items).toHaveLength(5)
+    expect(s.allRoutes).toHaveLength(8) // unranked, unlike routes.items: the map needs every one of them
   })
 
   it('ne fabrique pas un top 5 avec 3 trajets', () => {

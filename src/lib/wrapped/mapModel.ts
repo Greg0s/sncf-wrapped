@@ -106,9 +106,9 @@ interface DrawnRoute {
   b: Pt
 }
 
-/** Routes whose two cities both have a position on the map (foreign stations are excluded). */
+/** Routes whose two cities both have a position on the map (foreign stations are excluded). All of them, not just the top-ranked ones shown on the ranking screen. */
 function drawable(stats: WrappedStats): DrawnRoute[] {
-  return stats.routes.items.flatMap((route) => {
+  return stats.allRoutes.flatMap((route) => {
     const { cityA, cityB } = route
     return cityA.x !== null && cityA.y !== null && cityB.x !== null && cityB.y !== null
       ? [{ route, a: { x: cityA.x, y: cityA.y }, b: { x: cityB.x, y: cityB.y } }]
