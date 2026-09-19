@@ -65,6 +65,16 @@ export interface MonthBucket {
   routeLegs: Record<string, number>
 }
 
+/** One dated leg (one-way trip), for the map screen's "last trips" list. Oldest first. */
+export interface TravelLeg {
+  date: string
+  /** RouteStat key: which line this leg belongs to. */
+  routeKey: string
+  /** Actual direction of this leg (unlike RouteStat, which always shows the same city first). */
+  from: string
+  to: string
+}
+
 export interface Anticipation {
   /** Legs with a coherent order date. */
   tripsConsidered: number
@@ -125,6 +135,8 @@ export interface WrappedStats {
   anticipation: Anticipation | null
   /** One bucket per month (12 for a year), including empty months. */
   timeline: MonthBucket[]
+  /** Every travel leg (no same-city connections), oldest first: what the map's "last trips" list draws from. */
+  travelLegs: TravelLeg[]
 
   quality: {
     sameCityTrips: number
@@ -233,6 +245,8 @@ export function computeWrappedStats(ds: TripDataset, period: Period, options: St
     eur: number
   }
   const routeKeyOf = (l: Leg) => [l.from.city.key, l.to.city.key].sort().join('|')
+  // `travelLegs` is already chronological (oldest first): `trips` is sorted, and legsOf/flatMap/filter preserve order.
+  const travelLog: TravelLeg[] = travelLegs.map((l) => ({ date: l.trip.departureDate, routeKey: routeKeyOf(l), from: l.from.city.name, to: l.to.city.name }))
   const accs = new Map<string, RouteAcc>()
   for (const l of travelLegs) {
     const key = routeKeyOf(l)
@@ -373,6 +387,7 @@ export function computeWrappedStats(ds: TripDataset, period: Period, options: St
     allRoutes: routeList,
     anticipation,
     timeline,
+    travelLegs: travelLog,
     quality: {
       sameCityTrips: legs.length - travelLegs.length,
       unpricedBookings: trips.length - priced.length,

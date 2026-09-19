@@ -68,6 +68,13 @@ export function monthName(month: string, withYear: boolean): string {
   return withYear ? `${name} ${month.slice(0, 4)}` : name
 }
 
+/** "3 mars"; with the year ("3 mars 2025") when the period spans several years. */
+export function dayMonthLabel(date: string, withYear: boolean): string {
+  const day = Number(date.slice(8, 10))
+  const name = MONTHS_FR[Number(date.slice(5, 7)) - 1]
+  return withYear ? `${day} ${name} ${date.slice(0, 4)}` : `${day} ${name}`
+}
+
 export function anticipationNote(a: Anticipation, s: WrappedStats): string {
   const days = Math.round(a.averageDays)
   const who = s.period.kind === 'all' ? `Sur ${yearSpan(s)} ${plural(yearSpan(s), 'an', 'ans')}, vous réservez` : 'Vous réservez'

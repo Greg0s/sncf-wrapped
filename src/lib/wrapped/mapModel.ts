@@ -1,6 +1,6 @@
-import type { CityRef, RouteStat, WrappedStats } from '../parsing'
+import { dayNumber, daysInMonth, monthOf, type CityRef, type RouteStat, type WrappedStats } from '../parsing'
 import { fmtNum, plural } from './format'
-import { monthName } from './phrases'
+import { dayMonthLabel, monthName } from './phrases'
 
 /*
  * Trip map (screen 06) and the mini-map on the shareable card, built from the actual routes.
@@ -88,6 +88,16 @@ export interface MapCity {
   label: { x: number; y: number; anchor: Anchor; hidden: boolean }
 }
 
+/** A single travel leg placed on the animation timeline. */
+export interface MapLeg {
+  /** Position on the animation progress axis (month index + fraction of the month elapsed). */
+  pos: number
+  /** "Saint-Étienne → Annecy": actual direction of this leg. */
+  label: string
+  /** "5 avril" (with the year when the period spans several years). */
+  date: string
+}
+
 export interface MapModel {
   frame: Frame
   routes: MapRoute[]
@@ -98,6 +108,8 @@ export interface MapModel {
   doneLabel: string
   /** Relative animation duration: longer when the period spans many months. */
   durationFactor: number
+  /** Every travel leg drawn on the map, oldest first: feeds the "last trips" list. */
+  log: MapLeg[]
 }
 
 interface DrawnRoute {
@@ -180,6 +192,17 @@ export function buildMapModel(stats: WrappedStats): MapModel | null {
   const totals = new Map<string, number>()
   for (const m of months) for (const [k, n] of Object.entries(m.legs)) totals.set(k, (totals.get(k) ?? 0) + n)
 
+  // Position each travel leg on the same progress axis as the animation (month index + fraction of the month elapsed).
+  const monthIndexOf = new Map(stats.timeline.map((m, i) => [m.month, i]))
+  const log: MapLeg[] = stats.travelLegs
+    .filter((l) => keys.has(l.routeKey))
+    .map((l) => {
+      const month = monthOf(l.date)
+      const idx = monthIndexOf.get(month) ?? 0
+      const frac = (dayNumber(l.date) - dayNumber(`${month}-01`)) / daysInMonth(month)
+      return { pos: idx + frac, label: `${l.from} → ${l.to}`, date: dayMonthLabel(l.date, all) }
+    })
+
   return {
     frame,
     routes: routes.map(({ route, a, b }, i) => ({ key: route.key, name: route.label, d: arcPath(a, b, i), totalLegs: totals.get(route.key) ?? route.trips })),
@@ -189,6 +212,7 @@ export function buildMapModel(stats: WrappedStats): MapModel | null {
     maxLegs: Math.max(1, ...totals.values()),
     doneLabel: `${all ? 'Toute la période' : "Toute l'année"}, ${routes.length} ${plural(routes.length, 'ligne', 'lignes')}`,
     durationFactor: Math.min(2, Math.max(1, months.length / 12)),
+    log,
   }
 }
 
@@ -196,7 +220,8 @@ export interface MapState {
   arcs: { d: string; off: number; o: number; w: string }[]
   dots: { x: number; y: number; r: number; o: number }[]
   labels: { name: string; x: number; y: number; anchor: Anchor; o: number; fontSize: number }[]
-  legend: { name: string; trips: string; w: string; o: number }[]
+  /** Up to 5 most recent travel legs at the current progress, most recent first. */
+  recentTrips: { label: string; date: string }[]
   /** Colors of the monthly ticks: accent (elapsed), accent 50% (in progress), grey (upcoming). */
   ticks: ('done' | 'current' | 'todo')[]
   km: string
@@ -248,15 +273,11 @@ export function evaluateMap(model: MapModel, progress: number): MapState {
       fontSize: 11 * k,
       o: c.label.hidden || !seen(c) ? 0 : active(c) || c.isHub ? 1 : 0.55,
     })),
-    legend: model.routes
-      .map((r, i) => ({ r, i, n: cum[r.key] ?? 0 }))
-      .sort((a, b) => b.n - a.n || a.i - b.i)
-      .map(({ r, n: legs }) => ({
-        name: r.name,
-        trips: legs ? `${legs} ${plural(legs, 'trajet', 'trajets')}` : '—',
-        w: (2 + (legs / model.maxLegs) * 5).toFixed(1),
-        o: legs ? 1 : 0.25,
-      })),
+    recentTrips: model.log
+      .filter((l) => l.pos <= p)
+      .slice(-5)
+      .reverse()
+      .map((l) => ({ label: l.label, date: l.date })),
     ticks: model.months.map((_, i) => (i < p - 0.5 ? 'done' : i <= p ? 'current' : 'todo')),
     km: fmtNum(finished ? model.totalKm : km),
     phase: finished ? model.doneLabel : model.months[Math.min(done, n - 1)].label,

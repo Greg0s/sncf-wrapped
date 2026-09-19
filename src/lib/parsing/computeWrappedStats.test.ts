@@ -136,6 +136,22 @@ describe('computeWrappedStats — scénario de référence, année 2026', () => 
     expect(s.timeline[3].routeLegs[annecy.key]).toBe(2)
   })
 
+  it('liste les trajets individuels par ordre chronologique, sans la connexion intra-Lyon', () => {
+    expect(s.travelLegs).toHaveLength(7) // 8 legs - 1 same-city connection
+    expect(s.travelLegs.map((l) => l.date)).toEqual(['2026-01-10', '2026-01-12', '2026-02-14', '2026-02-16', '2026-03-01', '2026-04-05', '2026-04-05'])
+    expect(s.travelLegs.map((l) => [l.from, l.to])).toEqual([
+      ['Saint-Étienne', 'Roanne'],
+      ['Roanne', 'Saint-Étienne'],
+      ['Saint-Étienne', 'Paris'],
+      ['Paris', 'Saint-Étienne'],
+      ['Saint-Étienne', 'Lyon'],
+      ['Saint-Étienne', 'Annecy'],
+      ['Annecy', 'Saint-Étienne'],
+    ])
+    const annecy = s.routes.items.find((r) => r.label.endsWith('Annecy'))!
+    expect(s.travelLegs[5].routeKey).toBe(annecy.key)
+  })
+
   it('fournit les textes de période', () => {
     expect(s.display).toEqual({ period: 'Édition 2026', big: '2026', bigStart: '2026', bigEnd: '2026' })
     expect(s.from).toBe('2026-01-10')

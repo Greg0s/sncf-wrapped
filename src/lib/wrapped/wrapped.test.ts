@@ -253,20 +253,32 @@ describe('carte des trajets', () => {
     expect(s.dots.filter((d) => d.o === 1)).toHaveLength(2) // Saint-Étienne + Roanne (2 trips in January)
     expect(s.km).toBe('0')
     expect(s.phase).toBe('Janvier')
+    expect(s.recentTrips).toEqual([]) // no trip has happened yet
   })
 
   it('trace les lignes mois après mois, et finit sur le total exact', () => {
-    const mid = evaluateMap(model, 1.5) // February in progress: Saint-Étienne ↔ Paris is being drawn
+    const mid = evaluateMap(model, 1.5) // mid-February: Saint-Étienne ↔ Paris is being drawn
     const paris = model.routes.findIndex((r) => r.name.endsWith('Paris'))
     expect(mid.arcs[paris].o).toBe(1)
     expect(mid.arcs[paris].off).toBe(50)
     expect(mid.phase).toBe('Février')
-    expect(mid.legend[0].name).toBe('Saint-Étienne ↔ Roanne') // 2 trips in January, the only route with any total so far
+    // only the 3 legs that occurred by mid-February so far (fewer than 5: adapts, doesn't overclaim), most recent first
+    expect(mid.recentTrips).toEqual([
+      { label: 'Saint-Étienne → Paris', date: '14 février' },
+      { label: 'Roanne → Saint-Étienne', date: '12 janvier' },
+      { label: 'Saint-Étienne → Roanne', date: '10 janvier' },
+    ])
     const end = evaluateMap(model, 12)
     expect(end.km).toBe(fmtNum(stats.distance.estimatedKm))
     expect(end.phase).toBe("Toute l'année, 4 lignes")
     expect(end.arcs.every((a) => a.off === 0)).toBe(true)
-    expect(end.legend.map((l) => l.trips)).toEqual(['2 trajets', '2 trajets', '2 trajets', '1 trajet'])
+    expect(end.recentTrips).toEqual([
+      { label: 'Annecy → Saint-Étienne', date: '5 avril' },
+      { label: 'Saint-Étienne → Annecy', date: '5 avril' },
+      { label: 'Saint-Étienne → Lyon', date: '1 mars' },
+      { label: 'Paris → Saint-Étienne', date: '16 février' },
+      { label: 'Saint-Étienne → Paris', date: '14 février' },
+    ])
     expect(end.ticks.every((t) => t === 'done')).toBe(true)
   })
 
