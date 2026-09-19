@@ -1,15 +1,18 @@
 import { toPng } from 'html-to-image'
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { css } from '../../../lib/css'
 import type { WrappedView } from '../../../lib/wrapped'
 import { FranceMap } from '../FranceMap'
 
 // Formats of the shareable card: preview dimensions (px) and exported image size (exportW/exportH).
 const FORMATS = [
-  { key: 'square', label: 'Carré', dims: '1080 × 1080', w: 400, h: 400, iconW: 11, iconH: 11, exportW: 1080, exportH: 1080 },
-  { key: 'wide', label: '4:5', dims: '1080 × 1350', w: 400, h: 500, iconW: 11, iconH: 13.75, exportW: 1080, exportH: 1350 },
-  { key: 'story', label: 'Story', dims: '1080 × 1920', w: 320, h: 569, iconW: 8, iconH: 14, exportW: 1080, exportH: 1920 },
+  { key: 'story', label: 'Story', dims: '1080 × 1920', w: 320, h: 569, exportW: 1080, exportH: 1920 },
+  { key: 'wide', label: '4:5', dims: '1080 × 1350', w: 400, h: 500, exportW: 1080, exportH: 1350 },
+  { key: 'square', label: 'Carré', dims: '1080 × 1080', w: 400, h: 400, exportW: 1080, exportH: 1080 },
 ] as const
+
+// A horizontal drag shorter than this is a tap or a scroll attempt, not a format swipe.
+const SWIPE_THRESHOLD_PX = 40
 
 // Readable filename from the displayed period ("Édition 2024" -> "edition-2024").
 function slugify(text: string): string {
@@ -24,10 +27,11 @@ function slugify(text: string): string {
 
 export function Recap({ index, label, view, replay }: { index: number; label?: string | null; view: WrappedView; replay: () => void }) {
   const { d, franceMap, cardCities, cardRoutes, recapNote } = view
-  const [format, setFormat] = useState<(typeof FORMATS)[number]['key']>('square')
+  const [format, setFormat] = useState<(typeof FORMATS)[number]['key']>(FORMATS[0].key)
   const [availH, setAvailH] = useState(300)
   const [downloading, setDownloading] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
+  const swipeStart = useRef<{ id: number; x: number; y: number } | null>(null)
   useEffect(() => {
     const measure = () => setAvailH(Math.max(220, (window.innerHeight || 600) - 240))
     measure()
@@ -37,18 +41,32 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
 
   const fmt = FORMATS.find((f) => f.key === format) ?? FORMATS[0]
   const fit = Math.max(0.42, Math.min(1, availH / fmt.h)).toFixed(3)
-  const formats = FORMATS.map((f) => {
-    const on = f.key === fmt.key
-    return {
-      label: f.label,
-      iconW: f.iconW,
-      iconH: f.iconH,
-      fg: on ? '#0E1219' : '#AEB7C6',
-      bg: on ? 'var(--ac)' : 'transparent',
-      bd: on ? 'var(--ac)' : 'rgba(241,244,247,.22)',
-      pick: () => setFormat(f.key),
-    }
-  })
+  const formatIndex = FORMATS.findIndex((f) => f.key === fmt.key)
+  const changeFormat = (direction: 1 | -1) => {
+    const next = FORMATS[Math.min(FORMATS.length - 1, Math.max(0, formatIndex + direction))]
+    if (next) setFormat(next.key)
+  }
+
+  // Swipe left/right on the card preview to change format, in addition to the dots below it.
+  // Touch only, scoped to the preview box (not the whole screen), so it never fights the
+  // tap-to-navigate zone: a real swipe already moves well past the tap tolerance that gesture uses.
+  const onCardPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== 'touch') return
+    swipeStart.current = { id: e.pointerId, x: e.clientX, y: e.clientY }
+  }
+  const onCardPointerCancel = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (swipeStart.current?.id === e.pointerId) swipeStart.current = null
+  }
+  const onCardPointerUp = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const start = swipeStart.current
+    if (e.pointerType !== 'touch' || !start || start.id !== e.pointerId) return
+    swipeStart.current = null
+    const dx = e.clientX - start.x
+    const dy = e.clientY - start.y
+    if (Math.abs(dx) < SWIPE_THRESHOLD_PX || Math.abs(dx) <= Math.abs(dy)) return
+    changeFormat(dx < 0 ? 1 : -1)
+  }
+
   const [isSquare, isWide, isStory] = [fmt.key === 'square', fmt.key === 'wide', fmt.key === 'story']
   const [cardW, cardH] = [fmt.w, fmt.h]
   const [boxW, boxH] = [Math.round(fmt.w * Number(fit)), Math.round(fmt.h * Number(fit))]
@@ -90,26 +108,37 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
       <div data-anim="up" style={css(`font-size: 14px; font-weight: 600; color: #8A93A6; text-align: center;`)}>
         {label}
       </div>
-      <div data-anim="up" data-delay="60" style={css(`display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;`)}>
-        {formats.map((f, i) => (
-          <Fragment key={i}>
-            <button
-              type="button"
-              onClick={f.pick}
-              style={css(
-                `font-family: 'Schibsted Grotesk', sans-serif; font-size: 13px; font-weight: 600; color: ${f.fg}; background: ${f.bg}; border: 1.5px solid ${f.bd}; border-radius: 999px; padding: 8px 15px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: transform .16s ease;`,
-              )}
-              className="hv-lift-2"
-            >
-              <span
-                style={css(`display: inline-block; width: ${f.iconW}px; height: ${f.iconH}px; border: 1.5px solid ${f.fg}; border-radius: 2px;`)}
+      <div data-anim="up" data-delay="60" style={css(`display: flex; flex-direction: column; align-items: center; gap: 10px;`)}>
+        <div style={css(`font-size: 13px; font-weight: 600; color: #AEB7C6;`)}>
+          {fmt.label} · {fmt.dims}
+        </div>
+        <div style={css(`display: flex; align-items: center; gap: 8px;`)}>
+          {FORMATS.map((f) => {
+            const on = f.key === fmt.key
+            return (
+              <button
+                key={f.key}
+                type="button"
+                onClick={() => setFormat(f.key)}
+                aria-label={`Format ${f.label} (${f.dims})`}
+                aria-current={on || undefined}
+                style={css(
+                  `width: ${on ? 22 : 8}px; height: 8px; padding: 0; border: none; border-radius: 999px; background: ${on ? 'var(--ac)' : 'rgba(241,244,247,.28)'}; cursor: pointer; transition: width .22s cubic-bezier(.16,.84,.26,1), background .2s ease, transform .16s ease;`,
+                )}
+                className="hv-lift-2"
               />
-              {f.label}
-            </button>
-          </Fragment>
-        ))}
+            )
+          })}
+        </div>
       </div>
-      <div data-anim="scale" data-delay="120" style={css(`width: ${boxW}px; height: ${boxH}px;`)}>
+      <div
+        data-anim="scale"
+        data-delay="120"
+        onPointerDown={onCardPointerDown}
+        onPointerUp={onCardPointerUp}
+        onPointerCancel={onCardPointerCancel}
+        style={css(`width: ${boxW}px; height: ${boxH}px; touch-action: pan-y;`)}
+      >
         <div
           ref={cardRef}
           style={css(
