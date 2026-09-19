@@ -9,3 +9,4 @@ Pitfalls this project already hit. Add a lesson only if it is non-obvious and wo
 - **A real export copied into `public/` would be deployed** (`public/` is copied to `dist/`). → Never. CI fails if a `.csv` is tracked or lands in `dist/`.
 - **The SNCF export is Windows-1252**, so reading it as UTF-8 gives `�`. → Always decode with `decodeCsvBytes` / `readCsvFile`.
 - **Hot-linked Google Fonts leak the visitor's IP to a third party**, contradicting "no tracking". → Fonts are self-hosted (`@fontsource/schibsted-grotesk`).
+- **`typescript-eslint` refuses to run at all on TypeScript 7** (the project's pinned version), hard error not a warning. → Lint uses `oxlint` instead (no dependency on the TS compiler); see typescript-eslint/typescript-eslint#10940.

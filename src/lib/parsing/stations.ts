@@ -21,7 +21,7 @@ export function createStationIndex(data: StationData): StationIndex {
   })
 
   const citiesByKey = new Map<string, number[]>()
-  const stationCount = new Array<number>(data.cities.length).fill(0)
+  const stationCount = Array.from({ length: data.cities.length }, () => 0)
   for (const s of data.stations) stationCount[s[3]]++
   data.cities.forEach((c, i) => {
     const key = normalizeStationName(c[0])

@@ -41,7 +41,7 @@ const SLOT_ANGLES = STAR_SLOTS.map((s) => angle(s.end.x - STAR_HUB.x, s.end.y - 
 /** Répartit les villes sur les rayons en minimisant l'écart entre leur direction réelle et celle du rayon. */
 export function assignSlots(bearings: (number | null)[]): number[] {
   const placed = bearings.flatMap((b, i) => (b === null ? [] : [i]))
-  const result = new Array<number>(bearings.length).fill(-1)
+  const result = Array.from({ length: bearings.length }, () => -1)
   let best = { cost: Infinity, slots: [] as number[] }
 
   const search = (k: number, used: number[], cost: number) => {

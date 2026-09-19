@@ -26,7 +26,7 @@ jobs:
 
       - run: npm ci
 
-      # Typecheck + tests (dont robustesse et confidentialité) + build
+      # Lint + typecheck + tests (dont robustesse et confidentialité) + build
       - run: npm run check
 
       # Un export réel contient des données personnelles : jamais dans le dépôt, jamais dans le site déployé.

@@ -26,7 +26,7 @@ function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name)
     if (statSync(path).isDirectory()) return sourceFiles(path)
-    return /\.(ts|tsx)$/.test(name) && !/\.test\.ts$/.test(name) ? [path] : []
+    return /\.(ts|tsx)$/.test(name) && !name.endsWith('.test.ts') ? [path] : []
   })
 }
 
