@@ -2,7 +2,17 @@ import { useRef, type ReactNode } from 'react'
 import { css } from '../../lib/css'
 import { useLandingReveal } from '../wrapped/useReveal'
 
-export function Landing({ openData, openImport, modal }: { openData: () => void; openImport: () => void; modal: ReactNode }) {
+export function Landing({
+  openData,
+  openImport,
+  openLegal,
+  modal,
+}: {
+  openData: () => void
+  openImport: () => void
+  openLegal: () => void
+  modal: ReactNode
+}) {
   const root = useRef<HTMLDivElement>(null)
   useLandingReveal(root)
   return (
@@ -368,6 +378,15 @@ export function Landing({ openData, openImport, modal }: { openData: () => void;
         >
           <span>Projet non officiel — for fun by Greg</span>
           <span>Aperçus : chiffres d'exemple · Contient des données SNCF Open Data (licence ODbL) et IGN Admin Express (Licence Ouverte / Etalab)</span>
+          <button
+            type="button"
+            onClick={openLegal}
+            style={css(
+              `font-family: 'Schibsted Grotesk', sans-serif; font-size: 13px; color: #6C768A; background: transparent; border: none; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px;`,
+            )}
+          >
+            Mentions légales
+          </button>
         </footer>
       </main>
       {modal}

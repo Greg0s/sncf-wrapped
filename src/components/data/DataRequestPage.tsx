@@ -29,7 +29,15 @@ function buildMailBody(firstName: string, lastName: string, email: string): stri
   ].join('\n')
 }
 
-export function DataRequestPage({ backHome, goImport }: { backHome: () => void; goImport: () => void }) {
+export function DataRequestPage({
+  backHome,
+  goImport,
+  openLegal,
+}: {
+  backHome: () => void
+  goImport: () => void
+  openLegal: () => void
+}) {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -462,6 +470,15 @@ export function DataRequestPage({ backHome, goImport }: { backHome: () => void; 
           )}
         >
           <span>Projet non officiel — for fun by Greg</span>
+          <button
+            type="button"
+            onClick={openLegal}
+            style={css(
+              `font-family: 'Schibsted Grotesk', sans-serif; font-size: 13px; color: #6C768A; background: transparent; border: none; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px;`,
+            )}
+          >
+            Mentions légales
+          </button>
         </footer>
       </main>
     </div>
