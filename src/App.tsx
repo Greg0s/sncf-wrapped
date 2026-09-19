@@ -4,11 +4,12 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { DebugPanel } from './components/debug/DebugPanel'
 import { ImportModal, type ImportPeriod, type ImportStatus } from './components/landing/ImportModal'
 import { Landing } from './components/landing/Landing'
+import { LegalPage } from './components/legal/LegalPage'
 import { Wrapped } from './components/wrapped/Wrapped'
 import { computeWrappedStats, importSncfCsv, type ImportResult, type ParseError } from './lib/parsing'
 import { ACCENTS, accentFor, buildWrappedView, plural } from './lib/wrapped'
 
-type View = 'landing' | 'data' | 'wrapped'
+type View = 'landing' | 'data' | 'legal' | 'wrapped'
 type Imported = Extract<ImportResult, { ok: true }>
 
 const NO_TRIPS = "Aucun trajet effectué dans ce fichier : il ne contient que des départs à venir ou des réservations non payées."
@@ -94,6 +95,10 @@ function Journey() {
     setView('data')
     setModal(false)
   }
+  const openLegal = () => {
+    setView('legal')
+    setModal(false)
+  }
   const closeModal = () => setModal(false)
 
   return (
@@ -101,6 +106,7 @@ function Journey() {
       {view === 'landing' && (
         <Landing
           openData={openData}
+          openLegal={openLegal}
           openImport={() => setModal(true)}
           modal={
             modal && (
@@ -130,8 +136,10 @@ function Journey() {
             setView('landing')
             setModal(true)
           }}
+          openLegal={openLegal}
         />
       )}
+      {view === 'legal' && <LegalPage backHome={() => setView('landing')} />}
       {view === 'wrapped' && wrappedView && <Wrapped view={wrappedView} onBack={() => setView('landing')} />}
     </div>
   )
