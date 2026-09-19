@@ -4,9 +4,11 @@ import { buildTripDataset, computeWrappedStats, createStationIndex, parseSncfCsv
 import stationData from '../parsing/data/gares.json'
 import { accentFor } from './accents'
 import { buildWrappedView } from './buildWrappedView'
+import { abbreviateCityName } from './cityAbbrev'
 import { fmtEur, fmtNum, plural } from './format'
 import { FULL_FRAME, arcPath, computeFrame, evaluateMap, showsOutline } from './mapModel'
 import { anticipationNote, earthPhrase } from './phrases'
+import { regionOf } from './regions'
 import { assignSlots, buildStar } from './star'
 
 const index = createStationIndex(stationData as unknown as StationData)
@@ -44,6 +46,23 @@ describe('formats', () => {
   })
   it('accorde 0 et 1 au singulier', () => {
     expect([0, 1, 2].map((n) => plural(n, 'trajet', 'trajets'))).toEqual(['trajet', 'trajet', 'trajets'])
+  })
+})
+
+describe('abbreviateCityName', () => {
+  it('raccourcit les préfixes courants comme sur les panneaux de signalisation', () => {
+    expect(abbreviateCityName('Saint-Étienne')).toBe('St-Étienne')
+    expect(abbreviateCityName('Sainte-Foy-lès-Lyon')).toBe('Ste-Foy-lès-Lyon')
+    expect(abbreviateCityName('Saints-Geosmes')).toBe('Sts-Geosmes')
+    expect(abbreviateCityName('Saintes-Maries-de-la-Mer')).toBe('Stes-Maries-de-la-Mer')
+    expect(abbreviateCityName('Mont-de-Marsan')).toBe('Mt-de-Marsan')
+    expect(abbreviateCityName("Saint-Germain-au-Mont-d'Or")).toBe("St-Germain-au-Mt-d'Or")
+  })
+  it('laisse intact un nom qui n’est pas un préfixe suivi d’un tiret', () => {
+    expect(abbreviateCityName('Saintes')).toBe('Saintes') // the town, not "Saint" + suffix
+    expect(abbreviateCityName('Croix Sainte')).toBe('Croix Sainte')
+    expect(abbreviateCityName('Longpré-les-Corps-Saints')).toBe('Longpré-les-Corps-Saints')
+    expect(abbreviateCityName('Roanne')).toBe('Roanne')
   })
 })
 
@@ -152,7 +171,7 @@ describe('buildWrappedView — scénario complet', () => {
   it('prépare la carte à partager : 3 lignes au plus, itinéraires en noms de villes', () => {
     expect(view.cardCities).toHaveLength(3)
     expect(view.cardCities[0]).toEqual({ n: 'N°1', name: 'Annecy' })
-    expect(view.cardRoutes.map((r) => r.name)).toEqual(['Saint-Étienne ↔ Paris', 'Saint-Étienne ↔ Annecy', 'Saint-Étienne ↔ Roanne'])
+    expect(view.cardRoutes.map((r) => r.name)).toEqual(['St-Étienne ↔ Paris', 'St-Étienne ↔ Annecy', 'St-Étienne ↔ Roanne'])
   })
 
   it('mentionne l’estimation des km et la licence des données dans la légende finale', () => {
@@ -323,6 +342,21 @@ describe('cadrage de la carte', () => {
     expect(f.x).toBeGreaterThanOrEqual(10)
     expect(f.x + f.size).toBeLessThanOrEqual(415)
   })
+  it("ne montre pas de contour de région à l'échelle nationale (Saint-Étienne → Paris)", () => {
+    const { view } = viewOf(scenario)
+    expect(view.map!.regionOutline).toBeNull()
+    expect(view.franceMap.regionOutline).toBeNull()
+  })
+
+  it('montre le contour de la région quand tous les trajets y restent', () => {
+    const regional = scenario.filter((r) => !r.origin.includes('PARIS') && !r.destination.includes('PARIS'))
+    const { view } = viewOf(regional)
+    const lyon = index.resolve('LYON PART DIEU')!
+    const expected = regionOf(lyon.cityLat, lyon.cityLon)!.outline
+    expect(view.map!.regionOutline).toBe(expected)
+    expect(view.franceMap.regionOutline).toBe(expected)
+  })
+
   it('trace des arcs quadratiques comme la maquette (Lyon → Paris)', () => {
     expect(arcPath({ x: 276.3, y: 229.4 }, { x: 207.9, y: 105.7 }, 0)).toBe('M276.3 229.4 Q224.8 177.1 207.9 105.7')
     expect(arcPath({ x: 276.3, y: 229.4 }, { x: 100.4, y: 171.3 }, 2)).toBe('M276.3 229.4 Q196.5 175.7 100.4 171.3')

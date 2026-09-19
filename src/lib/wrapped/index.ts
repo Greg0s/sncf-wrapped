@@ -1,5 +1,6 @@
 export { ACCENTS, accentFor } from './accents'
 export { buildWrappedView } from './buildWrappedView'
+export { abbreviateCityName } from './cityAbbrev'
 export type { CardRow, CityRow, DisplayData, RouteRow, SectionId, SectionMeta, WrappedView } from './buildWrappedView'
 export { fmtNum, fmtEur, plural, cap } from './format'
 export { FULL_FRAME, showsOutline, arcPath, buildFranceMapModel, buildMapModel, computeFrame, evaluateMap } from './mapModel'

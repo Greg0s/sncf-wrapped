@@ -9,7 +9,7 @@ import { Recap } from './sections/Recap'
 import { Routes } from './sections/Routes'
 import { RoutesMap, type MapHandle } from './sections/RoutesMap'
 import { Teaser } from './sections/Teaser'
-import { useWrappedScroll } from './useReveal'
+import { useStoryTapNavigation, useWrappedScroll } from './useReveal'
 
 /**
  * Wrapped: the mockup's screens, in vertical scroll-snap, fed by the display model.
@@ -21,6 +21,7 @@ export function Wrapped({ view, onBack }: { view: WrappedView; onBack: () => voi
   const mapRef = useRef<MapHandle>(null)
 
   useWrappedScroll(rootRef, (event) => mapRef.current?.[event]())
+  useStoryTapNavigation(scrollerRef)
   const replay = () => scrollerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
 
   const section = (s: SectionMeta, i: number) => {

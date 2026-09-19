@@ -367,7 +367,7 @@ export function Landing({ openData, openImport, modal }: { openData: () => void;
           )}
         >
           <span>Projet non officiel — for fun by Greg</span>
-          <span>Aperçus : chiffres d'exemple · Contient des données SNCF Open Data (licence ODbL)</span>
+          <span>Aperçus : chiffres d'exemple · Contient des données SNCF Open Data (licence ODbL) et IGN Admin Express (Licence Ouverte / Etalab)</span>
         </footer>
       </main>
       {modal}
