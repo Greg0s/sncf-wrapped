@@ -38,3 +38,11 @@ jobs:
           if find dist -iname '*.csv' -o -iname '*.zip' | grep .; then
             echo "::error::dist/ must not contain CSV/zip files"; exit 1
           fi
+
+      # Récupéré par deploy.yml (workflow_run) : seulement sur main, pour ne pas déployer un build de PR.
+      - uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          name: dist
+          path: dist
+          retention-days: 1
