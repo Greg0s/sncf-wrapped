@@ -5,7 +5,7 @@ import { toWindows1252 } from './__fixtures__/sncfCsv'
 describe('decodeCsvBytes', () => {
   it("décode l'export SNCF (Windows-1252) sans produire de « � »", () => {
     const bytes = toWindows1252('Données - Commandes train bus;Payé en ligne;Option posée;Première')
-    expect(bytes).toContain(0xe9) // « é » codé sur un octet, invalide en UTF-8
+    expect(bytes).toContain(0xe9) // "é" encoded as a single byte, invalid in UTF-8
     const { text, encoding } = decodeCsvBytes(bytes)
     expect(encoding).toBe('windows-1252')
     expect(text).toBe('Données - Commandes train bus;Payé en ligne;Option posée;Première')

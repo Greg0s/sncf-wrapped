@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/Greg0s/wrapped-sncf/actions/workflows/ci.yml/badge.svg)](https://github.com/Greg0s/wrapped-sncf/actions/workflows/ci.yml)
 
+*Read this in English: [README.en.md](README.en.md)*
+
 🔗 **[greg0s.github.io/wrapped-sncf](https://greg0s.github.io/wrapped-sncf/)**
 
 Votre année sur les rails, façon « Wrapped » : importez l'export de vos données personnelles SNCF Connect et découvrez vos kilomètres, votre budget, vos villes, vos itinéraires et votre façon de réserver, écran par écran, avec une carte à partager.

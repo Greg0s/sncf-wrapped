@@ -1,17 +1,17 @@
-// Fabrique de CSV « façon SNCF Connect » pour les tests. Toutes les données sont FICTIVES (identité, adresse,
-// e-mails…) : ne jamais coller ici un vrai export, qui contient des données personnelles.
+// Factory for "SNCF Connect style" CSVs used in tests. All the data is FICTIONAL (identity, address,
+// emails…): never paste a real export here, since it contains personal data.
 
 export interface FixtureRow {
   order?: string
   ref?: string
   orderDate?: string
-  /** Format de l'export : 2026-01-10T08:00:00.000Z */
+  /** Export format: 2026-01-10T08:00:00.000Z */
   departure: string
   origin: string
   destination: string
   payment?: string
   roundTrip?: boolean
-  /** Tel qu'écrit dans le CSV (virgule décimale). */
+  /** As written in the CSV (decimal comma). */
   amount?: string
   passengers?: number
 }
@@ -42,7 +42,7 @@ export function tripLine(r: FixtureRow): string {
 
 const blank = ';;;;;;;;;;;;'
 
-/** Export complet : sections d'identité/compte (fictives), trajets, puis d'autres sections après. Fins de ligne CRLF. */
+/** Full export: identity/account sections (fictional), trips, then other sections after. CRLF line endings. */
 export function buildSncfCsv(rows: FixtureRow[]): string {
   return [
     "Demande d'extraction des données personnelles;;;;;;;;;;;;",
@@ -55,7 +55,7 @@ export function buildSncfCsv(rows: FixtureRow[]): string {
     blank,
     'Données - Compte client;;;;;;;;;;;;',
     'email;adresse;date_de_creation;date_de_mise_a_jour;date_de_naissance;numerotelephone',
-    // Guillemets « à l'échappement bizarre » comme dans un vrai export : ils ne doivent rien casser.
+    // Quotes with "weird escaping" like in a real export: they must not break anything.
     'jean.dupont@example.org;"{\\mainAddress\\"":\\""1 RUE DES LILAS\\"",\\""city\\"":\\""LYON\\""}""";2018-01-01T00:00:00.000Z;2026-01-01T00:00:00.000Z;1990-01-01;33600000000',
     blank,
     blank,
@@ -74,7 +74,7 @@ export function buildSncfCsv(rows: FixtureRow[]): string {
   ].join('\r\n')
 }
 
-/** Encode en Windows-1252 (les caractères du fixture sont tous dans Latin-1) : reproduit les octets d'un vrai export. */
+/** Encodes as Windows-1252 (the fixture's characters are all within Latin-1): reproduces a real export's bytes. */
 export function toWindows1252(text: string): Uint8Array<ArrayBuffer> {
   return Uint8Array.from(text, (c) => c.charCodeAt(0) & 0xff)
 }

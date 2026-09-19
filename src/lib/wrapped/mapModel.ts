@@ -3,16 +3,16 @@ import { fmtNum, plural } from './format'
 import { monthName } from './phrases'
 
 /*
- * Carte des trajets (écran 06) et mini-carte de la carte à partager, à partir des itinéraires réels.
- * Les positions viennent de la projection lat/lon → SVG « CarteFrance » (voir geo.ts).
+ * Trip map (screen 06) and the mini-map on the shareable card, built from the actual routes.
+ * Positions come from the lat/lon → SVG "CarteFrance" projection (see geo.ts).
  */
 
 export interface Frame {
-  /** Cadre (viewBox) : x, y, côté. */
+  /** Frame (viewBox): x, y, side. */
   x: number
   y: number
   size: number
-  /** Échelle des traits/points/textes : 1 en vue France entière, < 1 quand la carte est zoomée. */
+  /** Scale of lines/dots/text: 1 in full-France view, < 1 when the map is zoomed in. */
   k: number
 }
 
@@ -23,10 +23,10 @@ interface Pt {
   y: number
 }
 
-/** La silhouette de la France n'est tracée que si la carte n'est pas trop zoomée (au-delà, ce n'est plus qu'un fragment de ligne). */
+/** The outline of France is only drawn if the map isn't too zoomed in (beyond that, it's just a line fragment). */
 export const showsOutline = (frame: Frame): boolean => frame.k >= 0.4
 
-/** France entière, sauf si tous les points sont regroupés : on zoome (jusqu'à ×3,4) pour que les lignes restent lisibles. */
+/** Full France, unless all points are clustered: we zoom in (up to ×3.4) so the lines stay readable. */
 export function computeFrame(points: Pt[]): Frame {
   if (!points.length) return FULL_FRAME
   const xs = points.map((p) => p.x)
@@ -41,10 +41,10 @@ export function computeFrame(points: Pt[]): Frame {
 }
 
 const r1 = (n: number) => Math.round(n * 10) / 10
-/** Signe de la courbure des arcs, alterné comme dans la maquette (Paris +, Marseille +, Nantes −, Dijon +, Strasbourg −). */
+/** Sign of the arcs' curvature, alternating as in the mockup (Paris +, Marseille +, Nantes −, Dijon +, Strasbourg −). */
 const CURVE_SIGNS = [1, 1, -1, 1, -1]
 
-/** Arc quadratique de a vers b : le point de contrôle est décalé de 14 % de la corde, perpendiculairement. */
+/** Quadratic arc from a to b: the control point is offset perpendicularly by 14% of the chord. */
 export function arcPath(a: Pt, b: Pt, index: number): string {
   const sign = CURVE_SIGNS[index % CURVE_SIGNS.length]
   const dx = b.x - a.x
@@ -59,7 +59,7 @@ interface Box {
   x1: number
   y1: number
 }
-const CHAR_WIDTH = 6 // largeur moyenne d'un caractère à 11 px, graisse 600 (approximation)
+const CHAR_WIDTH = 6 // average character width at 11px, weight 600 (approximation)
 const overlaps = (a: Box, b: Box) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0
 
 function labelBox(name: string, x: number, y: number, anchor: Anchor, k: number): Box {
@@ -71,9 +71,9 @@ function labelBox(name: string, x: number, y: number, anchor: Anchor, k: number)
 
 export interface MapRoute {
   key: string
-  /** « Saint-Étienne ↔ Paris » */
+  /** "Saint-Étienne ↔ Paris" */
   name: string
-  /** Tracé de A (la ville de base quand elle en fait partie) vers B. */
+  /** Path from A (the home city, when it's part of the route) to B. */
   d: string
   totalLegs: number
 }
@@ -96,7 +96,7 @@ export interface MapModel {
   totalKm: number
   maxLegs: number
   doneLabel: string
-  /** Durée relative de l'animation : plus longue quand la période compte beaucoup de mois. */
+  /** Relative animation duration: longer when the period spans many months. */
   durationFactor: number
 }
 
@@ -106,7 +106,7 @@ interface DrawnRoute {
   b: Pt
 }
 
-/** Itinéraires dont les deux villes ont une position sur la carte (les gares étrangères en sont exclues). */
+/** Routes whose two cities both have a position on the map (foreign stations are excluded). */
 function drawable(stats: WrappedStats): DrawnRoute[] {
   return stats.routes.items.flatMap((route) => {
     const { cityA, cityB } = route
@@ -197,20 +197,20 @@ export interface MapState {
   dots: { x: number; y: number; r: number; o: number }[]
   labels: { name: string; x: number; y: number; anchor: Anchor; o: number; fontSize: number }[]
   legend: { name: string; trips: string; w: string; o: number }[]
-  /** Couleurs des repères mensuels : accent (écoulé), accent 50 % (en cours), gris (à venir). */
+  /** Colors of the monthly ticks: accent (elapsed), accent 50% (in progress), grey (upcoming). */
   ticks: ('done' | 'current' | 'todo')[]
   km: string
   phase: string
 }
 
 /**
- * État de la carte pour une progression `p` (0 → nombre de mois) : reprend `mapVals` de la maquette, avec des
- * itinéraires et des mois réels. Les traits grossissent avec le nombre de trajets, rapporté à l'itinéraire le
- * plus fréquent.
+ * Map state for a progress value `p` (0 → number of months): mirrors `mapVals` from the mockup, with
+ * actual routes and months. Line widths grow with the number of trips, relative to the most frequent
+ * route.
  */
 export function evaluateMap(model: MapModel, progress: number): MapState {
   const n = model.months.length
-  const p = Math.min(n, Math.max(0, Number.isFinite(progress) ? progress : 0)) // toujours dans [0, n]
+  const p = Math.min(n, Math.max(0, Number.isFinite(progress) ? progress : 0)) // always within [0, n]
   const done = Math.floor(p)
   const frac = p - done
   const k = model.frame.k
@@ -263,7 +263,7 @@ export function evaluateMap(model: MapModel, progress: number): MapState {
   }
 }
 
-/** Épaisseurs et rayons par rang, comme dans « CarteFrance » (Paris 6,4 → Strasbourg 2,4). */
+/** Widths and radii by rank, as in "CarteFrance" (Paris 6.4 → Strasbourg 2.4). */
 const WIDTHS = [6.4, 3.6, 3.4, 2.8, 2.4]
 const DOT_RADII = [6.4, 5.4, 5.4, 4.6, 4.6]
 
@@ -273,7 +273,7 @@ export interface FranceMapModel {
   arcs: { d: string; w: number; dots: { x: number; y: number; r: number }[] }[]
 }
 
-/** Mini-carte de la carte à partager : les mêmes itinéraires, sans animation. */
+/** Mini-map for the shareable card: the same routes, without animation. */
 export function buildFranceMapModel(stats: WrappedStats): FranceMapModel {
   const routes = drawable(stats)
   if (!routes.length) return { frame: FULL_FRAME, hub: null, arcs: [] }

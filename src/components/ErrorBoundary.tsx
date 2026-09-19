@@ -2,8 +2,8 @@ import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { css } from '../lib/css'
 
 /**
- * Filet de sécurité : un fichier inattendu ne doit jamais laisser une page blanche. On affiche un message
- * et un retour à l'accueil (qui remonte tout le parcours, donc efface le fichier importé de la mémoire).
+ * Safety net: an unexpected file must never leave a blank page. We show a message
+ * and a way back home (which remounts the whole journey, so it clears the imported file from memory).
  */
 export class ErrorBoundary extends Component<{ children: ReactNode; onReset: () => void }, { failed: boolean }> {
   state = { failed: false }
@@ -13,7 +13,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode; onReset: () 
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    // Uniquement dans la console locale : rien n'est envoyé.
+    // Local console only: nothing is sent.
     console.error(error, info.componentStack)
   }
 

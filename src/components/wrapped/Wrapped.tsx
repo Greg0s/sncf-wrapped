@@ -12,8 +12,8 @@ import { Teaser } from './sections/Teaser'
 import { useWrappedScroll } from './useReveal'
 
 /**
- * Wrapped : les écrans de la maquette, en scroll-snap vertical, alimentés par le modèle d'affichage.
- * Les écrans sans données sont absents de `view.sections` ; la barre de progression suit leur nombre réel.
+ * Wrapped: the mockup's screens, in vertical scroll-snap, fed by the display model.
+ * Screens with no data are absent from `view.sections`; the progress bar follows their actual count.
  */
 export function Wrapped({ view, onBack }: { view: WrappedView; onBack: () => void }) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -32,7 +32,7 @@ export function Wrapped({ view, onBack }: { view: WrappedView; onBack: () => voi
       case 'budget':
         return <Budget key={s.id} d={view.d} index={i} label={s.label} />
       case 'cities':
-        return <Cities key={s.id} villes={view.villes} heading={view.villesHeading} index={i} label={s.label} />
+        return <Cities key={s.id} cities={view.cities} heading={view.citiesHeading} index={i} label={s.label} />
       case 'routes':
         return <Routes key={s.id} routes={view.routes} heading={view.routesHeading} index={i} label={s.label} />
       case 'anticipation':

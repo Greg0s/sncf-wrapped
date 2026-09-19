@@ -1,8 +1,8 @@
 export type CsvEncoding = 'utf-8' | 'windows-1252'
 
 /**
- * L'export SNCF Connect est encodé en Windows-1252 (« é » = 0xE9) : lu en UTF-8, il donnerait « � ».
- * On tente UTF-8 strict (fichier ré-enregistré par un tableur, BOM inclus) puis on retombe sur Windows-1252.
+ * The SNCF Connect export is encoded in Windows-1252 ("é" = 0xE9): read as UTF-8, it would produce "�".
+ * We try strict UTF-8 first (file re-saved by a spreadsheet app, BOM included) then fall back to Windows-1252.
  */
 export function decodeCsvBytes(bytes: ArrayBuffer | Uint8Array): { text: string; encoding: CsvEncoding } {
   const view = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes)
@@ -13,7 +13,7 @@ export function decodeCsvBytes(bytes: ArrayBuffer | Uint8Array): { text: string;
   }
 }
 
-/** Lit un fichier choisi par l'utilisateur, en local (File API) : le contenu ne quitte jamais le navigateur. */
+/** Reads a file chosen by the user, locally (File API): the content never leaves the browser. */
 export async function readCsvFile(file: Blob): Promise<{ text: string; encoding: CsvEncoding }> {
   return decodeCsvBytes(await file.arrayBuffer())
 }

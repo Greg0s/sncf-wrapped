@@ -2,7 +2,7 @@ import { Fragment } from 'react'
 import { css } from '../../../lib/css'
 import type { CityRow } from '../../../lib/wrapped'
 
-export function Cities({ villes, heading, index, label }: { villes: CityRow[]; heading: string; index: number; label?: string | null }) {
+export function Cities({ cities, heading, index, label }: { cities: CityRow[]; heading: string; index: number; label?: string | null }) {
   return (
     <section
       data-sec={index}
@@ -28,7 +28,7 @@ export function Cities({ villes, heading, index, label }: { villes: CityRow[]; h
         data-delay="140"
         style={css(`background: #1B2130; border-radius: 28px; padding: clamp(4px, 1vh, 12px) clamp(16px, 3vw, 28px); max-width: 880px; width: 100%;`)}
       >
-        {villes.map((v, i) => (
+        {cities.map((v, i) => (
           <Fragment key={i}>
             <div style={css(`padding: clamp(6px, 1.1vh, 12px) 0; display: flex; align-items: baseline; gap: clamp(10px, 2.4vw, 20px);`)}>
               <span style={css(`font-size: 13px; color: #6C768A; flex: 0 0 auto; font-weight: 600;`)}>{v.rank}</span>

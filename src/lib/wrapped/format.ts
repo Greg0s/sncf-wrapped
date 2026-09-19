@@ -1,13 +1,13 @@
-/** Nombre entier à la française : « 31 144 » (espace simple, comme dans la maquette). */
+/** Integer in French format: "31 144" (plain space, as in the mockup). */
 export const fmtNum = (n: number): string => Math.round(n).toLocaleString('fr-FR').replace(/[  ]/g, ' ')
 
 /**
- * Montant sur les écrans : euros entiers dès 10 € (« 850 € »), centimes en dessous (« 1,50 € »),
- * pour ne pas arrondir un billet à 1,50 € en « 2 € ».
+ * Amount shown on screens: whole euros from 10 € up ("850 €"), cents below that ("1,50 €"),
+ * so a 1.50 € ticket doesn't get rounded to "2 €".
  */
 export const fmtEur = (n: number): string => (n >= 10 || Number.isInteger(n) ? `${fmtNum(n)} €` : `${n.toFixed(2).replace('.', ',')} €`)
 
-/** En français, 0 et 1 s'accordent au singulier. */
+/** In French, 0 and 1 both take the singular. */
 export const plural = (n: number, one: string, many: string): string => (n > 1 ? many : one)
 
 export const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)

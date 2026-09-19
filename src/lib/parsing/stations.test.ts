@@ -40,7 +40,7 @@ describe('resolve', () => {
   })
 
   it("retrouve une gare dont le libellé SNCF est plus court que le nom officiel (« PARIS BERCY »)", () => {
-    expect(index.resolve('PARIS BERCY')).toMatchObject({ kind: 'station', via: 'prefix', city: 'Paris', name: 'Paris Bercy' }) // libellé du CSV, pas le nom officiel
+    expect(index.resolve('PARIS BERCY')).toMatchObject({ kind: 'station', via: 'prefix', city: 'Paris', name: 'Paris Bercy' }) // CSV label, not the official name
     expect(index.resolve('PARIS BERCY')?.cityKey).toBe(index.resolve('PARIS GARE DE LYON')?.cityKey)
   })
 

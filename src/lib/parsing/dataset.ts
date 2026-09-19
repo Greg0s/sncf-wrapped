@@ -3,59 +3,59 @@ import { haversineKm, projectToFranceMap } from './geo'
 import { unresolvedPlace } from './stations'
 import type { StationIndex, Trip } from './types'
 
-/** Ville telle que les écrans la manipulent. */
+/** City as the screens work with it. */
 export interface CityRef {
-  /** Identifiant opaque (deux gares d'une même ville partagent la même clé). */
+  /** Opaque identifier (two stations in the same city share the same key). */
   key: string
   name: string
-  /** null quand la gare est absente du référentiel (ex. gare étrangère). */
+  /** null when the station is missing from the referential (e.g. a foreign station). */
   lat: number | null
   lon: number | null
-  /** Position sur la carte schématique de la maquette (viewBox de CarteFrance), null sans coordonnées. */
+  /** Position on the mockup's schematic map (CarteFrance's viewBox), null without coordinates. */
   x: number | null
   y: number | null
 }
 
 export interface TripPlace {
-  /** Libellé brut du CSV. */
+  /** Raw label from the CSV. */
   raw: string
-  /** Nom de gare pour l'affichage. */
+  /** Station name for display. */
   station: string
   city: CityRef
-  /** Coordonnées de la gare (ou de la ville si seule la ville a été identifiée), null si inconnues. */
+  /** Coordinates of the station (or of the city if only the city was identified), null if unknown. */
   lat: number | null
   lon: number | null
-  /** « none » : gare absente du référentiel. */
+  /** "none": station missing from the referential. */
   via: 'exact' | 'stripped' | 'prefix' | 'city-prefix' | 'none'
 }
 
 export interface ResolvedTrip extends Trip {
   from: TripPlace
   to: TripPlace
-  /** Distance à vol d'oiseau entre origine et destination, null si une extrémité n'a pas de coordonnées. */
+  /** Straight-line distance between origin and destination, null if either end lacks coordinates. */
   straightKm: number | null
 }
 
 export interface PlaceUsage {
   raw: string
-  /** Nom auquel le libellé a été rattaché (gare ou ville), null si aucun. */
+  /** Name the label was matched to (station or city), null if none. */
   matchedAs: string | null
   via: TripPlace['via']
   count: number
 }
 
 export interface TripDataset {
-  /** Date de référence (AAAA-MM-JJ) : les départs postérieurs sont « à venir ». */
+  /** Reference date (YYYY-MM-DD): later departures are "upcoming". */
   today: string
-  /** Trajets déjà effectués, du plus ancien au plus récent. */
+  /** Trips already taken, from oldest to most recent. */
   trips: ResolvedTrip[]
-  /** Départs à venir, exclus de toutes les statistiques. */
+  /** Upcoming departures, excluded from all statistics. */
   upcoming: ResolvedTrip[]
-  /** Premier départ connu (AAAA-MM-JJ). */
+  /** First known departure (YYYY-MM-DD). */
   firstDate: string
-  /** Dernière date connue dans le fichier (départ passé ou commande). */
+  /** Latest date known in the file (past departure or order). */
   dataEnd: string
-  /** Libellés sans coordonnées (aucune distance possible) et libellés rattachés par approximation. */
+  /** Labels without coordinates (no distance possible) and labels matched by approximation. */
   unresolvedPlaces: PlaceUsage[]
   approximatedPlaces: PlaceUsage[]
 }
@@ -64,13 +64,13 @@ export type Period = { kind: 'year'; year: number } | { kind: 'all' }
 
 export interface PeriodOption {
   period: Period
-  /** Nombre de trajets (allers simples) de la période. */
+  /** Number of trips (one-way legs) in the period. */
   tripCount: number
 }
 
 export const legCount = (t: Pick<Trip, 'roundTrip'>): 1 | 2 => (t.roundTrip ? 2 : 1)
 
-/** Rattache chaque trajet à ses gares/villes, calcule les distances, et écarte les départs à venir. */
+/** Links each trip to its stations/cities, computes distances, and drops upcoming departures. */
 export function buildTripDataset(trips: Trip[], index: StationIndex, today: string = localToday()): TripDataset {
   const places = new Map<string, TripPlace>()
   const usage = new Map<string, number>()
@@ -130,7 +130,7 @@ export function buildTripDataset(trips: Trip[], index: StationIndex, today: stri
   }
 }
 
-/** Périodes proposables : chaque année avec au moins un trajet (récente d'abord), puis « toutes les années » s'il y en a plusieurs. */
+/** Selectable periods: each year with at least one trip (most recent first), then "all years" if there is more than one. */
 export function listPeriods(ds: TripDataset): PeriodOption[] {
   const byYear = new Map<number, number>()
   for (const t of ds.trips) byYear.set(yearOf(t.departureDate), (byYear.get(yearOf(t.departureDate)) ?? 0) + legCount(t))

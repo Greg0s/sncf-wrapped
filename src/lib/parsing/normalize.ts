@@ -1,18 +1,18 @@
 const DIACRITICS = /[̀-ͯ]/g
 
-/** Minuscules sans accents ni ligatures. */
+/** Lowercase, without accents or ligatures. */
 export function fold(s: string): string {
   return s.normalize('NFD').replace(DIACRITICS, '').toLowerCase().replace(/œ/g, 'oe').replace(/æ/g, 'ae')
 }
 
-/** Clé de colonne : « numéro de commande » et « est_aller_retour » deviennent « numero de commande » et « est aller retour ». */
+/** Column key: "numéro de commande" and "est_aller_retour" become "numero de commande" and "est aller retour". */
 export function normalizeHeader(s: string): string {
   return fold(s).replace(/[^a-z0-9]+/g, ' ').trim()
 }
 
 /**
- * Clé de gare, identique pour « SAINT ETIENNE CHATEAUCREUX » (CSV) et « Saint-Étienne Châteaucreux » (référentiel).
- * Les abréviations ST / STE sont développées des deux côtés.
+ * Station key, identical for "SAINT ETIENNE CHATEAUCREUX" (CSV) and "Saint-Étienne Châteaucreux" (referential).
+ * The ST / STE abbreviations are expanded on both sides.
  */
 export function normalizeStationName(s: string): string {
   return fold(s)
@@ -25,7 +25,7 @@ export function normalizeStationName(s: string): string {
 
 const SMALL_WORDS = new Set(['de', 'du', 'des', 'la', 'le', 'les', 'sur', 'sous', 'en', 'et', 'aux', 'au', 'd', 'l'])
 
-/** « BRUXELLES MIDI » → « Bruxelles Midi » (utilisé pour les gares absentes du référentiel). */
+/** "BRUXELLES MIDI" → "Bruxelles Midi" (used for stations missing from the referential). */
 export function titleCaseFr(s: string): string {
   return s
     .toLowerCase()

@@ -26,10 +26,10 @@ jobs:
 
       - run: npm ci
 
-      # Lint + typecheck + tests (dont robustesse et confidentialité) + build
+      # Lint + typecheck + tests (including robustness and privacy) + build
       - run: npm run check
 
-      # Un export réel contient des données personnelles : jamais dans le dépôt, jamais dans le site déployé.
+      # A real export contains personal data: never in the repo, never in the deployed site.
       - name: No personal export in the repository or in the build
         run: |
           if git ls-files | grep -iE '\.(csv|zip)$'; then
@@ -39,7 +39,7 @@ jobs:
             echo "::error::dist/ must not contain CSV/zip files"; exit 1
           fi
 
-      # Récupéré par deploy.yml (workflow_run) : seulement sur main, pour ne pas déployer un build de PR.
+      # Fetched by deploy.yml (workflow_run): only on main, so we never deploy a PR build.
       - uses: actions/upload-artifact@v4
         if: github.ref == 'refs/heads/main'
         with:

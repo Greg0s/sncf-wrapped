@@ -5,39 +5,39 @@ import { EARTH_CIRCUMFERENCE_KM, RAIL_DETOUR_FACTOR } from './geo'
 import { MAX_TOP, rankTop, type Ranked } from './ranking'
 
 /*
- * Calcule les valeurs affichées par les écrans du wrapped (maquette v3), pour une période donnée.
- * Fonction pure : aucune entrée/sortie, aucun réseau.
+ * Computes the values displayed by the wrapped's screens (mockup v3), for a given period.
+ * Pure function: no I/O, no network.
  *
- * Vocabulaire : un « trajet » (leg) est un aller simple ; un billet aller-retour en fait deux.
- * Les villes regroupent les gares d'une même commune (« Saint-Étienne » pour Châteaucreux, Carnot, Bellevue…).
+ * Vocabulary: a "leg" is a one-way trip; a round-trip ticket makes two of them.
+ * Cities group together the stations of a single municipality ("Saint-Étienne" for Châteaucreux, Carnot, Bellevue…).
  */
 
 export interface StatsOptions {
-  /** Taille maximale des classements ; ils rétrécissent d'eux-mêmes si les données sont plus pauvres. */
+  /** Maximum size of the rankings; they shrink on their own if the data is scarcer. */
   maxItems?: number
-  /** Facteur appliqué à la distance à vol d'oiseau pour approcher le tracé ferroviaire. */
+  /** Factor applied to the straight-line distance to approximate the rail track. */
   detourFactor?: number
 }
 
 export interface CityVisit {
   city: CityRef
   visits: number
-  /** Largeur de barre (6–100), proportionnelle à la première ville. */
+  /** Bar width (6-100), proportional to the top city. */
   pct: number
 }
 
 export interface RouteStat {
   key: string
-  /** A → B : le sens le plus fréquent (ville « de base » en premier quand il y en a une). */
+  /** A → B: the more frequent direction (the "home" city first when there is one). */
   cityA: CityRef
   cityB: CityRef
-  /** Ex. « Saint-Étienne ↔ Roanne ». */
+  /** E.g. "Saint-Étienne ↔ Roanne". */
   label: string
-  /** Gares les plus utilisées de chaque côté, ex. « Saint-Étienne Châteaucreux ». */
+  /** Most used station on each side, e.g. "Saint-Étienne Châteaucreux". */
   stations: [string, string]
-  /** Trajets, deux sens confondus. */
+  /** Legs, both directions combined. */
   trips: number
-  /** Km estimés cumulés, null si aucune distance connue. */
+  /** Cumulative estimated km, null if no distance is known. */
   km: number | null
   totalEur: number
 }
@@ -46,7 +46,7 @@ export interface TripHighlight {
   priceEur: number
   date: string
   time: string | null
-  /** 0 = dimanche … 6 = samedi. */
+  /** 0 = Sunday … 6 = Saturday. */
   weekday: number
   partOfDay: 'night' | 'morning' | 'afternoon' | 'evening' | null
   from: string
@@ -55,73 +55,73 @@ export interface TripHighlight {
 }
 
 export interface MonthBucket {
-  /** AAAA-MM */
+  /** YYYY-MM */
   month: string
   trips: number
-  /** Km estimés. */
+  /** Estimated km. */
   km: number
   spendEur: number
-  /** Trajets par itinéraire (clé de RouteStat) : alimente l'animation de la carte. */
+  /** Legs per route (RouteStat key): feeds the map animation. */
   routeLegs: Record<string, number>
 }
 
 export interface Anticipation {
-  /** Trajets ayant une date de commande cohérente. */
+  /** Legs with a coherent order date. */
   tripsConsidered: number
-  /** Jours entre la commande et le départ (moyenne, 1 décimale). */
+  /** Days between order and departure (average, 1 decimal). */
   averageDays: number
-  /** Billets pris le jour même du départ. */
+  /** Tickets bought on the day of departure itself. */
   sameDayCount: number
   minDays: number
   maxDays: number
-  /** Jour de la semaine où l'on commande le plus (0 = dimanche), à égalité le premier de la semaine. */
+  /** Weekday on which orders are placed most (0 = Sunday); ties go to the first day of the week. */
   bookingWeekday: { weekday: number; count: number } | null
 }
 
 export interface WrappedStats {
   period: Period
-  /** Textes de période des écrans (teaser, carte à partager). */
+  /** Period texts for the screens (teaser, shareable card). */
   display: { period: string; big: string; bigStart: string; bigEnd: string }
   years: number[]
   from: string | null
   to: string | null
 
-  /** Trajets = allers simples (un aller-retour compte pour 2). */
+  /** Legs = one-way trips (a round trip counts as 2). */
   tripCount: number
-  /** Billets/voyages distincts (un aller-retour compte pour 1). */
+  /** Distinct tickets/bookings (a round trip counts as 1). */
   bookingCount: number
 
   distance: {
-    /** Km estimés = à vol d'oiseau × facteur de détour. */
+    /** Estimated km = straight-line distance × detour factor. */
     estimatedKm: number
     straightLineKm: number
     detourFactor: number
     kmPerTrip: number | null
     earthLaps: number
-    /** Trajets dont la distance est connue / inconnue (gare absente du référentiel). */
+    /** Legs whose distance is known / unknown (station absent from the referential). */
     coveredTrips: number
     uncoveredTrips: number
   }
 
   spend: {
     totalEur: number
-    /** Moyenne par trajet (aller simple) sur les billets dont le montant est connu. */
+    /** Average per leg (one-way trip) over the tickets whose amount is known. */
     avgPerTripEur: number | null
     perMonthEur: number | null
-    /** Mois pris en compte pour la moyenne mensuelle. */
+    /** Months taken into account for the monthly average. */
     monthsSpan: number
     priciest: TripHighlight | null
-    /** Billet le moins cher, hors billets à 0 €. */
+    /** Cheapest ticket, excluding tickets at 0 €. */
     cheapest: TripHighlight | null
     priciestMonth: { month: string; totalEur: number } | null
   }
 
-  /** Ville « de base » : la plus présente (départs + arrivées), exclue du classement des destinations. */
+  /** "Home" city: the most present one (departures + arrivals), excluded from the destinations ranking. */
   hub: (CityRef & { appearances: number }) | null
   destinations: Ranked<CityVisit>
   routes: Ranked<RouteStat>
   anticipation: Anticipation | null
-  /** Un bloc par mois (12 pour une année), y compris les mois vides. */
+  /** One bucket per month (12 for a year), including empty months. */
   timeline: MonthBucket[]
 
   quality: {
@@ -179,7 +179,7 @@ function displayOf(period: Period, years: number[]): WrappedStats['display'] {
   return { period: `${first} → ${last}`, big: `${last - first + 1} ans`, bigStart: String(first), bigEnd: String(last) }
 }
 
-/** Élément le plus fréquent d'une table de comptage ; à égalité, le premier par ordre alphabétique. */
+/** Most frequent element of a count table; ties go to the first one alphabetically. */
 function mostFrequent(counts: Map<string, number>): string {
   return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'fr'))[0]?.[0] ?? ''
 }
@@ -197,7 +197,7 @@ export function computeWrappedStats(ds: TripDataset, period: Period, options: St
   const straight = sum(measured.map((l) => l.km as number))
   const estimatedKm = Math.round(straight * factor)
 
-  // ── Ville de base, destinations, itinéraires ───────────────────────────────
+  // ── Home city, destinations, routes ────────────────────────────────────────
   const travelLegs = legs.filter((l) => !sameCity(l))
   const appearances = new Map<string, { city: CityRef; n: number }>()
   for (const l of travelLegs) {
@@ -252,7 +252,7 @@ export function computeWrappedStats(ds: TripDataset, period: Period, options: St
   }
   const routeList = [...accs.entries()]
     .map(([key, a]): RouteStat => {
-      // Sens d'affichage : la ville de base en premier, sinon la ville d'où l'on part le plus souvent.
+      // Display direction: the home city first, otherwise the city one departs from most often.
       const leadsFirst = (x: CityRef, y: CityRef): boolean => {
         if (x.key === hub?.key) return true
         if (y.key === hub?.key) return false
@@ -283,7 +283,7 @@ export function computeWrappedStats(ds: TripDataset, period: Period, options: St
   const pick = (better: (a: number, b: number) => boolean) =>
     paid.length ? highlight(paid.reduce((best, t) => (better(t.priceEur as number, best.priceEur as number) ? t : best))) : null
 
-  // Moyenne mensuelle : du 1er mois de la période (ou des données) au dernier mois connu du fichier.
+  // Monthly average: from the 1st month of the period (or of the data) to the last month known in the file.
   const dataStart = monthOf(ds.firstDate)
   const dataEnd = monthOf(ds.dataEnd)
   const periodStart = period.kind === 'year' ? `${period.year}-01` : dataStart
@@ -292,7 +292,7 @@ export function computeWrappedStats(ds: TripDataset, period: Period, options: St
   const spanEnd = periodEnd < dataEnd ? periodEnd : dataEnd
   const monthsSpan = Math.max(1, monthsBetween(spanStart, spanEnd) + 1)
 
-  // ── Chronologie mensuelle (dépense rattachée au mois de départ) ────────────
+  // ── Monthly timeline (spend attributed to the departure month) ─────────────
   const timelineMonths = trips.length
     ? period.kind === 'year'
       ? monthRange(`${period.year}-01`, `${period.year}-12`)
@@ -310,7 +310,7 @@ export function computeWrappedStats(ds: TripDataset, period: Period, options: St
   const timeline = [...buckets.values()].map((b) => ({ ...b, km: Math.round(b.km), spendEur: roundCents(b.spendEur) }))
   const priciestMonth = timeline.reduce<MonthBucket | null>((best, b) => (b.spendEur > (best?.spendEur ?? 0) ? b : best), null)
 
-  // ── Anticipation (jours entre la commande et le départ) ────────────────────
+  // ── Anticipation (days between order and departure) ────────────────────────
   let negativeLead = 0
   const leads: { lead: number; orderWeekday: number }[] = []
   for (const t of trips) {

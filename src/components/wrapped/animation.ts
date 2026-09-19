@@ -1,5 +1,5 @@
 /**
- * Vitesse des révélations. La maquette expose ce réglage (« revealSpeed », 0,5 à 2) avec 0,6 par défaut :
- * toutes les durées d'animation sont divisées par cette valeur.
+ * Speed of the reveals. The mockup exposes this setting ("revealSpeed", 0.5 to 2) with 0.6 by default:
+ * all animation durations are divided by this value.
  */
 export const REVEAL_SPEED = 0.6

@@ -15,7 +15,7 @@ describe('haversineKm', () => {
 })
 
 describe('projectToFranceMap', () => {
-  // Villes ancrées dans la maquette (CarteFrance / SNCF Wrapped v3) : lat, lon → x, y du SVG.
+  // Cities anchored in the mockup (CarteFrance / SNCF Wrapped v3): lat, lon → x, y in the SVG.
   const anchors: [string, number, number, number, number][] = [
     ['Lyon', 45.764, 4.8357, 276.3, 229.4],
     ['Paris', 48.8566, 2.3522, 207.9, 105.7],

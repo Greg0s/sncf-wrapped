@@ -15,12 +15,12 @@ const NO_TRIPS = "Aucun trajet effectué dans ce fichier : il ne contient que de
 const errorMessage = (e: ParseError) => (e.code === 'no-valid-rows' ? NO_TRIPS : e.message)
 
 /**
- * Parcours : landing → import du CSV (lu dans le navigateur) → wrapped. L'état ne vit qu'en mémoire : rien n'est
- * envoyé ni stocké (pas de localStorage, pas de requête). Le panneau de validation des calculs reste accessible
+ * Journey: landing → CSV import (read in the browser) → wrapped. State lives only in memory: nothing is
+ * sent or stored (no localStorage, no request). The calculation validation panel stays reachable
  * via ?debug.
  */
 export default function App() {
-  const [session, setSession] = useState(0) // remonter le parcours vide aussi les données importées
+  const [session, setSession] = useState(0) // remounting the journey also clears imported data
   if (new URLSearchParams(window.location.search).has('debug')) return <DebugPanel />
   return (
     <ErrorBoundary onReset={() => setSession((n) => n + 1)}>
@@ -35,7 +35,7 @@ function Journey() {
   const [status, setStatus] = useState<ImportStatus>({ status: 'idle' })
   const [imported, setImported] = useState<Imported | null>(null)
   const [periodIndex, setPeriodIndex] = useState(0)
-  const request = useRef(0) // ignore la réponse d'un fichier remplacé entre-temps
+  const request = useRef(0) // ignore the response for a file that was replaced in the meantime
 
   useEffect(() => {
     window.scrollTo(0, 0)

@@ -3,10 +3,10 @@ import { join, relative, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 /*
- * Garde-fou de la contrainte n°1 de CLAUDE.md : le contenu du CSV ne quitte jamais le navigateur.
- * Aucun fichier de l'application (hors tests et scripts de développement) ne doit utiliser d'API réseau ni de
- * dépendance qui en émette. Si un besoin légitime apparaît (ex. charger un asset statique), l'ajouter ici
- * explicitement, avec la justification, après vérification que rien de l'utilisateur ne transite.
+ * Guard rail for constraint #1 of CLAUDE.md: the CSV's content never leaves the browser.
+ * No file of the application (outside tests and development scripts) may use a network API or a
+ * dependency that emits one. If a legitimate need arises (e.g. loading a static asset), add it here
+ * explicitly, with justification, after verifying that none of the user's data goes through it.
  */
 
 const SRC = resolve(__dirname, '../..')

@@ -1,9 +1,9 @@
 import { useLayoutEffect, useRef, type CSSProperties } from 'react'
 
 /**
- * Nombre « qui roule » (les chiffres défilent puis se figent à l'apparition de l'écran).
- * Le texte est piloté à la main par l'animation (cf. useWrappedScroll) : le composant ne rend donc aucun
- * enfant React, seulement la valeur finale dans `data-final`, et un état initial à zéro avant la révélation.
+ * "Rolling" number (the digits scroll then settle when the screen appears).
+ * The text is driven by hand by the animation (see useWrappedScroll): the component therefore renders no
+ * React children, only the final value in `data-final`, and an initial zeroed-out state before the reveal.
  */
 export function Roll({ final, style }: { final: string; style?: CSSProperties }) {
   const ref = useRef<HTMLSpanElement>(null)

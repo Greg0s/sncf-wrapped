@@ -1,15 +1,15 @@
 import { normalizeStationName, titleCaseFr } from './normalize'
 import type { Place, StationData, StationIndex } from './types'
 
-// Arrêts routiers listés par SNCF Connect à côté des gares (« ROANNE GARE ROUTIERE ») : rattachés à la gare/ville.
+// Bus stops listed by SNCF Connect alongside stations ("ROANNE GARE ROUTIERE"): matched to the station/city.
 const BUS_SUFFIX = / (GARE ROUTIERE|G ROUTIERE|ROUTIERE|GARE BUS)$/
-// En dessous de cette longueur, un nom de ville est trop court pour servir de préfixe fiable (« ay », « us »…).
+// Below this length, a city name is too short to serve as a reliable prefix ("ay", "us"…).
 const MIN_CITY_PREFIX_LENGTH = 4
 
 /**
- * Index de résolution « libellé SNCF → gare/ville + coordonnées », construit sur le référentiel embarqué.
- * Ordre de résolution : nom exact → sans suffixe « gare routière » → nom de gare qui commence par le libellé
- * (« PARIS BERCY » → Paris Bercy Bourgogne…) → nom de ville en préfixe (« SAINT ETIENNE CHTX » → Saint-Étienne).
+ * Resolution index "SNCF label → station/city + coordinates", built on the bundled referential.
+ * Resolution order: exact name → without the "gare routière" suffix → station name starting with the label
+ * ("PARIS BERCY" → Paris Bercy Bourgogne…) → city name as a prefix ("SAINT ETIENNE CHTX" → Saint-Étienne).
  */
 export function createStationIndex(data: StationData): StationIndex {
   const stationByName = new Map<string, number>()
@@ -53,16 +53,16 @@ export function createStationIndex(data: StationData): StationIndex {
       if (s !== undefined) return stationPlace(raw, s, 'stripped')
     }
 
-    // Un seul nom de gare commence par le libellé (« PARIS BERCY » → « Paris Bercy Bourgogne - Pays d'Auvergne »).
+    // Only one station name starts with the label ("PARIS BERCY" → "Paris Bercy Bourgogne - Pays d'Auvergne").
     const prefix = stripped + ' '
     const candidates: number[] = []
     for (let i = 0; i < stationNames.length && candidates.length < 2; i++) {
       if (stationNames[i].startsWith(prefix)) candidates.push(i)
     }
-    // On garde alors le libellé de l'utilisateur (« Paris Bercy ») plutôt que le nom officiel, plus long.
+    // In that case we keep the user's label ("Paris Bercy") rather than the longer official name.
     if (candidates.length === 1) return { ...stationPlace(raw, candidates[0], 'prefix'), name: titleCaseFr(stripped) }
 
-    // Le plus long préfixe (en mots) qui est un nom de ville connu.
+    // The longest prefix (in words) that is a known city name.
     const words = stripped.split(' ')
     for (let n = words.length; n >= 1; n--) {
       const key = words.slice(0, n).join(' ')
@@ -82,7 +82,7 @@ export function createStationIndex(data: StationData): StationIndex {
   }
 }
 
-/** Repli pour une gare inconnue du référentiel (ex. gare étrangère) : on garde son nom, sans coordonnées. */
+/** Fallback for a station unknown to the referential (e.g. a foreign station): we keep its name, without coordinates. */
 export function unresolvedPlace(raw: string): { raw: string; name: string; city: string; cityKey: string } {
   const label = titleCaseFr(normalizeStationName(raw).replace(BUS_SUFFIX, ''))
   return { raw, name: titleCaseFr(normalizeStationName(raw)), city: label, cityKey: `u:${normalizeStationName(raw).replace(BUS_SUFFIX, '')}` }
@@ -91,8 +91,8 @@ export function unresolvedPlace(raw: string): { raw: string; name: string; city:
 let cached: Promise<StationIndex> | null = null
 
 /**
- * Charge le référentiel des gares. C'est un fichier statique du site (jamais une donnée utilisateur) :
- * import dynamique, donc un chunk séparé qui n'est téléchargé qu'au moment d'analyser un fichier.
+ * Loads the station referential. It's a static file of the site (never user data):
+ * dynamic import, so a separate chunk that is only downloaded when a file is actually parsed.
  */
 export function loadStationIndex(): Promise<StationIndex> {
   cached ??= import('./data/gares.json').then((m) => createStationIndex(m.default as unknown as StationData))

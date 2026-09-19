@@ -3,12 +3,12 @@ import { fold, normalizeHeader, normalizeStationName } from './normalize'
 import type { ParseOptions, ParseReport, ParseResult, SkipReason, Trip } from './types'
 
 /*
- * L'export RGPD de SNCF Connect est un CSV « multi-sections » (identité, compte, newsletter, commandes de
- * trains/bus, cartes, communications…). Seule la section des commandes de train nous intéresse : on la repère
- * par ses colonnes, on l'isole, et le reste du fichier (données personnelles) n'est jamais interprété.
+ * The SNCF Connect GDPR export is a "multi-section" CSV (identity, account, newsletter, train/bus orders,
+ * cards, communications…). We only care about the train orders section: we locate it by its columns,
+ * isolate it, and the rest of the file (personal data) is never parsed.
  */
 
-// Colonnes indispensables pour reconnaître la section, repérées par leur intitulé normalisé.
+// Columns required to recognize the section, matched by their normalized header name.
 const REQUIRED_COLUMNS = { departure: 'date voyage', origin: 'lieu origine', destination: 'lieu destination' } as const
 const OPTIONAL_COLUMNS = {
   orderDate: 'date commande',
@@ -28,7 +28,7 @@ const SECTION_TITLE = /^\s*donn.{1,2}es\s+-\s+\S/i
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
-/** Date/heure « telles qu'écrites » : le suffixe Z de l'export est ignoré (les heures sont des heures de départ locales). */
+/** Date/time "as written": the export's Z suffix is ignored (times are local departure times). */
 export function parseDateTime(raw: string): { date: string; time: string | null } | null {
   const s = raw.trim()
   let y: number, mo: number, d: number, hh: string | undefined, mm: string | undefined
@@ -49,7 +49,7 @@ export function parseDateTime(raw: string): { date: string; time: string | null 
   return { date: `${y}-${pad(mo)}-${pad(d)}`, time: timeOk ? `${hh}:${mm}` : null }
 }
 
-/** « 13,4 » → 13.4 ; « 44 » → 44 ; illisible → null. */
+/** "13,4" → 13.4; "44" → 44; unreadable → null. */
 export function parseAmount(raw: string): number | null {
   const s = raw.replace(/[\s €]/g, '').replace(',', '.')
   return /^-?\d+(\.\d+)?$/.test(s) ? Number(s) : null
@@ -83,14 +83,14 @@ function findHeader(lines: string[]): { header: HeaderMatch | null; closest: { m
 const isBlank = (line: string, delimiter: string) => line.split(delimiter).every((c) => c.trim() === '')
 
 /**
- * Lit un export SNCF Connect déjà décodé en texte (cf. decode.ts) et en extrait les trajets.
+ * Reads an SNCF Connect export already decoded to text (see decode.ts) and extracts the trips from it.
  *
- * Règles de lecture (validées sur un export réel, à confirmer sur d'autres) :
- *  - les « options » (mode de paiement « Option posée ») sont des réservations non payées : exclues par défaut ;
- *  - un même trajet peut apparaître sur plusieurs lignes (billet TER + billet TGV d'un même voyage, ou échange
- *    dans une autre commande) : les lignes de même départ + origine + destination sont fusionnées en un trajet,
- *    et leurs montants s'additionnent ;
- *  - le montant est le montant brut du CSV (avant tout remboursement, que le fichier ne décrit pas).
+ * Reading rules (validated against a real export, to be confirmed against others):
+ *  - "options" (payment mode "Option posée") are unpaid reservations: excluded by default;
+ *  - the same trip can appear on several rows (a TER ticket + a TGV ticket for the same journey, or an exchange
+ *    in another order): rows with the same departure + origin + destination are merged into one trip,
+ *    and their amounts are added together;
+ *  - the amount is the CSV's gross amount (before any refund, which the file does not describe).
  */
 export function parseSncfCsv(text: string, options: ParseOptions = {}): ParseResult {
   if (!text.trim()) {
@@ -120,7 +120,7 @@ export function parseSncfCsv(text: string, options: ParseOptions = {}): ParseRes
     }
   }
 
-  // Titre de la section : dernière ligne non vide au-dessus de l'en-tête.
+  // Section title: last non-blank line above the header.
   let sectionTitle: string | null = null
   for (let i = header.index - 1; i >= 0; i--) {
     if (!isBlank(lines[i], header.delimiter)) {
@@ -129,7 +129,7 @@ export function parseSncfCsv(text: string, options: ParseOptions = {}): ParseRes
     }
   }
 
-  // Lignes de la section : jusqu'à la première ligne vide ou au titre de la section suivante.
+  // Section lines: up to the first blank line or the next section's title.
   const sectionLines = [lines[header.index]]
   for (let i = header.index + 1; i < lines.length; i++) {
     if (isBlank(lines[i], header.delimiter) || SECTION_TITLE.test(lines[i])) break
@@ -167,7 +167,7 @@ export function parseSncfCsv(text: string, options: ParseOptions = {}): ParseRes
 
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i]
-    const line = header.index + i + 1 // numéro de ligne (à partir de 1) dans le fichier
+    const line = header.index + i + 1 // line number (1-based) in the file
     const cell = (c: number) => (c >= 0 ? (row[c] ?? '').trim() : '')
 
     const origin = cell(idx.origin)
@@ -203,7 +203,7 @@ export function parseSncfCsv(text: string, options: ParseOptions = {}): ParseRes
     if (known) {
       report.mergedTickets++
       if (isOption) {
-        // Une option reposée à l'identique ne s'additionne pas : on garde la plus élevée, et jamais à côté d'un billet payé.
+        // An option booked again identically doesn't add up: we keep the highest amount, and never alongside a paid ticket.
         if (!known.paid && price !== null) known.priceEur = Math.max(known.priceEur ?? 0, price)
       } else {
         if (price !== null) known.priceEur = roundCents((known.paid ? (known.priceEur ?? 0) : 0) + price)

@@ -1,14 +1,14 @@
 import type { CSSProperties } from 'react'
 
 /*
- * Port fidèle de la maquette : ses styles sont des chaînes CSS en ligne (« display: flex; gap: 10px; »).
- * Plutôt que de les retaper en objets (et risquer de dériver du design), on les garde tels quels et on les
- * convertit ici en objet `style` React. Le résultat est mis en cache par chaîne.
+ * Faithful port of the mockup: its styles are inline CSS strings ("display: flex; gap: 10px;").
+ * Rather than retyping them as objects (and risking drifting from the design), we keep them as-is and
+ * convert them here into a React `style` object. The result is cached per string.
  */
 
 const cache = new Map<string, CSSProperties>()
 
-/** Sépare les déclarations sur « ; » en respectant parenthèses et guillemets (ex. « url(data:…;base64,…) »). */
+/** Splits declarations on ";" while respecting parentheses and quotes (e.g. "url(data:…;base64,…)"). */
 function declarations(text: string): string[] {
   const out: string[] = []
   let depth = 0
@@ -30,7 +30,7 @@ function declarations(text: string): string[] {
   return out.map((s) => s.trim()).filter(Boolean)
 }
 
-/** « align-items » → « alignItems », « -webkit-x » → « WebkitX », « --ac » inchangé. */
+/** "align-items" → "alignItems", "-webkit-x" → "WebkitX", "--ac" unchanged. */
 const propName = (name: string) => (name.startsWith('--') ? name : name.replace(/^-ms-/, 'ms-').replace(/-([a-z])/g, (_, c: string) => c.toUpperCase()))
 
 export function css(text: string): CSSProperties {

@@ -1,11 +1,11 @@
-// Générateur d'exports SNCF Connect FICTIFS et aléatoires (graine fixe → reproductible), pour les tests de robustesse.
-// Il mélange volontairement les cas difficiles : très peu ou beaucoup de trajets, options non payées, billets
-// dupliqués, allers-retours, gares inconnues ou étrangères, arrêts de car, montants illisibles, dates de commande
-// manquantes ou postérieures au départ, départs à venir.
+// Generator of FICTIONAL, randomized SNCF Connect exports (fixed seed → reproducible), for robustness tests.
+// It deliberately mixes in the tricky cases: very few or very many trips, unpaid options, duplicate
+// tickets, round trips, unknown or foreign stations, bus stops, unreadable amounts, missing order
+// dates or ones after the departure, upcoming departures.
 import { normalizeStationName } from '../normalize'
 import type { FixtureRow } from './sncfCsv'
 
-/** PRNG déterministe (mulberry32). */
+/** Deterministic PRNG (mulberry32). */
 export function mulberry32(seed: number): () => number {
   let a = seed | 0
   return () => {
@@ -28,11 +28,11 @@ function addDays(date: string, days: number): string {
 
 export interface RandomExport {
   rows: FixtureRow[]
-  /** Date du jour à utiliser : certains départs sont postérieurs (donc « à venir »). */
+  /** "Today" date to use: some departures are later than this (and thus "upcoming"). */
   today: string
 }
 
-/** `stationNames` : noms de gares du référentiel, tels que publiés (avec accents et tirets). */
+/** `stationNames`: station names from the referential, as published (with accents and hyphens). */
 export function randomExport(seed: number, stationNames: string[]): RandomExport {
   const rand = mulberry32(seed)
   const pick = <T>(items: T[]): T => items[Math.floor(rand() * items.length)]
@@ -49,7 +49,7 @@ export function randomExport(seed: number, stationNames: string[]): RandomExport
     if (chance(0.04)) other = `${other} GARE ROUTIERE`
     const outbound = chance(0.5)
     const day = addDays('2021-06-01', Math.floor(rand() * 1400))
-    const date = chance(0.5) ? day : addDays(day, 700) // étale de 2021 à 2027 : plusieurs années, dont des départs à venir
+    const date = chance(0.5) ? day : addDays(day, 700) // spreads from 2021 to 2027: several years, including upcoming departures
     const lead = chance(0.05) ? -1 - Math.floor(rand() * 3) : chance(0.4) ? 0 : Math.floor(rand() * 90)
     const amountKind = rand()
     const amount =
@@ -65,7 +65,7 @@ export function randomExport(seed: number, stationNames: string[]): RandomExport
       amount,
       passengers: chance(0.9) ? 1 : 2 + Math.floor(rand() * 3),
     })
-    // Même train racheté (échange) ou billet complémentaire dans la même commande
+    // Same train rebought (exchange) or supplementary ticket in the same order
     if (chance(0.1)) rows.push({ ...rows[rows.length - 1], order: `dup-${i}`, amount: String(Math.round(rand() * 5000) / 100).replace('.', ',') })
   }
   return { rows, today: '2026-06-30' }

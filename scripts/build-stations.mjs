@@ -1,11 +1,11 @@
-// Génère src/lib/parsing/data/gares.json à partir de l'export JSON officiel
-// « Gares de voyageurs » (SNCF Open Data, licence ODbL) :
+// Generates src/lib/parsing/data/gares.json from the official JSON export
+// "Gares de voyageurs" (SNCF Open Data, ODbL license):
 //   https://ressources.data.sncf.com/api/explore/v2.1/catalog/datasets/gares-de-voyageurs/exports/json
 //
-// Usage : node scripts/build-stations.mjs <export-brut.json>
+// Usage: node scripts/build-stations.mjs <raw-export.json>
 //
-// Le fichier brut n'est pas versionné ; seul le référentiel réduit (nom, coordonnées, ville) l'est.
-// Ce script ne tourne qu'au développement : il ne touche jamais aux données d'un utilisateur.
+// The raw file is not versioned; only the reduced referential (name, coordinates, city) is.
+// This script only runs during development: it never touches a user's data.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -24,7 +24,7 @@ const fold = (s) =>
   s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[’']/g, "'")
 const tokens = (s) => s.split(/\s+/).filter(Boolean)
 
-// Les arrondissements PLM ont leur propre code INSEE : on les rattache à la commune.
+// PLM boroughs have their own INSEE code: we attach them to the parent municipality.
 function communeCode(insee) {
   const n = Number(insee)
   if (n >= 75101 && n <= 75120) return '75056' // Paris
@@ -48,7 +48,7 @@ for (const s of stations) {
   byCommune.get(s.commune).push(s)
 }
 
-// Mots qui, seuls, ne forment pas un nom de ville (évite « La » pour « La Baule… »).
+// Words that, alone, do not form a city name (avoids "La" for "La Baule…").
 const WEAK = new Set([
   'le', 'la', 'les', "l'", 'un', 'une', 'du', 'de', 'des', "d'", 'et', 'en', 'sur', 'sous',
   'saint', 'sainte', 'st', 'ste', 'bas', 'haut', 'haute', 'grand', 'grande', 'petit', 'petite',
@@ -66,10 +66,10 @@ function commonPrefix(lists) {
   return out
 }
 
-// Nom de « ville » d'une gare, sans référentiel des communes :
-//  a) une autre gare de la même commune dont le nom est un préfixe strict (« Nice » pour « Nice Riquier ») ;
-//  b) sinon le préfixe commun aux gares de la commune qui partagent le 1er mot (« Lyon » pour « Lyon Part Dieu ») ;
-//  c) sinon le nom complet de la gare.
+// "City" name of a station, without a municipality referential:
+//  a) another station in the same municipality whose name is a strict prefix ("Nice" for "Nice Riquier");
+//  b) otherwise the common prefix of the municipality's stations that share the 1st word ("Lyon" for "Lyon Part Dieu");
+//  c) otherwise the station's full name.
 function cityLabel(station) {
   const group = byCommune.get(station.commune)
   const t = tokens(station.name)
@@ -87,7 +87,7 @@ function cityLabel(station) {
   return station.name
 }
 
-const cityIndex = new Map() // "commune|libellé" -> { label, lats[], lons[] }
+const cityIndex = new Map() // "commune|label" -> { label, lats[], lons[] }
 for (const s of stations) {
   s.city = cityLabel(s)
   const key = `${s.commune}|${fold(s.city)}`
@@ -109,12 +109,12 @@ const data = {
   source: 'SNCF Open Data — Gares de voyageurs (https://data.sncf.com/explore/dataset/gares-de-voyageurs/)',
   license: 'ODbL 1.0 — https://opendatacommons.org/licenses/odbl/1-0/',
   retrievedAt: new Date().toISOString().slice(0, 10),
-  // [libellé de la ville, latitude moyenne, longitude moyenne]
+  // [city label, average latitude, average longitude]
   cities: cityKeys.map((k) => {
     const c = cityIndex.get(k)
     return [c.label, round(mean(c.lats)), round(mean(c.lons))]
   }),
-  // [nom de la gare, latitude, longitude, index dans cities]
+  // [station name, latitude, longitude, index into cities]
   stations: stations
     .map((s) => [s.name, round(s.lat), round(s.lon), cityPos.get(s.cityKey)])
     .sort((a, b) => a[0].localeCompare(b[0], 'fr')),

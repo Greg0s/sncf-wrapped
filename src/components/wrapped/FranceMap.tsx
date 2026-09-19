@@ -2,10 +2,10 @@ import type { CSSProperties } from 'react'
 import { showsOutline, type FranceMapModel } from '../../lib/wrapped'
 import { CORSICA_OUTLINE, FRANCE_OUTLINE } from './franceOutline'
 
-/** Mini-carte de France de la carte à partager (port de « CarteFrance » de la maquette), alimentée par les vrais itinéraires. */
+/** Mini map of France for the shareable card (port of "CarteFrance" from the mockup), fed by the real routes. */
 export function FranceMap({ lineColor, scale, model, style }: { lineColor: string; scale: number; model: FranceMapModel; style?: CSSProperties }) {
   const { frame, arcs, hub } = model
-  const s = scale * frame.k // les traits gardent leur épaisseur apparente quand la carte est zoomée
+  const s = scale * frame.k // lines keep their apparent thickness when the map is zoomed
   const size = (n: number) => (n * s).toFixed(1)
   return (
     <svg
