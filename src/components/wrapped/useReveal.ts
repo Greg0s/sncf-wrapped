@@ -148,3 +148,58 @@ export function useWrappedScroll(root: RefObject<HTMLElement | null>, onMap: (ev
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [root])
 }
+
+const TAP_TOLERANCE_PX = 10
+const INTERACTIVE_SELECTOR = 'button, a, input, select, textarea, [role="button"], [contenteditable]'
+
+/**
+ * Instagram-style tap-to-navigate: tapping the right/left half of the screen moves to the
+ * next/previous section. Touch only (checked via `pointerType`), so mouse clicks (desktop: text
+ * selection, etc.) and keyboard use are untouched. A tap is only recognized when the pointer moved
+ * less than TAP_TOLERANCE_PX between down and up, so a swipe-to-scroll never also navigates. Taps
+ * on an interactive element (button, link…) are left alone so their own handler runs normally.
+ */
+export function useStoryTapNavigation(scrollerRef: RefObject<HTMLDivElement | null>) {
+  useLayoutEffect(() => {
+    const scroller = scrollerRef.current
+    if (!scroller) return
+
+    let start: { id: number; x: number; y: number } | null = null
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch') return
+      start = { id: e.pointerId, x: e.clientX, y: e.clientY }
+    }
+
+    const onPointerCancel = (e: PointerEvent) => {
+      if (start?.id === e.pointerId) start = null
+    }
+
+    const onPointerUp = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch' || !start || start.id !== e.pointerId) return
+      const { x, y } = start
+      start = null
+      if (Math.abs(e.clientX - x) > TAP_TOLERANCE_PX || Math.abs(e.clientY - y) > TAP_TOLERANCE_PX) return
+      if ((e.target as HTMLElement).closest(INTERACTIVE_SELECTOR)) return
+
+      const sections = [...scroller.querySelectorAll<HTMLElement>('[data-sec]')]
+      if (sections.length === 0) return
+      const current = sections.reduce((closest, s) =>
+        Math.abs(s.offsetTop - scroller.scrollTop) < Math.abs(closest.offsetTop - scroller.scrollTop) ? s : closest,
+      )
+      const index = sections.indexOf(current)
+      const forward = e.clientX > window.innerWidth / 2
+      const nextIndex = Math.min(sections.length - 1, Math.max(0, index + (forward ? 1 : -1)))
+      if (nextIndex !== index) sections[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+
+    scroller.addEventListener('pointerdown', onPointerDown)
+    scroller.addEventListener('pointerup', onPointerUp)
+    scroller.addEventListener('pointercancel', onPointerCancel)
+    return () => {
+      scroller.removeEventListener('pointerdown', onPointerDown)
+      scroller.removeEventListener('pointerup', onPointerUp)
+      scroller.removeEventListener('pointercancel', onPointerCancel)
+    }
+  }, [scrollerRef])
+}
