@@ -41,7 +41,11 @@ export function Budget({ d, index, label }: { d: DisplayData; index: number; lab
             </div>
           </div>
           <div style={css(`display: flex; align-items: baseline; gap: 8px; color: #F3BB67;`)}>
-            <Roll final={d.eur} style={css(`font-size: clamp(54px, 14vw, 140px); font-weight: 800; letter-spacing: -.055em; line-height: .84;`)} />
+            <Roll
+              final={d.eur}
+              suspense
+              style={css(`font-size: clamp(54px, 14vw, 140px); font-weight: 800; letter-spacing: -.055em; line-height: .84;`)}
+            />
             <span style={css(`font-size: clamp(26px, 6vw, 56px); font-weight: 800;`)}>€</span>
           </div>
         </div>
