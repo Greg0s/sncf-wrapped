@@ -103,10 +103,9 @@ export function RoutesMap({ index, label, model, mapRef }: { index: number; labe
             preserveAspectRatio="xMidYMid meet"
             style={css(`width: 100%; max-width: 340px; height: clamp(190px, 36vh, 320px);`)}
           >
-            {showsOutline(frame) &&
-              [FRANCE_OUTLINE, CORSICA_OUTLINE].map((points) => (
-                <polyline key={points} points={points} fill="none" stroke="rgba(241,244,247,.18)" strokeWidth={1.2 * frame.k} strokeLinejoin="round" />
-              ))}
+            {(model.regionOutline ? [model.regionOutline] : showsOutline(frame) ? [FRANCE_OUTLINE, CORSICA_OUTLINE] : []).map((points) => (
+              <polyline key={points} points={points} fill="none" stroke="rgba(241,244,247,.18)" strokeWidth={1.2 * frame.k} strokeLinejoin="round" />
+            ))}
             {mapArcs.map((a, i) => (
               <path
                 key={i}
