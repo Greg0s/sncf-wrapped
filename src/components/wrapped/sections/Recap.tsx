@@ -70,7 +70,7 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
       })
       const link = document.createElement('a')
       link.href = dataUrl
-      link.download = `sncf-wrapped-${slugify(d.period)}.png`
+      link.download = `sncf-wrapped-${slugify(d.period)}-${slugify(fmt.label)}.png`
       link.click()
     } catch (error) {
       console.error('Failed to generate the shareable card', error)
