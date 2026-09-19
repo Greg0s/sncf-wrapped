@@ -1,86 +1,86 @@
-# Stack technique — Wrapped SNCF
+# Tech stack — Wrapped SNCF
 
-Contexte du projet : voir [CLAUDE.md](CLAUDE.md). Contraintes structurantes pour tous les choix ci-dessous : rendu 100% statique/client-side, aucune donnée envoyée à un serveur, hébergement gratuit (GitHub Pages).
+Project context: see [CLAUDE.md](CLAUDE.md). Constraints shaping every choice below: fully static/client-side rendering, no data sent to any server, free hosting (GitHub Pages).
 
-## 1. Framework front — React + Vite + TypeScript
+## 1. Front-end framework — React + Vite + TypeScript
 
-**Choix :** React 18 + Vite + TypeScript.
+**Choice:** React 18 + Vite + TypeScript.
 
-**Justification :** Vite produit un build 100% statique (HTML/CSS/JS), sans serveur, directement servable par GitHub Pages. React a l'écosystème le plus riche pour les briques spécifiques dont ce projet a besoin (carte, animations de scroll, export d'image) : les librairies recommandées aux points 2/4/5 sont toutes React-first et bien maintenues. TypeScript sécurise les transformations de données (CSV brut → stats agrégées), ce qui limite les bugs silencieux sur un format d'export dont le contenu peut varier.
+**Rationale:** Vite produces a fully static build (HTML/CSS/JS), with no server, directly servable by GitHub Pages. React has the richest ecosystem for the specific pieces this project needs (map, scroll animations, image export): the libraries recommended in points 2/4/5 are all React-first and well maintained. TypeScript secures the data transformations (raw CSV → aggregated stats), which limits silent bugs on an export format whose content can vary.
 
-*Alternative écartée :* Svelte/SvelteKit (bundle plus léger, transitions natives) — écosystème moins mûr côté carte et export d'image.
+*Alternative ruled out:* Svelte/SvelteKit (lighter bundle, native transitions) — less mature ecosystem for the map and image export.
 
-## 2. Animations de scroll et micro-animations — GSAP + ScrollTrigger
+## 2. Scroll animations and micro-animations — GSAP + ScrollTrigger
 
-**Choix :** GSAP + plugin ScrollTrigger, via le binding `@gsap/react` (hook `useGSAP`).
+**Choice:** GSAP + ScrollTrigger plugin, via the `@gsap/react` binding (the `useGSAP` hook).
 
-**Justification :** C'est la référence pour le scrollytelling (sections pinnées, animations "scrubbées" sur la position de scroll), exactement le besoin pour une expérience façon Wrapped. Le plugin DrawSVG (dessin progressif d'un tracé SVG) — utile pour "les traits qui se dessinent sur la carte" — est gratuit depuis que Webflow a racheté GreenSock en 2025. GSAP est agnostique du framework, donc ne dépend pas du cycle de rendu React pour le timing des animations.
+**Rationale:** This is the reference for scrollytelling (pinned sections, animations "scrubbed" by scroll position), exactly what's needed for a Wrapped-style experience. The DrawSVG plugin (progressive drawing of an SVG path) — useful for "the lines that draw themselves on the map" — has been free since Webflow acquired GreenSock in 2025. GSAP is framework-agnostic, so animation timing doesn't depend on React's render cycle.
 
-*Alternative écartée :* Framer Motion — plus simple pour de l'apparition au scroll basique (`whileInView`), mais moins adapté au pinning de sections et au scrubbing précis. Pourra être ajouté ponctuellement plus tard pour de petites micro-interactions UI, sans remplacer GSAP sur les séquences narratives.
+*Alternative ruled out:* Framer Motion — simpler for basic reveal-on-scroll (`whileInView`), but less suited to section pinning and precise scrubbing. Could be added later for small UI micro-interactions, without replacing GSAP for the narrative sequences.
 
-## 3. Parsing CSV côté client — PapaParse
+## 3. Client-side CSV parsing — PapaParse
 
-**Choix :** PapaParse.
+**Choice:** PapaParse.
 
-**Justification :** Standard de facto pour parser du CSV en JS. Peut tourner dans un Web Worker (ne bloque pas l'UI pendant le parsing), détecte automatiquement délimiteurs/encodages, types TypeScript disponibles. Fonctionne entièrement en mémoire dans le navigateur — cohérent avec la contrainte de confidentialité.
+**Rationale:** De facto standard for parsing CSV in JS. Can run in a Web Worker (doesn't block the UI while parsing), auto-detects delimiters/encodings, TypeScript types available. Runs entirely in memory in the browser — consistent with the privacy constraint.
 
-## 4. Carte de France + trajets — react-simple-maps (D3-geo) + données géo statiques embarquées
+## 4. Map of France + routes — react-simple-maps (D3-geo) + static geo data bundled in
 
-**Choix :** `react-simple-maps` (basé sur `d3-geo`) pour le rendu SVG de la carte, avec deux jeux de données statiques embarqués en asset local au build :
-- un fond de carte de France (contours régions/départements) issu d'un GeoJSON libre (ex. le repo `gregoiredavid/france-geojson`, MIT) ;
-- un référentiel des gares SNCF avec coordonnées GPS (portail open data SNCF, licence ouverte), pour convertir les noms de gares du CSV en points sur la carte.
+**Choice:** `react-simple-maps` (based on `d3-geo`) for the SVG map rendering, with two static datasets bundled as local assets at build time:
+- a base map of France (region/department outlines) from a free GeoJSON (e.g. the `gregoiredavid/france-geojson` repo, MIT);
+- an SNCF station reference with GPS coordinates (SNCF open data portal, open licence), to convert station names from the CSV into points on the map.
 
-**Justification :** Rendu 100% SVG, donc aucun appel réseau à un serveur de tuiles ni clé API. Les trajets sont de simples `<path>` SVG, directement animables avec GSAP/DrawSVG. Le style est entièrement personnalisable (fond sombre, dégradés, glow) pour coller à l'esthétique Wrapped — contrairement à un fond de carte réaliste (type Leaflet/OSM) qui imposerait un rendu "carte routière". Aucune donnée géographique n'est chargée depuis l'extérieur : tout est embarqué au build, dans l'esprit "rien ne sort du navigateur".
+**Rationale:** Fully SVG rendering, so no network calls to a tile server or API key. Routes are simple SVG `<path>` elements, directly animatable with GSAP/DrawSVG. The style is fully customizable (dark background, gradients, glow) to match the Wrapped aesthetic — unlike a realistic base map (Leaflet/OSM-style) which would impose a "road map" look. No geographic data is loaded from outside: everything is bundled at build time, in keeping with "nothing leaves the browser."
 
-*Alternative écartée :* Leaflet + tuiles OpenStreetMap — nécessite des requêtes réseau vers un serveur de tuiles à l'usage, et un rendu moins stylisable pour un visuel de type Wrapped.
+*Alternative ruled out:* Leaflet + OpenStreetMap tiles — requires network requests to a tile server at runtime, and a less stylable look for a Wrapped-style visual.
 
-## 5. Export de l'image partageable — html-to-image
+## 5. Shareable image export — html-to-image
 
-**Choix :** `html-to-image`.
+**Choice:** `html-to-image`.
 
-**Justification :** Convertit un nœud DOM (le composant "carte de résultats" stylé en HTML/CSS) en PNG/JPEG directement dans le navigateur, sans rendu serveur. Plus léger et mieux maintenu que `html2canvas` sur les layouts modernes (flexbox/grid, polices web, dégradés CSS). API simple (`toPng(node)`), suffisante pour un composant à layout fixe, sans avoir à redessiner manuellement sur un `<canvas>`.
+**Rationale:** Converts a DOM node (the styled "results card" component in HTML/CSS) to PNG/JPEG directly in the browser, with no server rendering. Lighter and better maintained than `html2canvas` for modern layouts (flexbox/grid, web fonts, CSS gradients). Simple API (`toPng(node)`), sufficient for a fixed-layout component, without having to manually redraw on a `<canvas>`.
 
-*Point d'attention pour l'implémentation :* précharger les polices web et éviter les images cross-origin non converties en data-URI, sinon le canvas peut être "tainted" et l'export échoue silencieusement.
+*Implementation watch-out:* preload web fonts and avoid cross-origin images that aren't converted to data-URIs, otherwise the canvas can get "tainted" and the export fails silently.
 
-## 6. Hébergement / déploiement — GitHub Pages + GitHub Actions
+## 6. Hosting / deployment — GitHub Pages + GitHub Actions
 
-**Choix :** GitHub Pages, déployé via une GitHub Action (`actions/upload-pages-artifact` + `actions/deploy-pages`) à chaque push sur `main`.
+**Choice:** GitHub Pages, deployed via a GitHub Action (`actions/upload-pages-artifact` + `actions/deploy-pages`) on every push to `main`.
 
-**Justification :** Gratuit, déjà couplé au repo GitHub existant (`Greg0s/wrapped-sncf`), et suffisant puisque le site est 100% statique après build. Pas de backend à héberger, donc aucun coût ni maintenance serveur.
+**Rationale:** Free, already tied to the existing GitHub repo (`Greg0s/wrapped-sncf`), and sufficient since the site is fully static after build. No backend to host, so no server cost or maintenance.
 
-*Point d'attention pour l'implémentation :* un site de projet GitHub Pages (`greg0s.github.io/wrapped-sncf`) est servi sous un sous-chemin — penser à configurer `base: '/wrapped-sncf/'` dans `vite.config.ts`.
+*Implementation watch-out:* a GitHub Pages project site (`greg0s.github.io/wrapped-sncf`) is served under a subpath — remember to set `base: '/wrapped-sncf/'` in `vite.config.ts`.
 
 ---
 
-## Architecture de dossiers résultante
+## Resulting folder architecture
 
 ```
 wrapped-sncf/
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml          # build Vite + déploiement GitHub Pages
+│       └── deploy.yml          # Vite build + GitHub Pages deployment
 ├── public/
 │   └── data/
-│       ├── france-map.json     # GeoJSON/TopoJSON des contours de France (asset statique)
-│       └── gares-sncf.json     # référentiel gares + coordonnées GPS (asset statique)
+│       ├── france-map.json     # GeoJSON/TopoJSON of France's outlines (static asset)
+│       └── gares-sncf.json     # station reference + GPS coordinates (static asset)
 ├── src/
-│   ├── assets/                 # images, icônes, polices
+│   ├── assets/                 # images, icons, fonts
 │   ├── components/
-│   │   ├── landing/            # hero, argumentaire confidentialité, CTA d'upload
-│   │   ├── upload/              # zone de dépôt / sélection du CSV
-│   │   ├── story/                # sections du récit scrollé (façon Wrapped)
-│   │   ├── map/                    # carte de France + tracés de trajets (react-simple-maps)
-│   │   ├── stats/                    # classements/visualisations (top villes, itinéraires…)
-│   │   ├── share-card/                 # composant de la carte exportable + bouton de partage
-│   │   └── ui/                          # boutons, layout, éléments génériques
+│   │   ├── landing/            # hero, privacy pitch, upload CTA
+│   │   ├── upload/              # CSV drop zone / picker
+│   │   ├── story/                # scrolled narrative sections (Wrapped-style)
+│   │   ├── map/                    # map of France + route lines (react-simple-maps)
+│   │   ├── stats/                    # rankings/visualizations (top cities, routes…)
+│   │   ├── share-card/                 # exportable card component + share button
+│   │   └── ui/                          # buttons, layout, generic elements
 │   ├── lib/
-│   │   ├── csv/                 # wrapper PapaParse + validation/mapping des colonnes attendues
-│   │   ├── stats/                 # agrégations (top N adaptatif, distances, fréquences…)
-│   │   ├── geo/                     # résolution nom de gare → coordonnées, géométrie des tracés
-│   │   └── export/                    # wrapper html-to-image
-│   ├── hooks/                   # ex. useGsapScrollTimeline, useCsvUpload
+│   │   ├── csv/                 # PapaParse wrapper + validation/mapping of expected columns
+│   │   ├── stats/                 # aggregations (adaptive top N, distances, frequencies…)
+│   │   ├── geo/                     # station-name-to-coordinates resolution, route geometry
+│   │   └── export/                    # html-to-image wrapper
+│   ├── hooks/                   # e.g. useGsapScrollTimeline, useCsvUpload
 │   ├── types/                   # Trip, Station, WrappedStats, etc.
-│   ├── App.tsx                  # état global simple : landing → story → résultats
+│   ├── App.tsx                  # simple global state: landing → story → results
 │   └── main.tsx
 ├── CLAUDE.md
 ├── STACK.md
@@ -90,30 +90,30 @@ wrapped-sncf/
 └── package.json
 ```
 
-**Notes sur l'architecture :**
-- Pas de routeur (react-router) : le parcours est un flux à état unique (landing → upload → story → partage), géré par du state React local plutôt que par des routes.
-- `public/data/` ne contient que des données statiques de référence (géographie, gares) — jamais de données utilisateur.
-- La logique d'adaptation des classements (contrainte CLAUDE.md sur le "top N" dynamique) vit dans `src/lib/stats/`, séparée des composants d'affichage, pour rester testable indépendamment du rendu.
+**Notes on the architecture:**
+- No router (react-router): the journey is a single-state flow (landing → upload → story → share), handled by local React state rather than routes.
+- `public/data/` only holds static reference data (geography, stations) — never user data.
+- The ranking-adaptation logic (the CLAUDE.md constraint on the dynamic "top N") lives in `src/lib/stats/`, separate from the display components, to stay testable independently of rendering.
 
 ---
 
-## Points non demandés mais à trancher rapidement à la prochaine étape
+## Points not asked for but to settle quickly at the next step
 
-Hors des 6 points demandés, mais nécessaires pour scaffolder :
-- **Styling :** suggestion Tailwind CSS (rapide pour un design system Wrapped-like avec dégradés/dark mode) — à confirmer.
-- **Gestionnaire de paquets :** npm par défaut (aucune install supplémentaire requise) — à confirmer si préférence contraire (pnpm/yarn).
+Beyond the 6 points requested, but needed to scaffold:
+- **Styling:** suggest Tailwind CSS (fast for a Wrapped-like design system with gradients/dark mode) — to confirm.
+- **Package manager:** npm by default (no extra install needed) — to confirm if there's a preference otherwise (pnpm/yarn).
 
 ---
 
-## Écarts constatés à l'implémentation
+## Deviations found during implementation
 
-Le projet est maintenant scaffoldé. Ce qui diffère de ce document :
+The project is now scaffolded. What differs from this document:
 
-- **Dossiers** : `src/lib/parsing/` (lecture du CSV, calculs, référentiel des gares) et `src/lib/wrapped/` (modèle d'affichage) remplacent `lib/csv`, `lib/stats` et `lib/geo`. Le référentiel des gares est `src/lib/parsing/data/gares.json`, chargé par import dynamique (et non `public/data/`).
-- **Animations** : CSS + IntersectionObserver, portés tels quels de la maquette (pas de GSAP pour l'instant).
-- **Styling** : ni Tailwind ni autre framework CSS ; les styles en ligne de la maquette sont conservés (`src/lib/css.ts`).
-- **Carte** : SVG schématique de la maquette (projection affine des coordonnées), pas `react-simple-maps`.
-- **Polices** : Schibsted Grotesk auto-hébergée (`@fontsource`), aucun service de polices tiers.
-- **Export d'image** (`html-to-image`) : pas encore fait, voir l'issue #3. **Déploiement Pages** : voir l'issue #10.
+- **Folders**: `src/lib/parsing/` (reading the CSV, computations, station reference) and `src/lib/wrapped/` (display model) replace `lib/csv`, `lib/stats` and `lib/geo`. The station reference is `src/lib/parsing/data/gares.json`, loaded via dynamic import (not `public/data/`).
+- **Animations**: CSS + IntersectionObserver, ported as-is from the mockup (no GSAP for now).
+- **Styling**: neither Tailwind nor another CSS framework; the mockup's inline styles are kept (`src/lib/css.ts`).
+- **Map**: schematic SVG from the mockup (affine projection of the coordinates), not `react-simple-maps`.
+- **Fonts**: Schibsted Grotesk self-hosted (`@fontsource`), no third-party font service.
+- **Image export** (`html-to-image`): not done yet, see issue #3. **Pages deployment**: see issue #10.
 
-Architecture à jour : `docs/architecture.md`.
+Up-to-date architecture: `docs/architecture.md`.

@@ -1,6 +1,6 @@
-// Affiche dans la console ce que lib/parsing calcule pour un export SNCF Connect.
-//   npm run inspect -- "<chemin du csv>" [--year 2025 | --all] [--include-options] [--json]
-// Tout est local : le fichier est lu sur disque, rien n'est envoyé nulle part.
+// Prints to the console what lib/parsing computes for an SNCF Connect export.
+//   npm run inspect -- "<path to csv>" [--year 2025 | --all] [--include-options] [--json]
+// Everything is local: the file is read from disk, nothing is sent anywhere.
 import { readFileSync } from 'node:fs'
 import {
   MONTHS_FR,

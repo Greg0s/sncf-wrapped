@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-// Police auto-hébergée (aucune requête vers un service de polices tiers : cohérent avec « aucun traçage »).
+// Self-hosted font (no request to a third-party font service: consistent with "no tracking").
 import '@fontsource/schibsted-grotesk/400.css'
 import '@fontsource/schibsted-grotesk/500.css'
 import '@fontsource/schibsted-grotesk/600.css'

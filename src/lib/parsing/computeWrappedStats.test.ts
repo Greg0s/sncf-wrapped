@@ -25,24 +25,24 @@ const km = (a: string, b: string) => {
   return haversineKm(p.lat, p.lon, q.lat, q.lon)
 }
 
-// Scénario de référence (aujourd'hui = 2026-06-30), calculé à la main dans les assertions ci-dessous.
+// Reference scenario (today = 2026-06-30), computed by hand in the assertions below.
 const scenario: FixtureRow[] = [
   { departure: '2026-01-10T08:00:00.000Z', orderDate: '2026-01-05', origin: SEC, destination: 'ROANNE', amount: '9,2' },
   { departure: '2026-01-12T18:30:00.000Z', orderDate: '2026-01-12', origin: 'ROANNE', destination: SEC, amount: '9,2' },
-  // billet TGV + billet TER d'un même voyage : 40 + 5 = 45 €, un seul trajet
+  // TGV ticket + TER ticket for the same trip: 40 + 5 = 45 €, a single leg
   { order: 'P1', departure: '2026-02-14T09:00:00.000Z', orderDate: '2026-01-20', origin: SEC, destination: 'PARIS GARE DE LYON', amount: '40' },
   { order: 'P1', departure: '2026-02-14T09:00:00.000Z', orderDate: '2026-01-20', origin: SEC, destination: 'PARIS GARE DE LYON', amount: '5' },
   { departure: '2026-02-16T17:00:00.000Z', orderDate: '2026-01-20', origin: 'PARIS GARE DE LYON', destination: SEC, amount: '42' },
   { departure: '2026-03-01T10:00:00.000Z', orderDate: '2026-03-01', origin: 'SAINT ETIENNE CARNOT', destination: 'LYON PART DIEU', amount: '10' },
-  // correspondance à l'intérieur de Lyon : compte comme trajet et dépense, mais pas comme itinéraire ni destination
+  // connection within Lyon: counts as a leg and as spend, but not as a route or a destination
   { departure: '2026-03-01T20:00:00.000Z', orderDate: '2026-03-01', origin: 'LYON PERRACHE', destination: 'LYON PART DIEU', amount: '1,2' },
-  // aller-retour : 2 trajets
+  // round trip: 2 legs
   { departure: '2026-04-05T12:00:00.000Z', orderDate: '2026-03-05', origin: SEC, destination: 'ANNECY', roundTrip: true, amount: '60' },
-  // option non payée : ignorée dès la lecture
+  // unpaid option: ignored right at parsing time
   { departure: '2026-05-01T10:00:00.000Z', origin: SEC, destination: 'NICE', payment: 'Option posée', amount: '80' },
-  // départ à venir : exclu de toutes les statistiques
+  // upcoming departure: excluded from all statistics
   { departure: '2026-12-24T10:00:00.000Z', origin: SEC, destination: 'PARIS GARE DE LYON', amount: '50' },
-  // année précédente
+  // previous year
   { departure: '2025-12-20T10:00:00.000Z', orderDate: '2025-12-19', origin: SEC, destination: 'ROANNE', amount: '9,2' },
 ]
 
@@ -56,7 +56,7 @@ describe('computeWrappedStats — scénario de référence, année 2026', () => 
   })
 
   it('compte trajets (allers simples) et voyages', () => {
-    expect(s.tripCount).toBe(8) // 1+1+1+1+1+1 + 2 (aller-retour)
+    expect(s.tripCount).toBe(8) // 1+1+1+1+1+1 + 2 (round trip)
     expect(s.bookingCount).toBe(7)
     expect(s.quality.roundTripBookings).toBe(1)
     expect(s.quality.sameCityTrips).toBe(1)
@@ -124,7 +124,7 @@ describe('computeWrappedStats — scénario de référence, année 2026', () => 
       sameDayCount: 3,
       minDays: 0,
       maxDays: 31,
-      bookingWeekday: { weekday: 1, count: 2 }, // lundi/mardi/dimanche à égalité → 1er de la semaine
+      bookingWeekday: { weekday: 1, count: 2 }, // Monday/Tuesday/Sunday tied → first day of the week
     })
   })
 
@@ -175,7 +175,7 @@ describe('périodes', () => {
     expect(all.tripCount).toBe(9)
     expect(all.spend.totalEur).toBe(185.8)
     expect(all.display).toEqual({ period: '2025 → 2026', big: '2 ans', bigStart: '2025', bigEnd: '2026' })
-    expect(all.spend.monthsSpan).toBe(5) // décembre 2025 → avril 2026
+    expect(all.spend.monthsSpan).toBe(5) // December 2025 → April 2026
     expect(all.timeline[0].month).toBe('2025-12')
     expect(all.timeline).toHaveLength(5)
   })
@@ -262,7 +262,7 @@ describe('cas limites', () => {
     expect(s.distance.estimatedKm).toBe(Math.round(km('LYON PART DIEU', 'ANNECY') * RAIL_DETOUR_FACTOR))
     const geneve = s.routes.items.find((r) => r.label.includes('Geneve'))!
     expect(geneve.km).toBeNull()
-    expect(geneve.cityB.x).toBeNull() // pas de position sur la carte
+    expect(geneve.cityB.x).toBeNull() // no position on the map
   })
 
   it('n’attribue pas un prix inventé aux trajets sans montant', () => {
@@ -294,7 +294,7 @@ describe('cas limites', () => {
 
   it('formate le dernier mois d’une année non terminée sans diviser par 12', () => {
     const s = computeWrappedStats(datasetOf([{ departure: '2026-03-10T10:00:00.000Z', origin: SEC, destination: 'ROANNE', amount: '12' }]), { kind: 'year', year: 2026 })
-    expect(s.spend.monthsSpan).toBe(1) // première donnée et dernière donnée en mars
+    expect(s.spend.monthsSpan).toBe(1) // first and last data points both in March
     expect(s.spend.perMonthEur).toBe(12)
   })
 })

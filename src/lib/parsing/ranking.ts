@@ -1,24 +1,24 @@
-/** Taille maximale des classements des écrans (villes, itinéraires). */
+/** Maximum size of the screen rankings (cities, routes). */
 export const MAX_TOP = 5
-/** Taille maximale des classements de la carte à partager. */
+/** Maximum size of the rankings on the shareable card. */
 export const CARD_TOP = 3
 
 export interface Ranked<T> {
-  /** Éléments à afficher, du meilleur au moins bon. */
+  /** Items to display, best to worst. */
   items: T[]
-  /** Nombre d'éléments distincts disponibles avant coupe. */
+  /** Number of distinct items available before truncation. */
   totalDistinct: number
   /**
-   * - `ranking` : au moins 2 éléments, un classement a du sens ;
-   * - `single`  : un seul élément, à présenter comme un constat plutôt que comme un « top » ;
-   * - `empty`   : rien à classer, l'écran doit être masqué ou remplacé.
+   * - `ranking`: at least 2 items, a ranking makes sense;
+   * - `single`: a single item, to be presented as a fact rather than a "top";
+   * - `empty`: nothing to rank, the screen should be hidden or replaced.
    */
   mode: 'ranking' | 'single' | 'empty'
 }
 
 /**
- * Classement adaptatif : N = min(maxItems, éléments distincts). Ne renvoie jamais un « top 5 » à 3 éléments.
- * `sorted` doit déjà être trié du meilleur au moins bon.
+ * Adaptive ranking: N = min(maxItems, distinct items). Never returns a "top 5" with only 3 items.
+ * `sorted` must already be sorted from best to worst.
  */
 export function rankTop<T>(sorted: readonly T[], maxItems: number = MAX_TOP): Ranked<T> {
   const items = sorted.slice(0, Math.max(0, maxItems))

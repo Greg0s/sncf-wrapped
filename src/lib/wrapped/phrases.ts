@@ -1,7 +1,7 @@
 import { MONTHS_FR, WEEKDAYS_FR, type Anticipation, type TripHighlight, type WrappedStats } from '../parsing'
 import { cap, fmtEur, fmtNum, plural } from './format'
 
-/** « Les trois quarts du tour de la Terre » : la comparaison suit l'ordre de grandeur, quel que soit le volume. */
+/** "Les trois quarts du tour de la Terre": the comparison follows the order of magnitude, regardless of volume. */
 export function earthPhrase(laps: number): string {
   if (laps < 0.03) return 'Un premier pas vers le tour de la Terre'
   if (laps < 0.2) return `Environ ${Math.round(laps * 100)} % du tour de la Terre`
@@ -29,18 +29,18 @@ const DAY_PART: Record<NonNullable<TripHighlight['partOfDay']>, string> = {
   evening: 'soir',
 }
 
-/** « un vendredi soir » */
+/** "un vendredi soir" */
 export function whenPhrase(t: TripHighlight): string {
   const part = t.partOfDay ? ` ${DAY_PART[t.partOfDay]}` : ''
   return `un ${WEEKDAYS_FR[t.weekday]}${part}`
 }
 
-/** Nombre d'années couvertes par une période « toutes les années » (2023 → 2026 : 4). */
+/** Number of years covered by an "all years" period (2023 → 2026: 4). */
 export function yearSpan(s: WrappedStats): number {
   return s.years.length ? s.years[s.years.length - 1] - s.years[0] + 1 : 1
 }
 
-/** « Soit 31 € par trajet et 203 € par mois. Votre billet le plus cher : 119 € pour un Lyon — Nantes un vendredi soir. » */
+/** "Soit 31 € par trajet et 203 € par mois. Votre billet le plus cher : 119 € pour un Lyon — Nantes un vendredi soir." */
 export function eurNote(s: WrappedStats): string {
   const { spend } = s
   const sentences: string[] = []
@@ -62,7 +62,7 @@ export function eurNote(s: WrappedStats): string {
   return sentences.join(' ')
 }
 
-/** Mois « Juillet » ; avec l'année (« Juin 2026 ») quand la période couvre plusieurs années. */
+/** Month "Juillet"; with the year ("Juin 2026") when the period spans several years. */
 export function monthName(month: string, withYear: boolean): string {
   const name = cap(MONTHS_FR[Number(month.slice(5, 7)) - 1])
   return withYear ? `${name} ${month.slice(0, 4)}` : name

@@ -4,7 +4,7 @@ import { evaluateMap, showsOutline, type MapModel } from '../../../lib/wrapped'
 import { REVEAL_SPEED } from '../animation'
 import { CORSICA_OUTLINE, FRANCE_OUTLINE } from '../franceOutline'
 
-/** Pilotage de l'animation par l'écran parent : lecture quand la section devient visible, remise à zéro quand elle sort. */
+/** Animation control by the parent screen: play when the section becomes visible, reset when it leaves. */
 export interface MapHandle {
   play: () => void
   stop: () => void
@@ -26,7 +26,7 @@ export function RoutesMap({ index, label, model, mapRef }: { index: number; labe
     const t0 = performance.now()
     const duration = (5200 / REVEAL_SPEED) * model.durationFactor
     const step = (now: number) => {
-      // rAF peut fournir un horodatage antérieur à t0 sur la première image : on borne la progression à [0, 1].
+      // rAF can provide a timestamp earlier than t0 on the first frame: we clamp progress to [0, 1].
       const k = Math.min(1, Math.max(0, (now - t0) / duration))
       setP((1 - Math.pow(1 - k, 1.6)) * months)
       if (k < 1) raf.current = requestAnimationFrame(step)

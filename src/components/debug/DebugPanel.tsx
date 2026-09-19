@@ -11,8 +11,8 @@ import {
 } from '../../lib/parsing'
 import './debug.css'
 
-// Panneau de validation des calculs (étape 3) : affiche, écran par écran de la maquette, les valeurs calculées
-// à partir du CSV. Tout reste dans le navigateur : le fichier est lu via l'API File, jamais envoyé.
+// Calculation validation panel (step 3): shows, screen by screen of the mockup, the values computed
+// from the CSV. Everything stays in the browser: the file is read via the File API, never sent.
 
 const fmt = (n: number | null | undefined, digits = 0) =>
   n == null ? '—' : n.toLocaleString('fr-FR', { minimumFractionDigits: digits, maximumFractionDigits: digits })
@@ -57,7 +57,7 @@ export function DebugPanel() {
   useEffect(() => {
     if (!file) return
     let cancelled = false
-    // eslint-disable-next-line react/set-state-in-effect -- reset avant le parsing asynchrone du fichier
+    // eslint-disable-next-line react/set-state-in-effect -- reset before the async file parsing
     setResult(null)
     void importSncfCsv(file, { includeOptions }).then((r) => {
       if (!cancelled) setResult(r)

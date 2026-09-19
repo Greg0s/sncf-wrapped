@@ -11,7 +11,7 @@ A static site that turns the CSV a user gets from SNCF Connect (GDPR data export
 
 ## Stack & structure
 
-- React 18, Vite, TypeScript, PapaParse, Vitest; npm. Static build for GitHub Pages under `/wrapped-sncf/`. Stack rationale: `STACK.md` (French).
+- React 18, Vite, TypeScript, PapaParse, Vitest; npm. Static build for GitHub Pages under `/wrapped-sncf/`. Stack rationale: `STACK.md`.
 - `src/lib/parsing/`: CSV → trips → statistics (pure functions). `src/lib/wrapped/`: statistics → what the screens display. `src/components/`: the design mockup ported to React. `src/App.tsx`: landing → import → wrapped.
 - The design mockup lives outside the repo (`SNCF Wrapped v3.dc.html`); how it was ported is in `docs/architecture.md`.
 
@@ -20,7 +20,7 @@ A static site that turns the CSV a user gets from SNCF Connect (GDPR data export
 - Install with `npm ci`, run `npm run dev` (http://localhost:5173/wrapped-sncf/, add `?debug` for the calculation panel).
 - Verify with `npm run check` (lint + typecheck + tests + build). It must pass before any PR; CI runs it.
 - Fictional exports: `npm run sample -- out.csv --profile tiny` (profiles in `docs/self-improvement.md`). Inspect an export in the console: `npm run inspect -- file.csv`.
-- UI copy and code comments are in French; identifiers are in English.
+- UI copy stays in French (what the site shows users). Everything internal — code comments, identifiers, commit messages, GitHub issues/PRs — is in English.
 
 ## Working agreements
 

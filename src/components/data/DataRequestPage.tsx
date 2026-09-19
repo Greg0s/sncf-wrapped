@@ -2,9 +2,9 @@ import { useRef, useState, type ChangeEvent } from 'react'
 import { css } from '../../lib/css'
 
 /*
- * « Obtenir vos données » : aide à rédiger la demande RGPD à SNCF Connect. Prénom, nom et e-mail servent
- * uniquement à pré-remplir le message sur l'appareil ; rien n'est envoyé à ce site (le bouton ouvre le client
- * de messagerie de l'utilisateur via un lien mailto).
+ * "Get your data": helps draft the GDPR request to SNCF Connect. First name, last name and email are
+ * only used to pre-fill the message on the device; nothing is sent to this site (the button opens the
+ * user's mail client via a mailto link).
  */
 
 const MAIL_TO = 'dpo@connect.sncf'

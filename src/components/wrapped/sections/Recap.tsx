@@ -3,7 +3,7 @@ import { css } from '../../../lib/css'
 import type { WrappedView } from '../../../lib/wrapped'
 import { FranceMap } from '../FranceMap'
 
-// Formats de la carte à partager : dimensions d'aperçu (px) et taille de l'image exportée.
+// Formats of the shareable card: preview dimensions (px) and exported image size.
 const FORMATS = [
   { key: 'square', label: 'Carré', dims: '1080 × 1080', w: 400, h: 400, iconW: 11, iconH: 11 },
   { key: 'wide', label: '4:5', dims: '1080 × 1350', w: 400, h: 500, iconW: 11, iconH: 13.75 },
@@ -11,7 +11,7 @@ const FORMATS = [
 ] as const
 
 export function Recap({ index, label, view, replay }: { index: number; label?: string | null; view: WrappedView; replay: () => void }) {
-  const { d, franceMap, cardVilles, cardRoutes, recapNote } = view
+  const { d, franceMap, cardCities, cardRoutes, recapNote } = view
   const [format, setFormat] = useState<(typeof FORMATS)[number]['key']>('square')
   const [availH, setAvailH] = useState(300)
   useEffect(() => {
@@ -138,7 +138,7 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
                       Top villes
                     </div>
                     <div style={css(`display: flex; flex-direction: column; gap: 7px;`)}>
-                      {cardVilles.map((v, i) => (
+                      {cardCities.map((v, i) => (
                         <Fragment key={i}>
                           <div style={css(`display: flex; align-items: baseline; gap: 6px;`)}>
                             <span style={css(`flex: 0 0 auto; width: 22px; font-size: 12px; font-weight: 700; color: #6C768A;`)}>{v.n}</span>
@@ -246,7 +246,7 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
                       Top villes
                     </div>
                     <div style={css(`display: flex; flex-direction: column; gap: 7px;`)}>
-                      {cardVilles.map((v, i) => (
+                      {cardCities.map((v, i) => (
                         <Fragment key={i}>
                           <div style={css(`display: flex; align-items: baseline; gap: 6px;`)}>
                             <span style={css(`flex: 0 0 auto; width: 22px; font-size: 12px; font-weight: 700; color: #6C768A;`)}>{v.n}</span>
@@ -379,7 +379,7 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
                       Top villes
                     </div>
                     <div style={css(`display: flex; flex-direction: column; gap: 9px;`)}>
-                      {cardVilles.map((v, i) => (
+                      {cardCities.map((v, i) => (
                         <Fragment key={i}>
                           <div style={css(`display: flex; align-items: baseline; gap: 6px;`)}>
                             <span style={css(`flex: 0 0 auto; width: 22px; font-size: 12px; font-weight: 700; color: #6C768A;`)}>{v.n}</span>

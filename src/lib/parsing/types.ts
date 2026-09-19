@@ -1,26 +1,26 @@
-// Types partagés par lib/parsing. Aucun n'implique le réseau : tout vit en mémoire dans le navigateur.
+// Types shared by lib/parsing. None of them involves the network: everything lives in memory in the browser.
 
-/** Un trajet unique (départ + origine + destination), reconstitué à partir d'un ou plusieurs billets du CSV. */
+/** A single trip (departure + origin + destination), reconstructed from one or more tickets in the CSV. */
 export interface Trip {
-  /** Clé de regroupement : départ + gares normalisées. */
+  /** Grouping key: departure + normalized stations. */
   key: string
-  /** Date de départ telle qu'écrite dans le CSV (AAAA-MM-JJ, heure locale supposée, le « Z » est ignoré). */
+  /** Departure date as written in the CSV (YYYY-MM-DD, assumed local time, the "Z" is ignored). */
   departureDate: string
-  /** Heure de départ (HH:mm), ou null si absente. */
+  /** Departure time (HH:mm), or null if absent. */
   departureTime: string | null
-  /** Plus ancienne date de commande parmi les billets regroupés (AAAA-MM-JJ), ou null. */
+  /** Oldest order date among the grouped tickets (YYYY-MM-DD), or null. */
   orderDate: string | null
-  /** Libellés bruts SNCF, ex. « SAINT ETIENNE CHATEAUCREUX ». */
+  /** Raw SNCF labels, e.g. "SAINT ETIENNE CHATEAUCREUX". */
   origin: string
   destination: string
-  /** Somme des montants bruts des billets regroupés, ou null si aucun montant lisible. */
+  /** Sum of the raw amounts of the grouped tickets, or null if no amount is readable. */
   priceEur: number | null
-  /** Faux pour une simple « option » (réservation non payée), possible seulement avec includeOptions. */
+  /** False for a mere "option" (unpaid reservation), only possible with includeOptions. */
   paid: boolean
   passengers: number
-  /** Billet aller-retour : compte pour 2 trajets (le retour n'a pas de date dans le CSV). */
+  /** Round-trip ticket: counts as 2 trips (the return leg has no date in the CSV). */
   roundTrip: boolean
-  /** Codes « dossier voyage » des billets regroupés (traçabilité). */
+  /** "Booking reference" codes of the grouped tickets (for traceability). */
   refs: string[]
 }
 
@@ -29,29 +29,29 @@ export type ParseErrorCode = 'empty-file' | 'file-too-large' | 'section-not-foun
 export interface ParseError {
   code: ParseErrorCode
   message: string
-  /** Colonnes attendues mais absentes (code « missing-columns »). */
+  /** Expected columns that are missing (code "missing-columns"). */
   missingColumns?: string[]
 }
 
 export type SkipReason = 'missing-station' | 'invalid-departure-date' | 'malformed-row'
 
 export interface ParseReport {
-  /** Titre de la section repérée, ex. « Données - Commandes train bus ». */
+  /** Title of the section that was found, e.g. "Données - Commandes train bus". */
   sectionTitle: string | null
   delimiter: string
-  /** Colonnes lues, telles qu'écrites dans le fichier. */
+  /** Columns read, as written in the file. */
   columns: string[]
-  /** Lignes de données de la section (billets). */
+  /** Data rows of the section (tickets). */
   ticketRows: number
-  /** Billets « option » (réservation non payée) rencontrés : exclus des trajets, sauf avec includeOptions. */
+  /** "Option" tickets (unpaid reservation) encountered: excluded from trips, except with includeOptions. */
   optionRows: number
-  /** Billets exclus car illisibles. */
+  /** Tickets excluded because they were unreadable. */
   skipped: { line: number; reason: SkipReason }[]
-  /** Billets fusionnés dans un trajet déjà connu (billets complémentaires, échanges). */
+  /** Tickets merged into an already-known trip (supplementary tickets, exchanges). */
   mergedTickets: number
-  /** Répartition des modes de paiement rencontrés. */
+  /** Breakdown of the payment modes encountered. */
   paymentModes: Record<string, number>
-  /** Montants illisibles (le trajet compte, mais sans prix). */
+  /** Unreadable amounts (the trip still counts, just without a price). */
   unreadableAmounts: number
 }
 
@@ -63,28 +63,28 @@ export interface ParsedCsv {
 export type ParseResult = { ok: true; data: ParsedCsv } | { ok: false; error: ParseError }
 
 export interface ParseOptions {
-  /** Garder les « options » (réservations non payées). Faux par défaut. */
+  /** Keep the "options" (unpaid reservations). False by default. */
   includeOptions?: boolean
 }
 
-/** Lieu résolu à partir d'un libellé SNCF. */
+/** A place resolved from an SNCF label. */
 export interface Place {
-  /** Libellé brut du CSV. */
+  /** Raw label from the CSV. */
   raw: string
-  /** Gare du référentiel, ou ville seule quand seule la ville a pu être identifiée. */
+  /** Station from the referential, or just a city when only the city could be identified. */
   kind: 'station' | 'city'
-  /** Comment le lieu a été identifié. */
+  /** How the place was identified. */
   via: 'exact' | 'stripped' | 'prefix' | 'city-prefix'
-  /** Nom d'affichage de la gare (ex. « Saint-Étienne Châteaucreux »). */
+  /** Display name of the station (e.g. "Saint-Étienne Châteaucreux"). */
   name: string
-  /** Nom d'affichage de la ville (ex. « Saint-Étienne »). */
+  /** Display name of the city (e.g. "Saint-Étienne"). */
   city: string
-  /** Identifiant opaque de la ville, stable pour un référentiel donné. */
+  /** Opaque city identifier, stable for a given referential. */
   cityKey: string
-  /** Position de la gare (ou de la ville quand kind = « city »). */
+  /** Position of the station (or of the city when kind = "city"). */
   lat: number
   lon: number
-  /** Position moyenne des gares de la ville, pour la placer sur la carte. */
+  /** Average position of the city's stations, used to place it on the map. */
   cityLat: number
   cityLon: number
 }
@@ -93,13 +93,13 @@ export interface StationData {
   source: string
   license: string
   retrievedAt: string
-  /** [libellé, latitude, longitude] */
+  /** [label, latitude, longitude] */
   cities: [string, number, number][]
-  /** [nom, latitude, longitude, index dans cities] */
+  /** [name, latitude, longitude, index into cities] */
   stations: [string, number, number, number][]
 }
 
 export interface StationIndex {
-  /** Résout un libellé SNCF ; null si la gare est inconnue du référentiel (ex. gare étrangère). */
+  /** Resolves an SNCF label; null if the station is unknown to the referential (e.g. a foreign station). */
   resolve(rawName: string): Place | null
 }

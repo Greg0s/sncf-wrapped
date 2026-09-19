@@ -65,7 +65,7 @@ describe('parseSncfCsv', () => {
     expect(report.paymentModes).toEqual({ 'Payé en ligne': 1, 'Option posée': 1 })
     const withOptions = parseOk(rows, { includeOptions: true })
     expect(withOptions.trips).toHaveLength(2)
-    expect(withOptions.report.optionRows).toBe(1) // toujours signalées, même quand on les garde
+    expect(withOptions.report.optionRows).toBe(1) // always reported, even when we keep them
   })
 
   it('fusionne les billets complémentaires d’un même voyage (TER + TGV) et additionne les montants', () => {
@@ -76,7 +76,7 @@ describe('parseSncfCsv', () => {
     expect(trips).toHaveLength(1)
     expect(trips[0].priceEur).toBe(41.7)
     expect(trips[0].refs).toEqual(['AAA111', 'BBB222'])
-    expect(trips[0].orderDate).toBe('2026-01-02') // la plus ancienne
+    expect(trips[0].orderDate).toBe('2026-01-02') // the earliest one
     expect(report.mergedTickets).toBe(1)
   })
 
@@ -94,7 +94,7 @@ describe('parseSncfCsv', () => {
 
     const withPaid = parseOk([opt('45', '2026-01-04'), row({ amount: '38,5', orderDate: '2026-01-11' }), opt('50', '2026-01-12')], { includeOptions: true })
     expect(withPaid.trips).toHaveLength(1)
-    expect(withPaid.trips[0]).toMatchObject({ priceEur: 38.5, paid: true }) // seul le billet payé compte
+    expect(withPaid.trips[0]).toMatchObject({ priceEur: 38.5, paid: true }) // only the paid ticket counts
   })
 
   it('ne fusionne pas deux départs différents le même jour', () => {

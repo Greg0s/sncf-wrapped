@@ -1,7 +1,7 @@
 name: Deploy
 
-# Déclenché quand la CI termine avec succès sur main (cf. STACK.md §6) : pas de
-# rebuild ni de re-check ici, on récupère juste le dist/ déjà validé par ci.yml.
+# Triggered when CI finishes successfully on main (see STACK.md §6): no rebuild
+# or re-check here, we just fetch the dist/ that ci.yml already validated.
 on:
   workflow_run:
     workflows: [CI]

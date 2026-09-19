@@ -1,10 +1,10 @@
 import type { CityRef } from '../parsing'
 
 /*
- * « Étoile » de l'écran Kilomètres : la ville de base au centre, jusqu'à 4 rayons vers les destinations.
- * La maquette dessine 4 rayons à des emplacements fixes (nord-ouest, sud, ouest, nord-est). Les destinations
- * réelles y sont réparties d'après leur direction géographique depuis la ville de base : Roanne (au nord de
- * Saint-Étienne) ne sera pas dessinée au sud.
+ * "Star" on the Kilometers screen: the home city at the center, up to 4 spokes toward destinations.
+ * The mockup draws 4 spokes at fixed positions (northwest, south, west, northeast). The actual
+ * destinations are assigned to them based on their real geographic direction from the home city: Roanne
+ * (north of Saint-Étienne) won't be drawn to the south.
  */
 
 export type Anchor = 'start' | 'middle' | 'end'
@@ -30,7 +30,7 @@ export const STAR_SLOTS: StarSlot[] = [
 export interface StarSpoke {
   name: string
   slot: StarSlot
-  /** Ordre de tracé (1 à 4), pour le décalage d'animation. */
+  /** Draw order (1 to 4), for the animation delay. */
   draw: number
 }
 
@@ -38,7 +38,7 @@ const angle = (dx: number, dy: number) => (Math.atan2(dy, dx) * 180) / Math.PI
 const gap = (a: number, b: number) => Math.abs(((a - b + 540) % 360) - 180)
 const SLOT_ANGLES = STAR_SLOTS.map((s) => angle(s.end.x - STAR_HUB.x, s.end.y - STAR_HUB.y))
 
-/** Répartit les villes sur les rayons en minimisant l'écart entre leur direction réelle et celle du rayon. */
+/** Assigns cities to spokes, minimizing the gap between their real direction and the spoke's. */
 export function assignSlots(bearings: (number | null)[]): number[] {
   const placed = bearings.flatMap((b, i) => (b === null ? [] : [i]))
   const result = Array.from({ length: bearings.length }, () => -1)
@@ -57,7 +57,7 @@ export function assignSlots(bearings: (number | null)[]): number[] {
   search(0, [], 0)
   placed.forEach((cityIndex, k) => (result[cityIndex] = best.slots[k]))
 
-  // Villes sans coordonnées : rayons restants, dans l'ordre.
+  // Cities without coordinates: remaining spokes, in order.
   const free = STAR_SLOTS.map((_, s) => s).filter((s) => !result.includes(s))
   bearings.forEach((_, i) => {
     if (result[i] === -1) result[i] = free.shift() ?? -1
@@ -65,7 +65,7 @@ export function assignSlots(bearings: (number | null)[]): number[] {
   return result
 }
 
-/** Rayons de l'étoile pour les villes données (les 4 premières), en partant de la ville de base. */
+/** Star spokes for the given cities (the first 4), starting from the home city. */
 export function buildStar(hub: CityRef | null, cities: CityRef[]): StarSpoke[] {
   const top = cities.slice(0, STAR_SLOTS.length)
   const bearings = top.map((c) => (hub && hub.x !== null && hub.y !== null && c.x !== null && c.y !== null ? angle(c.x - hub.x, c.y - hub.y) : null))

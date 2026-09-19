@@ -4,7 +4,7 @@ import { css } from '../../lib/css'
 export interface ImportPeriod {
   label: string
   sub: string
-  /** Couleur d'accent de la période (pastille). */
+  /** Accent color of the period (dot). */
   ac: string
   mark: string
   bd: string
@@ -21,7 +21,7 @@ export type ImportStatus =
 interface ImportModalProps {
   state: ImportStatus
   periods: ImportPeriod[]
-  /** Fichier choisi (sélecteur ou glisser-déposer) : il est lu localement, jamais envoyé. */
+  /** Chosen file (picker or drag-and-drop): it is read locally, never sent. */
   onFile: (file: File) => void
   onClose: () => void
   onReset: () => void
@@ -46,7 +46,7 @@ export function ImportModal({ state, periods, onFile: pick, onClose: closeImport
     const file = e.dataTransfer.files[0]
     if (file) pick(file)
   }
-  // Le bouton « Choisir un fichier » est un label : on le rend utilisable au clavier (Entrée / Espace).
+  // The "Choose a file" button is a label: we make it usable from the keyboard (Enter / Space).
   const onLabelKey = (e: KeyboardEvent) => {
     if (e.key !== 'Enter' && e.key !== ' ') return
     e.preventDefault()
@@ -55,7 +55,7 @@ export function ImportModal({ state, periods, onFile: pick, onClose: closeImport
   const onFile = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) pick(file)
-    e.target.value = '' // permet de re-choisir le même fichier
+    e.target.value = '' // allows re-selecting the same file
   }
   return (
     <div

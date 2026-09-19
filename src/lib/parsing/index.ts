@@ -1,9 +1,9 @@
 /*
- * lib/parsing — de l'export CSV SNCF Connect aux valeurs affichées par le wrapped.
+ * lib/parsing — from the SNCF Connect CSV export to the values displayed by the wrapped.
  *
- * Contrainte de confidentialité (CLAUDE.md) : tout se passe en mémoire, dans le navigateur. Rien dans ce dossier
- * n'émet de requête réseau avec le contenu du fichier ; le seul chargement est celui du référentiel de gares,
- * un fichier statique du site. Un test (privacy.test.ts) veille à ce qu'aucune API réseau n'y soit introduite.
+ * Privacy constraint (CLAUDE.md): everything happens in memory, in the browser. Nothing in this folder
+ * makes a network request with the file's content; the only thing loaded is the station referential,
+ * a static file of the site. A test (privacy.test.ts) makes sure no network API creeps in here.
  */
 import { readCsvFile, type CsvEncoding } from './decode'
 import { buildTripDataset, listPeriods, type PeriodOption, type TripDataset } from './dataset'
@@ -23,14 +23,14 @@ export { EARTH_CIRCUMFERENCE_KM, RAIL_DETOUR_FACTOR, haversineKm, projectToFranc
 export { MONTHS_FR, WEEKDAYS_FR, localToday } from './dates'
 export type * from './types'
 
-/** Taille maximale acceptée pour l'import (la maquette annonce « 20 Mo max »). */
+/** Maximum size accepted for the import (the mockup advertises "20 MB max"). */
 export const MAX_FILE_BYTES = 20 * 1024 * 1024
 
 export type ImportResult =
   | { ok: true; encoding: CsvEncoding; report: ParseReport; dataset: TripDataset; periods: PeriodOption[] }
   | { ok: false; error: ParseError }
 
-/** Parcours complet : fichier choisi → décodage → lecture du CSV → trajets rattachés aux gares → périodes proposables. */
+/** Full pipeline: chosen file → decoding → CSV reading → trips linked to stations → selectable periods. */
 export async function importSncfCsv(
   file: Blob,
   options: ParseOptions & { today?: string; stationIndex?: StationIndex } = {},

@@ -1,15 +1,15 @@
 const EARTH_RADIUS_KM = 6371.0088
 
-/** Circonférence terrestre, pour l'équivalent « tours de la Terre ». */
+/** Earth's circumference, for the "laps around the Earth" equivalent. */
 export const EARTH_CIRCUMFERENCE_KM = 40075
 
 /**
- * Le tracé ferroviaire est plus long que la ligne droite entre deux gares. Les km affichés sont donc
- * « à vol d'oiseau × 1,2 » : une ESTIMATION forfaitaire, le CSV ne contient aucune distance.
+ * The rail track is longer than the straight line between two stations. The displayed km are
+ * therefore "as the crow flies × 1.2": a flat-rate ESTIMATE, since the CSV contains no distance data.
  */
 export const RAIL_DETOUR_FACTOR = 1.2
 
-/** Distance à vol d'oiseau (formule de haversine), en km. */
+/** Great-circle distance (haversine formula), in km. */
 export function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const rad = Math.PI / 180
   const dLat = (lat2 - lat1) * rad
@@ -19,9 +19,9 @@ export function haversineKm(lat1: number, lon1: number, lat2: number, lon2: numb
 }
 
 /**
- * Projection (latitude, longitude) → coordonnées du SVG « CarteFrance » de la maquette (viewBox 10 10 405 405).
- * Transformation affine ajustée par moindres carrés sur les 6 villes de la maquette (Lyon, Paris, Marseille,
- * Nantes, Dijon, Strasbourg) : écart maximal 0,1 px.
+ * Projects (latitude, longitude) → coordinates in the mockup's "CarteFrance" SVG (viewBox 10 10 405 405).
+ * Affine transform fitted by least squares on the mockup's 6 cities (Lyon, Paris, Marseille,
+ * Nantes, Dijon, Strasbourg): maximum deviation 0.1 px.
  */
 export function projectToFranceMap(lat: number, lon: number): { x: number; y: number } {
   return { x: 27.5327 * lon + 143.162, y: -39.9919 * lat + 2059.6156 }

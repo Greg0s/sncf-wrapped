@@ -2,15 +2,15 @@ import { useLayoutEffect, type RefObject } from 'react'
 import { REVEAL_SPEED as SP } from './animation'
 
 /*
- * Animations d'apparition de la maquette (SNCF Wrapped v3), portées telles quelles : mêmes durées, mêmes courbes,
- * mêmes déclencheurs (IntersectionObserver). Les éléments à animer sont repérés par des attributs data-* :
- *   data-lanim / data-anim = "up" | "scale"  apparition (décalée par data-delay, en ms)
- *   data-roll + data-final                   nombre dont les chiffres défilent
- *   data-bar = pourcentage                   barre qui se remplit
- *   data-draw = rang                         trait qui se dessine
- *   data-sec / data-seg                      écran / segment de la barre de progression
- * Les styles sont posés à la main sur le DOM (comme dans la maquette) : ils n'apparaissent pas dans le JSX,
- * donc React ne les écrase pas au rendu suivant.
+ * Reveal animations from the mockup (SNCF Wrapped v3), ported as-is: same durations, same curves,
+ * same triggers (IntersectionObserver). Elements to animate are identified by data-* attributes:
+ *   data-lanim / data-anim = "up" | "scale"  reveal (offset by data-delay, in ms)
+ *   data-roll + data-final                   number whose digits scroll
+ *   data-bar = percentage                    bar that fills up
+ *   data-draw = rank                         line that draws itself
+ *   data-sec / data-seg                      screen / segment of the progress bar
+ * Styles are set by hand on the DOM (as in the mockup): they don't appear in the JSX,
+ * so React doesn't overwrite them on the next render.
  */
 
 function hide(el: HTMLElement) {
@@ -27,7 +27,7 @@ function show(el: HTMLElement) {
   el.style.transform = 'none'
 }
 
-/** Landing : chaque bloc [data-lanim] apparaît une fois, quand il entre dans l'écran. */
+/** Landing: each [data-lanim] block appears once, when it enters the screen. */
 export function useLandingReveal(root: RefObject<HTMLElement | null>) {
   useLayoutEffect(() => {
     const elements = [...(root.current?.querySelectorAll<HTMLElement>('[data-lanim]') ?? [])]
@@ -49,7 +49,7 @@ export function useLandingReveal(root: RefObject<HTMLElement | null>) {
 
 const rolling = new WeakMap<HTMLElement, number>()
 
-/** Les chiffres défilent au hasard puis se figent de gauche à droite sur la valeur finale. */
+/** The digits scroll at random then settle from left to right on the final value. */
 function roll(el: HTMLElement) {
   cancelAnimationFrame(rolling.get(el) ?? 0)
   const final = el.dataset.final || el.textContent || ''
@@ -74,9 +74,9 @@ function roll(el: HTMLElement) {
 const SEGMENT_OFF = 'rgba(241,244,247,.22)'
 
 /**
- * Wrapped : les écrans défilent en scroll-snap ; chaque écran devient « actif » au-delà de 40 % de visibilité
- * (révélations, chiffres, barres, tracés) et se remet à zéro en sortant. Le lecteur de la carte est piloté via
- * `onMap` (lecture quand l'écran de la carte devient actif, arrêt quand il sort).
+ * Wrapped: screens scroll with scroll-snap; each screen becomes "active" past 40% visibility
+ * (reveals, numbers, bars, lines) and resets when it leaves. The map player is driven via
+ * `onMap` (play when the map screen becomes active, stop when it leaves).
  */
 export function useWrappedScroll(root: RefObject<HTMLElement | null>, onMap: (event: 'play' | 'stop') => void) {
   useLayoutEffect(() => {
@@ -144,7 +144,7 @@ export function useWrappedScroll(root: RefObject<HTMLElement | null>, onMap: (ev
       io.disconnect()
       if (mapPlaying) onMap('stop')
     }
-    // Monté une fois par affichage du wrapped : les données ne changent pas pendant la lecture.
+    // Mounted once per wrapped display: the data doesn't change during playback.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [root])
 }

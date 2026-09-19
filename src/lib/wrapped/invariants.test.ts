@@ -18,20 +18,20 @@ import { fmtNum } from './format'
 import { evaluateMap } from './mapModel'
 
 /*
- * Tests de robustesse : des centaines d'exports fictifs aléatoires traversent toute la chaîne (lecture du CSV →
- * statistiques → modèle d'affichage → carte) et doivent respecter des invariants, quel que soit le contenu.
- * C'est le garde-fou de l'objectif « n'importe quel CSV du même format s'affiche ». Quand un vrai bug est
- * trouvé ailleurs, ajouter d'abord le cas ici (ou dans randomExport.ts), puis corriger.
- * En cas d'échec, le message indique la graine : `randomExport(<graine>, noms)` rejoue le cas.
+ * Robustness tests: hundreds of random fictional exports flow through the whole chain (CSV parsing →
+ * statistics → display model → map) and must satisfy invariants regardless of content.
+ * This is the guardrail for the goal "any CSV of the same format renders". When a real bug is
+ * found elsewhere, add the case here first (or in randomExport.ts), then fix it.
+ * On failure, the message gives the seed: `randomExport(<seed>, names)` replays the case.
  */
 
 const data = stationData as unknown as StationData
 const index = createStationIndex(data)
 const names = data.stations.map((s) => s[0])
-// Rapide par défaut ; pour chasser les bugs : FUZZ_SEEDS=2000 npm test -- invariants
+// Fast by default; to hunt for bugs: FUZZ_SEEDS=2000 npm test -- invariants
 const SEEDS = Number(process.env.FUZZ_SEEDS) || 120
 
-/** Parcourt l'objet et échoue sur tout nombre non fini ou texte contenant un artefact (« NaN », « undefined »…). */
+/** Walks the object and fails on any non-finite number or text containing an artifact ("NaN", "undefined"...). */
 function assertClean(value: unknown, path: string, context: string): void {
   if (typeof value === 'number') expect(Number.isFinite(value), `${context} : ${path} = ${value}`).toBe(true)
   else if (typeof value === 'string') expect(value, `${context} : ${path}`).not.toMatch(/NaN|undefined|\[object|Infinity/)
@@ -53,13 +53,13 @@ describe(`${SEEDS} exports aléatoires`, () => {
 
       const parsed = parseSncfCsv(csv)
       if (!parsed.ok) {
-        // Seul cas légitime : rien d'exploitable (tout est option ou illisible)
+        // The only legitimate case: nothing usable (everything is optional or unreadable)
         expect(parsed.error.code, ctx).toBe('no-valid-rows')
         continue
       }
       const ds = buildTripDataset(parsed.data.trips, index, today)
       const periods = listPeriods(ds)
-      // Déterminisme : même fichier, même résultat
+      // Determinism: same file, same result
       expect(JSON.stringify(parseSncfCsv(csv)), `${ctx} : lecture non déterministe`).toBe(JSON.stringify(parsed))
 
       let sumOfYears = 0
@@ -76,7 +76,7 @@ describe(`${SEEDS} exports aléatoires`, () => {
         assertClean(view, 'view', c)
         expect(JSON.stringify(view), `${c} : « heures à bord » réapparu`).not.toMatch(/h à bord|heures? de train/)
 
-        // Comptages
+        // Counts
         const legs = trips.reduce((n, t) => n + legCount(t), 0)
         expect(stats.tripCount, `${c} : trajets`).toBe(legs)
         expect(tripCount, `${c} : trajets annoncés dans la fenêtre d'import`).toBe(legs)
@@ -84,11 +84,11 @@ describe(`${SEEDS} exports aléatoires`, () => {
         expect(stats.distance.coveredTrips + stats.distance.uncoveredTrips, `${c} : distances`).toBe(stats.tripCount)
         expect(stats.distance.estimatedKm, `${c} : km`).toBeGreaterThanOrEqual(0)
 
-        // Budget : la somme indépendante des prix des voyages
+        // Budget: sum of trip prices computed independently
         const total = Math.round(trips.reduce((s, t) => s + (t.priceEur ?? 0), 0) * 100) / 100
         expect(stats.spend.totalEur, `${c} : total`).toBeCloseTo(total, 2)
 
-        // Classements adaptatifs : jamais plus de lignes que d'éléments distincts, triés, barres cohérentes
+        // Adaptive rankings: never more rows than distinct items, sorted, consistent bars
         for (const [name, ranked, key] of [
           ['destinations', stats.destinations, (x: { visits: number }) => x.visits],
           ['itinéraires', stats.routes, (x: { trips: number }) => x.trips],
@@ -105,37 +105,37 @@ describe(`${SEEDS} exports aléatoires`, () => {
         }
         expect(stats.destinations.items.every((d) => d.city.key !== stats.hub?.key), `${c} : la ville de base est exclue des destinations`).toBe(true)
 
-        // Chronologie : elle redonne les totaux (les km sont arrondis mois par mois)
+        // Timeline: it adds back up to the totals (km are rounded month by month)
         expect(stats.timeline.reduce((n, m) => n + m.trips, 0), `${c} : trajets par mois`).toBe(stats.tripCount)
         expect(Math.abs(stats.timeline.reduce((n, m) => n + m.km, 0) - stats.distance.estimatedKm), `${c} : km par mois`).toBeLessThanOrEqual(stats.timeline.length)
 
-        // Écrans : teaser en tête, récap en queue, numérotation continue, sans doublon
+        // Screens: teaser first, recap last, continuous numbering, no duplicates
         const ids = view.sections.map((s) => s.id)
         expect(ids[0], c).toBe('teaser')
         expect(ids[ids.length - 1], c).toBe('recap')
         expect(new Set(ids).size, `${c} : écrans uniques`).toBe(ids.length)
         expect(view.sections.slice(1).map((s) => s.label?.slice(0, 2)), `${c} : numérotation`).toEqual(ids.slice(1).map((_, i) => String(i + 1).padStart(2, '0')))
         expect(ids.includes('map'), `${c} : carte`).toBe(view.map !== null)
-        expect(ids.includes('cities'), `${c} : villes`).toBe(stats.destinations.mode !== 'empty')
+        expect(ids.includes('cities'), `${c}: cities`).toBe(stats.destinations.mode !== 'empty')
 
-        // Étoile et cartes à partager
+        // Star and shareable cards
         expect(view.star.spokes.length, c).toBeLessThanOrEqual(4)
         expect(new Set(view.star.spokes.map((s) => s.draw)).size, `${c} : rayons distincts`).toBe(view.star.spokes.length)
-        expect(view.cardVilles.length, c).toBeLessThanOrEqual(3)
+        expect(view.cardCities.length, c).toBeLessThanOrEqual(3)
         expect(view.cardRoutes.length, c).toBeLessThanOrEqual(3)
 
-        // Carte animée : finie à tout instant, et le compteur finit sur le total
+        // Animated map: finite at every instant, and the counter ends on the total
         if (view.map) {
           const n = view.map.months.length
           for (const p of [0, 0.3, 1, n / 2, n - 0.01, n]) assertClean(evaluateMap(view.map, p), `map@${p}`, c)
           expect(evaluateMap(view.map, n).km, `${c} : km final de la carte`).toBe(fmtNum(stats.distance.estimatedKm))
         }
       }
-      // « Toutes les années » = somme des années
+      // "All years" = sum of the years
       const all = periods.find((p) => p.period.kind === 'all')
       if (all) expect(all.tripCount, `${ctx} : toutes années`).toBe(sumOfYears)
     }
-    // Le générateur produit bien des cas exploitables (sinon le test ne prouverait rien)
+    // The generator does produce usable cases (otherwise the test would prove nothing)
     expect(analysed).toBeGreaterThan(SEEDS)
   }, Math.max(60_000, SEEDS * 100))
 })

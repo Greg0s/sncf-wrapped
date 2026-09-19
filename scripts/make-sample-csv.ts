@@ -1,6 +1,6 @@
-// Génère un export SNCF Connect FICTIF (mêmes sections, encodage Windows-1252, CRLF) pour tester l'import à la main.
-//   npm run sample -- <fichier-de-sortie.csv> [--profile lyon|regional|tiny|single|foreign|roundtrips]
-// Aucune donnée réelle : un usager imaginaire et des trajets tirés d'une suite déterministe.
+// Generates a FICTIONAL SNCF Connect export (same sections, Windows-1252 encoding, CRLF) to manually test the import.
+//   npm run sample -- <output-file.csv> [--profile lyon|regional|tiny|single|foreign|roundtrips]
+// No real data: a fictional user and trips drawn from a deterministic sequence.
 import { writeFileSync } from 'node:fs'
 import { buildSncfCsv, toWindows1252, type FixtureRow } from '../src/lib/parsing/__fixtures__/sncfCsv'
 
@@ -14,7 +14,7 @@ if (!out) {
 
 const pad = (x: number) => String(x).padStart(2, '0')
 
-/** Aller-retours mensuels depuis une gare de base vers des destinations (prix de l'aller). */
+/** Monthly round trips from a base station to destinations (one-way price). */
 function commute(home: string, destinations: [string, number][], from: number, until: [number, number], perMonth = 2): FixtureRow[] {
   const rows: FixtureRow[] = []
   let n = 0
@@ -37,7 +37,7 @@ function commute(home: string, destinations: [string, number][], from: number, u
 }
 
 const profiles: Record<string, () => FixtureRow[]> = {
-  // Lyonnais qui monte souvent à Paris, quelques longues distances et une gare étrangère
+  // Lyon resident who often heads up to Paris, a few long distances and a foreign station
   lyon: () => [
     ...commute('LYON PART DIEU', [['PARIS GARE DE LYON', 48], ['MARSEILLE SAINT CHARLES', 32], ['NANTES', 78], ['DIJON VILLE', 22], ['STRASBOURG', 60], ['GENEVE', 30]], 2024, [2026, 8]),
     { departure: '2025-06-01T09:00:00.000Z', origin: 'LYON PART DIEU', destination: 'PARIS GARE DE LYON', payment: 'Option posée', amount: '99' },
@@ -47,27 +47,27 @@ const profiles: Record<string, () => FixtureRow[]> = {
     { order: 'combo', departure: '2025-09-05T08:10:00.000Z', origin: 'SAINT ETIENNE CHATEAUCREUX', destination: 'PARIS BERCY', amount: '10,7' },
     { departure: '2025-09-20T12:00:00.000Z', origin: 'ROANNE GARE ROUTIERE', destination: 'LYON PART DIEU', amount: '8' },
   ],
-  // Usager du TER qui ne sort pas de sa région : tous les points tiennent dans un rayon de ~100 km
+  // TER commuter who never leaves their region: every point fits within a ~100 km radius
   regional: () =>
     commute('SAINT ETIENNE CHATEAUCREUX', [['ROANNE', 9.2], ['FIRMINY', 2.4], ['LYON PART DIEU', 10.7], ['LE PUY EN VELAY', 17], ['ANDREZIEUX BOUTHEON', 3.1]], 2025, [2026, 8], 3),
-  // Trois trajets seulement : les classements doivent rétrécir, pas se remplir
+  // Only three trips: rankings should shrink, not fill up
   tiny: () => [
     { departure: '2026-03-02T08:00:00.000Z', orderDate: '2026-02-20', origin: 'LYON PART DIEU', destination: 'PARIS GARE DE LYON', amount: '45' },
     { departure: '2026-03-05T18:00:00.000Z', orderDate: '2026-03-01', origin: 'PARIS GARE DE LYON', destination: 'LYON PART DIEU', amount: '52' },
     { departure: '2026-04-10T09:00:00.000Z', orderDate: '2026-04-10', origin: 'LYON PART DIEU', destination: 'GRENOBLE', amount: '18' },
   ],
-  // Un seul itinéraire, parcouru deux fois
+  // A single route, traveled twice
   single: () => [
     { departure: '2026-03-02T08:00:00.000Z', origin: 'LYON PART DIEU', destination: 'PARIS GARE DE LYON', amount: '45' },
     { departure: '2026-03-09T08:00:00.000Z', origin: 'LYON PART DIEU', destination: 'PARIS GARE DE LYON', amount: '47' },
   ],
-  // Uniquement des gares absentes du référentiel français : ni km ni carte
+  // Only stations absent from the French referential: no km and no map
   foreign: () => [
     { departure: '2026-03-02T08:00:00.000Z', origin: 'LYON PART DIEU', destination: 'GENEVE', amount: '34' },
     { departure: '2026-03-09T08:00:00.000Z', origin: 'GENEVE', destination: 'LYON PART DIEU', amount: '36' },
     { departure: '2026-05-01T08:00:00.000Z', origin: 'PARIS NORD', destination: 'BRUXELLES MIDI', amount: '59' },
   ],
-  // Billets aller-retour : chaque billet compte pour deux trajets
+  // Round-trip tickets: each ticket counts as two trips
   roundtrips: () => [
     { departure: '2026-02-07T08:00:00.000Z', orderDate: '2026-01-10', origin: 'LYON PART DIEU', destination: 'MARSEILLE SAINT CHARLES', roundTrip: true, amount: '58' },
     { departure: '2026-03-14T08:00:00.000Z', orderDate: '2026-03-01', origin: 'LYON PART DIEU', destination: 'PARIS GARE DE LYON', roundTrip: true, amount: '96' },

@@ -6,20 +6,20 @@ import { anticipationNote, eurNote, kmNote, monthName } from './phrases'
 import { buildStar, type StarSpoke } from './star'
 
 /*
- * Modèle d'affichage du wrapped : transforme les statistiques (chiffres bruts) en ce que les écrans montrent
- * (textes, lignes de classement, écrans à afficher). Les champs de `d` reprennent ceux de la maquette
- * (`sets()` dans « SNCF Wrapped v3 »).
+ * Wrapped display model: turns the statistics (raw numbers) into what the screens show
+ * (text, ranking rows, which screens to display). The fields of `d` mirror those of the mockup
+ * (`sets()` in "SNCF Wrapped v3").
  *
- * Adaptation aux volumes (CLAUDE.md, contrainte n°3) : un écran sans données est retiré (et les autres sont
- * renumérotés), un classement n'affiche jamais plus de lignes qu'il n'y a d'éléments distincts, et les
- * intitulés passent au singulier ou changent quand il n'y a qu'un élément ou une égalité en tête.
+ * Adaptation to volume (CLAUDE.md, constraint #3): a screen with no data is dropped (and the others are
+ * renumbered), a ranking never shows more rows than there are distinct items, and headings switch to
+ * singular or change wording when there's only one item or a tie at the top.
  */
 
 export type SectionId = 'teaser' | 'km' | 'budget' | 'cities' | 'routes' | 'anticipation' | 'map' | 'recap'
 
 export interface SectionMeta {
   id: SectionId
-  /** « 01 — Distance parcourue », null pour le teaser. */
+  /** "01 — Distance parcourue", null for the teaser. */
   label: string | null
 }
 
@@ -32,16 +32,16 @@ export interface DisplayData {
   kmNote: string
   trips: string
   tripsLabel: string
-  /** « 399 km / trajet », null si aucune distance connue. */
+  /** "399 km / trajet", null if no distance is known. */
   kmPer: string | null
-  /** Précision sur l'estimation des distances. */
+  /** Note on how distances are estimated. */
   kmFootnote: string
   eur: string
   eurNote: string
   avg: string
-  /** Mois le plus cher (« Juillet »), null sans dépense. */
+  /** Most expensive month ("Juillet"), null if there's no spend. */
   month: string | null
-  /** Billet le moins cher, null sans billet payant. */
+  /** Cheapest ticket, null if there's no paid ticket. */
   min: string | null
   adv: string
   advUnit: string
@@ -61,9 +61,9 @@ export interface CityRow {
 
 export interface RouteRow {
   rank: string
-  /** Gares les plus utilisées : « Saint-Étienne Châteaucreux ↔ Roanne ». */
+  /** Most-used stations: "Saint-Étienne Châteaucreux ↔ Roanne". */
   label: string
-  /** « 854 km » (vide sans distance connue). */
+  /** "854 km" (empty if no distance is known). */
   meta: string
   count: string
   countLabel: string
@@ -77,17 +77,17 @@ export interface CardRow {
 export interface WrappedView {
   d: DisplayData
   sections: SectionMeta[]
-  villes: CityRow[]
-  villesHeading: string
+  cities: CityRow[]
+  citiesHeading: string
   routes: RouteRow[]
   routesHeading: string
   star: { hubName: string; spokes: StarSpoke[] }
   map: MapModel | null
   mapTitle: string
   franceMap: FranceMapModel
-  cardVilles: CardRow[]
+  cardCities: CardRow[]
   cardRoutes: CardRow[]
-  /** Légende sous la carte à partager. */
+  /** Caption under the shareable card. */
   recapNote: string
 }
 
@@ -150,14 +150,14 @@ export function buildWrappedView(s: WrappedStats): WrappedView {
   return {
     d,
     sections,
-    villes: destinations.items.map((v, i) => ({
+    cities: destinations.items.map((v, i) => ({
       rank: rank(i),
       name: v.city.name,
       count: `${v.visits} ${plural(v.visits, 'visite', 'visites')}`,
-      // Sans écart entre les villes, toutes les barres pleines : la maquette exagère les écarts, on reste proportionnel.
+      // With no gap between cities, all bars are full: the mockup exaggerates gaps, we keep it proportional.
       pct: topVisits ? v.pct : 100,
     })),
-    villesHeading: destinations.mode === 'single' ? 'Une seule ville vous a vu arriver.' : 'Les villes qui vous ont vu arriver.',
+    citiesHeading: destinations.mode === 'single' ? 'Une seule ville vous a vu arriver.' : 'Les villes qui vous ont vu arriver.',
     routes: routes.items.map((r, i) => ({
       rank: rank(i),
       label: r.stations.join(' ↔ '),
@@ -175,7 +175,7 @@ export function buildWrappedView(s: WrappedStats): WrappedView {
     map,
     mapTitle: all ? 'Vos lignes de la période' : "Vos lignes de l'année",
     franceMap: buildFranceMapModel(s),
-    cardVilles: destinations.items.slice(0, CARD_TOP).map((v, i) => ({ n: `N°${i + 1}`, name: v.city.name })),
+    cardCities: destinations.items.slice(0, CARD_TOP).map((v, i) => ({ n: `N°${i + 1}`, name: v.city.name })),
     cardRoutes: routes.items.slice(0, CARD_TOP).map((r, i) => ({ n: `N°${i + 1}`, name: r.label })),
     recapNote: "Km estimés à vol d'oiseau entre les gares (+ 20 %) · Contient des données SNCF Open Data (licence ODbL)",
   }

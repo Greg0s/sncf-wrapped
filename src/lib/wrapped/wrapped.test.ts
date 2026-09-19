@@ -20,7 +20,7 @@ function viewOf(rows: FixtureRow[], year = 2026) {
   return { stats, view: buildWrappedView(stats) }
 }
 
-// Même scénario que computeWrappedStats.test.ts (année 2026)
+// Same scenario as computeWrappedStats.test.ts (year 2026)
 const scenario: FixtureRow[] = [
   { departure: '2026-01-10T08:00:00.000Z', orderDate: '2026-01-05', origin: SEC, destination: 'ROANNE', amount: '9,2' },
   { departure: '2026-01-12T18:30:00.000Z', orderDate: '2026-01-12', origin: 'ROANNE', destination: SEC, amount: '9,2' },
@@ -131,7 +131,7 @@ describe('buildWrappedView — scénario complet', () => {
   })
 
   it('classe villes et itinéraires sans jamais dépasser ce qui existe', () => {
-    expect(view.villes).toEqual([
+    expect(view.cities).toEqual([
       { rank: '01', name: 'Annecy', count: '1 visite', pct: 100 },
       { rank: '02', name: 'Lyon', count: '1 visite', pct: 100 },
       { rank: '03', name: 'Paris', count: '1 visite', pct: 100 },
@@ -144,14 +144,14 @@ describe('buildWrappedView — scénario complet', () => {
   })
 
   it('titre l’écran Itinéraires selon qu’un trajet domine ou non', () => {
-    expect(view.routesHeading).toBe('Les trajets que vous refaites le plus.') // égalité en tête
+    expect(view.routesHeading).toBe('Les trajets que vous refaites le plus.') // tie at the top
     const dominant = viewOf([...scenario, { departure: '2026-02-20T09:00:00.000Z', origin: SEC, destination: 'ROANNE' }, { departure: '2026-02-21T09:00:00.000Z', origin: SEC, destination: 'ROANNE' }])
     expect(dominant.view.routesHeading).toBe('Un trajet revient plus souvent que tous les autres.')
   })
 
   it('prépare la carte à partager : 3 lignes au plus, itinéraires en noms de villes', () => {
-    expect(view.cardVilles).toHaveLength(3)
-    expect(view.cardVilles[0]).toEqual({ n: 'N°1', name: 'Annecy' })
+    expect(view.cardCities).toHaveLength(3)
+    expect(view.cardCities[0]).toEqual({ n: 'N°1', name: 'Annecy' })
     expect(view.cardRoutes.map((r) => r.name)).toEqual(['Saint-Étienne ↔ Paris', 'Saint-Étienne ↔ Annecy', 'Saint-Étienne ↔ Roanne'])
   })
 
@@ -167,11 +167,11 @@ describe('buildWrappedView — adaptation aux petits volumes', () => {
       { departure: '2026-02-01T10:00:00.000Z', origin: SEC, destination: 'ROANNE', amount: '9' },
       { departure: '2026-02-02T10:00:00.000Z', origin: SEC, destination: 'ROANNE', amount: '9' },
     ])
-    expect(view.villes).toHaveLength(1)
-    expect(view.villes[0]).toMatchObject({ name: 'Roanne', count: '2 visites' }) // la ville de base est exclue des retours
-    expect(view.villesHeading).toBe('Une seule ville vous a vu arriver.')
+    expect(view.cities).toHaveLength(1)
+    expect(view.cities[0]).toMatchObject({ name: 'Roanne', count: '2 visites' }) // the home city is excluded from return trips
+    expect(view.citiesHeading).toBe('Une seule ville vous a vu arriver.')
     expect(view.routesHeading).toBe("Vous n'avez fait qu'un seul itinéraire.")
-    expect(view.cardVilles).toHaveLength(1)
+    expect(view.cardCities).toHaveLength(1)
   })
 
   it('retire l’écran Anticipation sans dates de commande cohérentes, et renumérote', () => {
@@ -184,8 +184,8 @@ describe('buildWrappedView — adaptation aux petits volumes', () => {
     const { view } = viewOf([{ departure: '2026-02-01T10:00:00.000Z', origin: 'LYON PART DIEU', destination: 'GENEVE', amount: '30' }])
     expect(view.sections.map((s) => s.id)).toEqual(['teaser', 'budget', 'cities', 'routes', 'anticipation', 'recap'])
     expect(view.map).toBeNull()
-    expect(view.villes[0].name).toBe('Geneve')
-    expect(view.routes[0].meta).toBe('') // pas de distance connue
+    expect(view.cities[0].name).toBe('Geneve')
+    expect(view.routes[0].meta).toBe('') // no known distance
   })
 
   it('retire Budget quand aucun montant n’est lisible', () => {
@@ -204,7 +204,7 @@ describe('buildWrappedView — adaptation aux petits volumes', () => {
 
 describe('étoile de l’écran Kilomètres', () => {
   it('range les villes selon leur direction réelle, pas selon leur rang', () => {
-    // nord-ouest (~ -107°), sud (~ 85°), ouest (~ -162°), nord-est (~ -54°) : les 4 rayons de la maquette
+    // northwest (~ -107°), south (~ 85°), west (~ -162°), northeast (~ -54°): the mockup's 4 spokes
     expect(assignSlots([-105, 85])).toEqual([0, 1])
     expect(assignSlots([85, -105])).toEqual([1, 0])
     expect(assignSlots([-160, -50, 90, -100])).toEqual([2, 3, 1, 0])
@@ -224,8 +224,8 @@ describe('étoile de l’écran Kilomètres', () => {
     ])
     const spokes = buildStar(stats.hub, stats.destinations.items.map((v) => v.city))
     const byName = Object.fromEntries(spokes.map((s) => [s.name, s.slot.end.y]))
-    expect(byName['Roanne']).toBeLessThan(140) // au-dessus du centre de l'étoile
-    expect(byName['Montpellier']).toBeGreaterThan(140) // en dessous
+    expect(byName['Roanne']).toBeLessThan(140) // above the star's center
+    expect(byName['Montpellier']).toBeGreaterThan(140) // below
   })
 
   it('n’affiche pas plus de 4 rayons', () => {
@@ -249,19 +249,19 @@ describe('carte des trajets', () => {
 
   it('ne trace encore rien au départ : seuls la ville de base et la destination de janvier sont posées', () => {
     const s = evaluateMap(model, 0)
-    expect(s.arcs.every((a) => a.off === 100)).toBe(true) // tirets entièrement décalés : aucun trait visible
-    expect(s.dots.filter((d) => d.o === 1)).toHaveLength(2) // Saint-Étienne + Roanne (2 trajets en janvier)
+    expect(s.arcs.every((a) => a.off === 100)).toBe(true) // dashes fully offset: no line visible
+    expect(s.dots.filter((d) => d.o === 1)).toHaveLength(2) // Saint-Étienne + Roanne (2 trips in January)
     expect(s.km).toBe('0')
     expect(s.phase).toBe('Janvier')
   })
 
   it('trace les lignes mois après mois, et finit sur le total exact', () => {
-    const mid = evaluateMap(model, 1.5) // février en cours : Saint-Étienne ↔ Paris se dessine
+    const mid = evaluateMap(model, 1.5) // February in progress: Saint-Étienne ↔ Paris is being drawn
     const paris = model.routes.findIndex((r) => r.name.endsWith('Paris'))
     expect(mid.arcs[paris].o).toBe(1)
     expect(mid.arcs[paris].off).toBe(50)
     expect(mid.phase).toBe('Février')
-    expect(mid.legend[0].name).toBe('Saint-Étienne ↔ Roanne') // 2 trajets en janvier, seule ligne avec du cumul
+    expect(mid.legend[0].name).toBe('Saint-Étienne ↔ Roanne') // 2 trips in January, the only route with any total so far
     const end = evaluateMap(model, 12)
     expect(end.km).toBe(fmtNum(stats.distance.estimatedKm))
     expect(end.phase).toBe("Toute l'année, 4 lignes")
@@ -294,8 +294,8 @@ describe('cadrage de la carte', () => {
   })
   it('ne trace la silhouette de la France que si le zoom reste modéré', () => {
     expect(showsOutline(FULL_FRAME)).toBe(true)
-    expect(showsOutline(computeFrame([{ x: 255, y: 218 }, { x: 264, y: 242 }]))).toBe(false) // région : ~×3,4
-    expect(showsOutline(computeFrame([{ x: 250, y: 200 }, { x: 320, y: 262 }]))).toBe(true) // quelques départements
+    expect(showsOutline(computeFrame([{ x: 255, y: 218 }, { x: 264, y: 242 }]))).toBe(false) // region: ~×3.4
+    expect(showsOutline(computeFrame([{ x: 250, y: 200 }, { x: 320, y: 262 }]))).toBe(true) // a few départements
   })
   it('zoome quand tous les points sont regroupés, en gardant l’épaisseur des traits', () => {
     const f = computeFrame([{ x: 255, y: 218 }, { x: 264, y: 242 }, { x: 261, y: 244 }])
