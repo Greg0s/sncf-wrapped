@@ -26,6 +26,12 @@ export function weekdayOf(date: string): number {
 export const monthOf = (date: string) => date.slice(0, 7)
 export const yearOf = (date: string) => Number(date.slice(0, 4))
 
+/** Number of days in a YYYY-MM month. */
+export function daysInMonth(month: string): number {
+  const { y, m } = parts(`${month}-01`)
+  return new Date(Date.UTC(y, m, 0)).getUTCDate()
+}
+
 /** Number of months between two YYYY-MM months (b - a). */
 export function monthsBetween(a: string, b: string): number {
   return (Number(b.slice(0, 4)) - Number(a.slice(0, 4))) * 12 + (Number(b.slice(5, 7)) - Number(a.slice(5, 7)))
