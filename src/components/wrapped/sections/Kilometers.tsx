@@ -38,7 +38,11 @@ export function Kilometers({ d, star, index, label }: { d: DisplayData; star: Wr
         </div>
         <div style={css(`flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 12px; padding-top: 30px;`)}>
           <div style={css(`display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;`)}>
-            <Roll final={d.km} style={css(`font-size: clamp(54px, 13vw, 132px); font-weight: 800; letter-spacing: -.055em; line-height: .86;`)} />
+            <Roll
+              final={d.km}
+              suspense
+              style={css(`font-size: clamp(54px, 13vw, 132px); font-weight: 800; letter-spacing: -.055em; line-height: .86;`)}
+            />
             <span style={css(`font-size: clamp(22px, 3.6vw, 38px); font-weight: 700; letter-spacing: -.03em;`)}>km</span>
           </div>
           <p style={css(`margin: 0; font-size: clamp(16px, 2.1vw, 22px); line-height: 1.35; max-width: 32ch; font-weight: 500;`)}>{d.kmNote}</p>

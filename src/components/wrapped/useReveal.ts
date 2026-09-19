@@ -6,6 +6,7 @@ import { REVEAL_SPEED as SP } from './animation'
  * same triggers (IntersectionObserver). Elements to animate are identified by data-* attributes:
  *   data-lanim / data-anim = "up" | "scale"  reveal (offset by data-delay, in ms)
  *   data-roll + data-final                   number whose digits scroll
+ *   data-roll-suspense = "true"              on data-roll, use the right-to-left growing variant
  *   data-bar = percentage                    bar that fills up
  *   data-draw = rank                         line that draws itself
  *   data-sec / data-seg                      screen / segment of the progress bar
@@ -71,6 +72,53 @@ function roll(el: HTMLElement) {
   rolling.set(el, requestAnimationFrame(step))
 }
 
+const SUSPENSE_DURATION = 1300 / SP
+const SUSPENSE_GROWTH_SHARE = 0.4 // share of the duration spent growing the number to its final width
+
+/**
+ * Suspense variant of `roll`: digits appear and settle right-to-left (instead of all at once,
+ * left to right), so the final digit count only becomes clear near the end of the animation.
+ * A group separator (thousands space) reveals together with the digit right before it.
+ */
+function rollSuspense(el: HTMLElement) {
+  cancelAnimationFrame(rolling.get(el) ?? 0)
+  const final = el.dataset.final || el.textContent || ''
+  const chars = final.split('')
+  const digitPositions = chars.map((c, i) => (/\d/.test(c) ? i : -1)).filter((i) => i >= 0)
+  const total = digitPositions.length
+  if (total === 0) {
+    el.textContent = final
+    return
+  }
+  const rankOf = (charIndex: number) => {
+    const digitAt = digitPositions.indexOf(charIndex)
+    if (digitAt >= 0) return total - 1 - digitAt
+    const before = [...digitPositions].reverse().find((i) => i < charIndex)
+    const after = digitPositions.find((i) => i > charIndex)
+    return total - 1 - digitPositions.indexOf(before ?? after ?? digitPositions[0])
+  }
+  const ranks = chars.map((_, i) => rankOf(i))
+  const t0 = performance.now()
+  const step = (now: number) => {
+    const p = Math.min(1, (now - t0) / SUSPENSE_DURATION)
+    const q = Math.min(1, p * 1.05)
+    let firstVisible = chars.length
+    const out = chars.slice()
+    chars.forEach((c, i) => {
+      const rank = ranks[i]
+      const appearAt = (rank / total) * SUSPENSE_GROWTH_SHARE
+      const settleAt = SUSPENSE_GROWTH_SHARE + (rank / total) * (1 - SUSPENSE_GROWTH_SHARE)
+      if (q < appearAt) return
+      firstVisible = Math.min(firstVisible, i)
+      if (/\d/.test(c) && q < settleAt) out[i] = String(Math.floor(Math.random() * 10))
+    })
+    el.textContent = out.slice(firstVisible).join('')
+    if (p < 1 && el.isConnected) rolling.set(el, requestAnimationFrame(step))
+    else el.textContent = final
+  }
+  rolling.set(el, requestAnimationFrame(step))
+}
+
 const SEGMENT_OFF = 'rgba(241,244,247,.22)'
 
 /**
@@ -102,7 +150,7 @@ export function useWrappedScroll(root: RefObject<HTMLElement | null>, onMap: (ev
         bar.style.width = on ? `${bar.dataset.bar}%` : '0%'
       })
       section.querySelectorAll<HTMLElement>('[data-roll]').forEach((node) => {
-        if (on) roll(node)
+        if (on) (node.dataset.rollSuspense === 'true' ? rollSuspense : roll)(node)
         else {
           cancelAnimationFrame(rolling.get(node) ?? 0)
           node.textContent = (node.dataset.final || '').replace(/\d/g, '0')
