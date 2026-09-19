@@ -1,0 +1,47 @@
+/*
+ * lib/parsing — de l'export CSV SNCF Connect aux valeurs affichées par le wrapped.
+ *
+ * Contrainte de confidentialité (CLAUDE.md) : tout se passe en mémoire, dans le navigateur. Rien dans ce dossier
+ * n'émet de requête réseau avec le contenu du fichier ; le seul chargement est celui du référentiel de gares,
+ * un fichier statique du site. Un test (privacy.test.ts) veille à ce qu'aucune API réseau n'y soit introduite.
+ */
+import { readCsvFile, type CsvEncoding } from './decode'
+import { buildTripDataset, listPeriods, type PeriodOption, type TripDataset } from './dataset'
+import { parseSncfCsv } from './parseSncfCsv'
+import { loadStationIndex } from './stations'
+import type { ParseError, ParseOptions, ParseReport, StationIndex } from './types'
+
+export { decodeCsvBytes, readCsvFile, type CsvEncoding } from './decode'
+export { parseSncfCsv } from './parseSncfCsv'
+export { createStationIndex, loadStationIndex } from './stations'
+export { buildTripDataset, legCount, listPeriods } from './dataset'
+export type { CityRef, Period, PeriodOption, PlaceUsage, ResolvedTrip, TripDataset, TripPlace } from './dataset'
+export { computeWrappedStats } from './computeWrappedStats'
+export type { Anticipation, CityVisit, MonthBucket, RouteStat, StatsOptions, TripHighlight, WrappedStats } from './computeWrappedStats'
+export { CARD_TOP, MAX_TOP, rankTop, type Ranked } from './ranking'
+export { EARTH_CIRCUMFERENCE_KM, RAIL_DETOUR_FACTOR, haversineKm, projectToFranceMap } from './geo'
+export { MONTHS_FR, WEEKDAYS_FR, localToday } from './dates'
+export type * from './types'
+
+/** Taille maximale acceptée pour l'import (la maquette annonce « 20 Mo max »). */
+export const MAX_FILE_BYTES = 20 * 1024 * 1024
+
+export type ImportResult =
+  | { ok: true; encoding: CsvEncoding; report: ParseReport; dataset: TripDataset; periods: PeriodOption[] }
+  | { ok: false; error: ParseError }
+
+/** Parcours complet : fichier choisi → décodage → lecture du CSV → trajets rattachés aux gares → périodes proposables. */
+export async function importSncfCsv(
+  file: Blob,
+  options: ParseOptions & { today?: string; stationIndex?: StationIndex } = {},
+): Promise<ImportResult> {
+  if (file.size > MAX_FILE_BYTES) {
+    return { ok: false, error: { code: 'file-too-large', message: 'Ce fichier dépasse 20 Mo, la taille maximale acceptée.' } }
+  }
+  const { text, encoding } = await readCsvFile(file)
+  const parsed = parseSncfCsv(text, { includeOptions: options.includeOptions })
+  if (!parsed.ok) return parsed
+  const index = options.stationIndex ?? (await loadStationIndex())
+  const dataset = buildTripDataset(parsed.data.trips, index, options.today)
+  return { ok: true, encoding, report: parsed.data.report, dataset, periods: listPeriods(dataset) }
+}
