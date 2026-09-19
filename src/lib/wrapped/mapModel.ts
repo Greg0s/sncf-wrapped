@@ -1,6 +1,7 @@
 import type { CityRef, RouteStat, WrappedStats } from '../parsing'
 import { fmtNum, plural } from './format'
 import { monthName } from './phrases'
+import { regionOf, type Region } from './regions'
 
 /*
  * Trip map (screen 06) and the mini-map on the shareable card, built from the actual routes.
@@ -90,6 +91,8 @@ export interface MapCity {
 
 export interface MapModel {
   frame: Frame
+  /** Background to draw behind the routes: a region's outline when zoomed in on it, null for the full-France view (drawn separately) or when no region matched. */
+  regionOutline: string | null
   routes: MapRoute[]
   cities: MapCity[]
   months: { label: string; legs: Record<string, number>; km: number }[]
@@ -114,6 +117,31 @@ function drawable(stats: WrappedStats): DrawnRoute[] {
       ? [{ route, a: { x: cityA.x, y: cityA.y }, b: { x: cityB.x, y: cityB.y } }]
       : []
   })
+}
+
+/**
+ * The region with the most trips among the drawn routes' cities (a route touching two regions counts
+ * for both), or null if none resolves to a bundled region. Used only when the frame is zoomed in on a
+ * cluster of cities (see `computeFrame`): the full-France view already has its own outline.
+ */
+function dominantRegion(routes: DrawnRoute[]): Region | null {
+  const totals = new Map<string, { region: Region; trips: number }>()
+  for (const { route } of routes) {
+    for (const city of [route.cityA, route.cityB]) {
+      if (city.lat === null || city.lon === null) continue
+      const region = regionOf(city.lat, city.lon)
+      if (!region) continue
+      const entry = totals.get(region.code)
+      if (entry) entry.trips += route.trips
+      else totals.set(region.code, { region, trips: route.trips })
+    }
+  }
+  return [...totals.values()].sort((a, b) => b.trips - a.trips || a.region.code.localeCompare(b.region.code))[0]?.region ?? null
+}
+
+/** Regional outline to draw as background, or null for the full-France view / when no region matched. */
+function regionOutlineFor(frame: Frame, routes: DrawnRoute[]): string | null {
+  return frame === FULL_FRAME ? null : (dominantRegion(routes)?.outline ?? null)
 }
 
 function placeLabels(cities: Omit<MapCity, 'label'>[], frame: Frame): Map<string, MapCity['label']> {
@@ -182,6 +210,7 @@ export function buildMapModel(stats: WrappedStats): MapModel | null {
 
   return {
     frame,
+    regionOutline: regionOutlineFor(frame, routes),
     routes: routes.map(({ route, a, b }, i) => ({ key: route.key, name: route.label, d: arcPath(a, b, i), totalLegs: totals.get(route.key) ?? route.trips })),
     cities: [...cityMap.values()].map((c) => ({ ...c, label: labels.get(c.key) as MapCity['label'] })),
     months,
@@ -269,6 +298,7 @@ const DOT_RADII = [6.4, 5.4, 5.4, 4.6, 4.6]
 
 export interface FranceMapModel {
   frame: Frame
+  regionOutline: string | null
   hub: Pt | null
   arcs: { d: string; w: number; dots: { x: number; y: number; r: number }[] }[]
 }
@@ -276,12 +306,13 @@ export interface FranceMapModel {
 /** Mini-map for the shareable card: the same routes, without animation. */
 export function buildFranceMapModel(stats: WrappedStats): FranceMapModel {
   const routes = drawable(stats)
-  if (!routes.length) return { frame: FULL_FRAME, hub: null, arcs: [] }
+  if (!routes.length) return { frame: FULL_FRAME, regionOutline: null, hub: null, arcs: [] }
   const frame = computeFrame(routes.flatMap((r) => [r.a, r.b]))
   const hubKey = stats.hub?.key
   const hubPoint = routes.flatMap((r) => (r.route.cityA.key === hubKey ? [r.a] : r.route.cityB.key === hubKey ? [r.b] : []))[0] ?? null
   return {
     frame,
+    regionOutline: regionOutlineFor(frame, routes),
     hub: hubPoint,
     arcs: routes.map(({ route, a, b }, i) => ({
       d: arcPath(a, b, i),
