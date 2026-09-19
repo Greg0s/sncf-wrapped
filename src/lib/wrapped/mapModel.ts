@@ -1,0 +1,295 @@
+import type { CityRef, RouteStat, WrappedStats } from '../parsing'
+import { fmtNum, plural } from './format'
+import { monthName } from './phrases'
+
+/*
+ * Carte des trajets (écran 06) et mini-carte de la carte à partager, à partir des itinéraires réels.
+ * Les positions viennent de la projection lat/lon → SVG « CarteFrance » (voir geo.ts).
+ */
+
+export interface Frame {
+  /** Cadre (viewBox) : x, y, côté. */
+  x: number
+  y: number
+  size: number
+  /** Échelle des traits/points/textes : 1 en vue France entière, < 1 quand la carte est zoomée. */
+  k: number
+}
+
+export const FULL_FRAME: Frame = { x: 10, y: 10, size: 405, k: 1 }
+
+interface Pt {
+  x: number
+  y: number
+}
+
+/** La silhouette de la France n'est tracée que si la carte n'est pas trop zoomée (au-delà, ce n'est plus qu'un fragment de ligne). */
+export const showsOutline = (frame: Frame): boolean => frame.k >= 0.4
+
+/** France entière, sauf si tous les points sont regroupés : on zoome (jusqu'à ×3,4) pour que les lignes restent lisibles. */
+export function computeFrame(points: Pt[]): Frame {
+  if (!points.length) return FULL_FRAME
+  const xs = points.map((p) => p.x)
+  const ys = points.map((p) => p.y)
+  const span = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys))
+  const half = Math.max(60, span * 0.9 + 30)
+  if (span >= 120 || half >= 150) return FULL_FRAME
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
+  const cx = clamp((Math.min(...xs) + Math.max(...xs)) / 2, 10 + half, 415 - half)
+  const cy = clamp((Math.min(...ys) + Math.max(...ys)) / 2, 10 + half, 415 - half)
+  return { x: cx - half, y: cy - half, size: half * 2, k: (half * 2) / FULL_FRAME.size }
+}
+
+const r1 = (n: number) => Math.round(n * 10) / 10
+/** Signe de la courbure des arcs, alterné comme dans la maquette (Paris +, Marseille +, Nantes −, Dijon +, Strasbourg −). */
+const CURVE_SIGNS = [1, 1, -1, 1, -1]
+
+/** Arc quadratique de a vers b : le point de contrôle est décalé de 14 % de la corde, perpendiculairement. */
+export function arcPath(a: Pt, b: Pt, index: number): string {
+  const sign = CURVE_SIGNS[index % CURVE_SIGNS.length]
+  const dx = b.x - a.x
+  const dy = b.y - a.y
+  return `M${r1(a.x)} ${r1(a.y)} Q${r1((a.x + b.x) / 2 + 0.14 * sign * dy)} ${r1((a.y + b.y) / 2 - 0.14 * sign * dx)} ${r1(b.x)} ${r1(b.y)}`
+}
+
+type Anchor = 'start' | 'middle' | 'end'
+interface Box {
+  x0: number
+  y0: number
+  x1: number
+  y1: number
+}
+const CHAR_WIDTH = 6 // largeur moyenne d'un caractère à 11 px, graisse 600 (approximation)
+const overlaps = (a: Box, b: Box) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0
+
+function labelBox(name: string, x: number, y: number, anchor: Anchor, k: number): Box {
+  const w = name.length * CHAR_WIDTH * k
+  const h = 11 * k
+  const x0 = anchor === 'middle' ? x - w / 2 : anchor === 'start' ? x : x - w
+  return { x0, x1: x0 + w, y0: y - h * 0.85, y1: y + h * 0.25 }
+}
+
+export interface MapRoute {
+  key: string
+  /** « Saint-Étienne ↔ Paris » */
+  name: string
+  /** Tracé de A (la ville de base quand elle en fait partie) vers B. */
+  d: string
+  totalLegs: number
+}
+
+export interface MapCity {
+  key: string
+  name: string
+  x: number
+  y: number
+  isHub: boolean
+  routeKeys: string[]
+  label: { x: number; y: number; anchor: Anchor; hidden: boolean }
+}
+
+export interface MapModel {
+  frame: Frame
+  routes: MapRoute[]
+  cities: MapCity[]
+  months: { label: string; legs: Record<string, number>; km: number }[]
+  totalKm: number
+  maxLegs: number
+  doneLabel: string
+  /** Durée relative de l'animation : plus longue quand la période compte beaucoup de mois. */
+  durationFactor: number
+}
+
+interface DrawnRoute {
+  route: RouteStat
+  a: Pt
+  b: Pt
+}
+
+/** Itinéraires dont les deux villes ont une position sur la carte (les gares étrangères en sont exclues). */
+function drawable(stats: WrappedStats): DrawnRoute[] {
+  return stats.routes.items.flatMap((route) => {
+    const { cityA, cityB } = route
+    return cityA.x !== null && cityA.y !== null && cityB.x !== null && cityB.y !== null
+      ? [{ route, a: { x: cityA.x, y: cityA.y }, b: { x: cityB.x, y: cityB.y } }]
+      : []
+  })
+}
+
+function placeLabels(cities: Omit<MapCity, 'label'>[], frame: Frame): Map<string, MapCity['label']> {
+  const k = frame.k
+  const placed: Box[] = []
+  const dots: Box[] = cities.map((c) => ({ x0: c.x - 6 * k, x1: c.x + 6 * k, y0: c.y - 6 * k, y1: c.y + 6 * k }))
+  const hub = cities.find((c) => c.isHub)
+  const ref = hub ?? { x: FULL_FRAME.x + FULL_FRAME.size / 2, y: FULL_FRAME.y + FULL_FRAME.size / 2 }
+  const inside = (b: Box) => b.x0 >= frame.x + 4 * k && b.x1 <= frame.x + frame.size - 4 * k && b.y0 >= frame.y && b.y1 <= frame.y + frame.size
+  const out = new Map<string, MapCity['label']>()
+
+  const ordered = [...cities].sort((a, b) => Number(b.isHub) - Number(a.isHub))
+  for (const c of ordered) {
+    const options: Record<string, { x: number; y: number; anchor: Anchor }> = {
+      above: { x: c.x, y: c.y - 8 * k, anchor: 'middle' },
+      below: { x: c.x, y: c.y + 16 * k, anchor: 'middle' },
+      right: { x: c.x + 9 * k, y: c.y + 4 * k, anchor: 'start' },
+      left: { x: c.x - 9 * k, y: c.y + 4 * k, anchor: 'end' },
+    }
+    const dx = c.x - ref.x
+    const dy = c.y - ref.y
+    const vertical = Math.abs(dy) > 0.5 * Math.abs(dx)
+    const order = c.isHub
+      ? ['right', 'below', 'above', 'left']
+      : vertical
+        ? [dy < 0 ? 'above' : 'below', dx >= 0 ? 'right' : 'left', dx >= 0 ? 'left' : 'right', dy < 0 ? 'below' : 'above']
+        : [dx >= 0 ? 'right' : 'left', dy < 0 ? 'above' : 'below', dy < 0 ? 'below' : 'above', dx >= 0 ? 'left' : 'right']
+    const pick = order.find((name) => {
+      const o = options[name]
+      const box = labelBox(c.name, o.x, o.y, o.anchor, k)
+      return inside(box) && !placed.some((p) => overlaps(p, box)) && !dots.some((d, i) => cities[i] !== c && overlaps(d, box))
+    })
+    const chosen = options[pick ?? order[0]]
+    if (pick) placed.push(labelBox(c.name, chosen.x, chosen.y, chosen.anchor, k))
+    out.set(c.key, { ...chosen, hidden: !pick })
+  }
+  return out
+}
+
+export function buildMapModel(stats: WrappedStats): MapModel | null {
+  const routes = drawable(stats)
+  if (!routes.length || !stats.timeline.length) return null
+
+  const points = routes.flatMap((r) => [r.a, r.b])
+  const frame = computeFrame(points)
+  const keys = new Set(routes.map((r) => r.route.key))
+
+  const cityMap = new Map<string, Omit<MapCity, 'label'>>()
+  for (const { route, a, b } of routes) {
+    for (const [city, p] of [[route.cityA, a], [route.cityB, b]] as [CityRef, Pt][]) {
+      const known = cityMap.get(city.key)
+      if (known) known.routeKeys.push(route.key)
+      else cityMap.set(city.key, { key: city.key, name: city.name, x: p.x, y: p.y, isHub: city.key === stats.hub?.key, routeKeys: [route.key] })
+    }
+  }
+  const labels = placeLabels([...cityMap.values()], frame)
+  const all = stats.period.kind === 'all'
+
+  const months = stats.timeline.map((m) => ({
+    label: monthName(m.month, all),
+    legs: Object.fromEntries(Object.entries(m.routeLegs).filter(([k]) => keys.has(k))),
+    km: m.km,
+  }))
+  const totals = new Map<string, number>()
+  for (const m of months) for (const [k, n] of Object.entries(m.legs)) totals.set(k, (totals.get(k) ?? 0) + n)
+
+  return {
+    frame,
+    routes: routes.map(({ route, a, b }, i) => ({ key: route.key, name: route.label, d: arcPath(a, b, i), totalLegs: totals.get(route.key) ?? route.trips })),
+    cities: [...cityMap.values()].map((c) => ({ ...c, label: labels.get(c.key) as MapCity['label'] })),
+    months,
+    totalKm: stats.distance.estimatedKm,
+    maxLegs: Math.max(1, ...totals.values()),
+    doneLabel: `${all ? 'Toute la période' : "Toute l'année"}, ${routes.length} ${plural(routes.length, 'ligne', 'lignes')}`,
+    durationFactor: Math.min(2, Math.max(1, months.length / 12)),
+  }
+}
+
+export interface MapState {
+  arcs: { d: string; off: number; o: number; w: string }[]
+  dots: { x: number; y: number; r: number; o: number }[]
+  labels: { name: string; x: number; y: number; anchor: Anchor; o: number; fontSize: number }[]
+  legend: { name: string; trips: string; w: string; o: number }[]
+  /** Couleurs des repères mensuels : accent (écoulé), accent 50 % (en cours), gris (à venir). */
+  ticks: ('done' | 'current' | 'todo')[]
+  km: string
+  phase: string
+}
+
+/**
+ * État de la carte pour une progression `p` (0 → nombre de mois) : reprend `mapVals` de la maquette, avec des
+ * itinéraires et des mois réels. Les traits grossissent avec le nombre de trajets, rapporté à l'itinéraire le
+ * plus fréquent.
+ */
+export function evaluateMap(model: MapModel, progress: number): MapState {
+  const n = model.months.length
+  const p = Math.min(n, Math.max(0, Number.isFinite(progress) ? progress : 0)) // toujours dans [0, n]
+  const done = Math.floor(p)
+  const frac = p - done
+  const k = model.frame.k
+  const cum: Record<string, number> = {}
+  let km = 0
+  for (let i = 0; i < Math.min(done, n); i++) {
+    for (const [key, legs] of Object.entries(model.months[i].legs)) cum[key] = (cum[key] ?? 0) + legs
+    km += model.months[i].km
+  }
+  const partial = done < n ? model.months[done].legs : {}
+  if (done < n) km += model.months[done].km * frac
+  const finished = p >= n
+
+  const routesOfCity = (c: MapCity) => c.routeKeys
+  const seen = (c: MapCity) => c.isHub || routesOfCity(c).some((key) => cum[key] || partial[key])
+  const active = (c: MapCity) => routesOfCity(c).some((key) => partial[key])
+
+  return {
+    arcs: model.routes.map((r) => {
+      const w = cum[r.key] ?? 0
+      const drawing = partial[r.key] !== undefined && !w
+      return {
+        d: r.d,
+        off: w ? 0 : drawing ? Math.round(100 - frac * 100) : 100,
+        o: w || drawing ? (partial[r.key] ? 1 : 0.5) : 0,
+        w: ((1.2 + (w / model.maxLegs) * 3.4) * k).toFixed(2),
+      }
+    }),
+    dots: model.cities.map((c) => ({ x: c.x, y: c.y, r: (c.isHub ? 6 : active(c) ? 5 : 3.6) * k, o: seen(c) ? 1 : 0 })),
+    labels: model.cities.map((c) => ({
+      name: c.name,
+      x: c.label.x,
+      y: c.label.y,
+      anchor: c.label.anchor,
+      fontSize: 11 * k,
+      o: c.label.hidden || !seen(c) ? 0 : active(c) || c.isHub ? 1 : 0.55,
+    })),
+    legend: model.routes
+      .map((r, i) => ({ r, i, n: cum[r.key] ?? 0 }))
+      .sort((a, b) => b.n - a.n || a.i - b.i)
+      .map(({ r, n: legs }) => ({
+        name: r.name,
+        trips: legs ? `${legs} ${plural(legs, 'trajet', 'trajets')}` : '—',
+        w: (2 + (legs / model.maxLegs) * 5).toFixed(1),
+        o: legs ? 1 : 0.25,
+      })),
+    ticks: model.months.map((_, i) => (i < p - 0.5 ? 'done' : i <= p ? 'current' : 'todo')),
+    km: fmtNum(finished ? model.totalKm : km),
+    phase: finished ? model.doneLabel : model.months[Math.min(done, n - 1)].label,
+  }
+}
+
+/** Épaisseurs et rayons par rang, comme dans « CarteFrance » (Paris 6,4 → Strasbourg 2,4). */
+const WIDTHS = [6.4, 3.6, 3.4, 2.8, 2.4]
+const DOT_RADII = [6.4, 5.4, 5.4, 4.6, 4.6]
+
+export interface FranceMapModel {
+  frame: Frame
+  hub: Pt | null
+  arcs: { d: string; w: number; dots: { x: number; y: number; r: number }[] }[]
+}
+
+/** Mini-carte de la carte à partager : les mêmes itinéraires, sans animation. */
+export function buildFranceMapModel(stats: WrappedStats): FranceMapModel {
+  const routes = drawable(stats)
+  if (!routes.length) return { frame: FULL_FRAME, hub: null, arcs: [] }
+  const frame = computeFrame(routes.flatMap((r) => [r.a, r.b]))
+  const hubKey = stats.hub?.key
+  const hubPoint = routes.flatMap((r) => (r.route.cityA.key === hubKey ? [r.a] : r.route.cityB.key === hubKey ? [r.b] : []))[0] ?? null
+  return {
+    frame,
+    hub: hubPoint,
+    arcs: routes.map(({ route, a, b }, i) => ({
+      d: arcPath(a, b, i),
+      w: WIDTHS[i] ?? WIDTHS[WIDTHS.length - 1],
+      dots: [
+        ...(route.cityA.key === hubKey ? [] : [{ ...a, r: DOT_RADII[i] ?? 4.6 }]),
+        ...(route.cityB.key === hubKey ? [] : [{ ...b, r: DOT_RADII[i] ?? 4.6 }]),
+      ],
+    })),
+  }
+}

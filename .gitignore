@@ -1,0 +1,13 @@
+node_modules/
+dist/
+*.local
+.DS_Store
+
+# Exports personnels SNCF Connect : ne jamais les versionner (données perso : identité, adresse, téléphone…)
+*.csv
+*.zip
+/samples/
+
+# Config locale des outils Claude (launch.json, worktrees, réglages) ; les skills du projet sont versionnés
+/.claude/*
+!/.claude/skills/
