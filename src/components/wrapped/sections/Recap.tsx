@@ -292,7 +292,7 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
                   <div style={css(`min-width: 0;`)}>
                     <div
                       style={css(
-                        `font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #8DE8FD; margin-bottom: 5px;`,
+                        `font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #8DE8FD; margin-bottom: 5px; color: var(--ac);`,
                       )}
                     >
                       Kilomètres
@@ -302,7 +302,7 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
                   <div style={css(`min-width: 0;`)}>
                     <div
                       style={css(
-                        `font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #8DE8FD; margin-bottom: 5px;`,
+                        `font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #8DE8FD; margin-bottom: 5px; color: var(--ac);`,
                       )}
                     >
                       Budget
@@ -425,7 +425,7 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
                   <div style={css(`min-width: 0;`)}>
                     <div
                       style={css(
-                        `font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #8DE8FD; margin-bottom: 5px;`,
+                        `font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #8DE8FD; margin-bottom: 5px; color: var(--ac);`,
                       )}
                     >
                       Kilomètres
@@ -435,7 +435,7 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
                   <div style={css(`min-width: 0;`)}>
                     <div
                       style={css(
-                        `font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #8DE8FD; margin-bottom: 5px;`,
+                        `font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #8DE8FD; margin-bottom: 5px; color: var(--ac);`,
                       )}
                     >
                       Budget
