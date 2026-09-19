@@ -55,4 +55,4 @@ Nothing leaves the browser: no `fetch`/XHR, no analytics, no third-party fonts (
 
 ## Testing
 
-`npm run check` = typecheck + Vitest + build. Besides unit tests, `src/lib/wrapped/invariants.test.ts` pushes hundreds of random fictional exports through the whole chain and checks invariants (no `NaN`, adaptive rankings, consistent totals, screen numbering). More seeds: `FUZZ_SEEDS=2500 npm test -- invariants`. UI is checked by hand with fictional profiles (`npm run sample`, see `self-improvement.md`).
+`npm run check` = lint (oxlint) + typecheck + Vitest + build. Besides unit tests, `src/lib/wrapped/invariants.test.ts` pushes hundreds of random fictional exports through the whole chain and checks invariants (no `NaN`, adaptive rankings, consistent totals, screen numbering). More seeds: `FUZZ_SEEDS=2500 npm test -- invariants`. UI is checked by hand with fictional profiles (`npm run sample`, see `self-improvement.md`).

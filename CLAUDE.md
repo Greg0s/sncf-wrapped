@@ -18,7 +18,7 @@ A static site that turns the CSV a user gets from SNCF Connect (GDPR data export
 ## Working on this project
 
 - Install with `npm ci`, run `npm run dev` (http://localhost:5173/wrapped-sncf/, add `?debug` for the calculation panel).
-- Verify with `npm run check` (typecheck + tests + build). It must pass before any PR; CI runs it.
+- Verify with `npm run check` (lint + typecheck + tests + build). It must pass before any PR; CI runs it.
 - Fictional exports: `npm run sample -- out.csv --profile tiny` (profiles in `docs/self-improvement.md`). Inspect an export in the console: `npm run inspect -- file.csv`.
 - UI copy and code comments are in French; identifiers are in English.
 

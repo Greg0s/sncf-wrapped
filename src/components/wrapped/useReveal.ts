@@ -145,5 +145,6 @@ export function useWrappedScroll(root: RefObject<HTMLElement | null>, onMap: (ev
       if (mapPlaying) onMap('stop')
     }
     // Monté une fois par affichage du wrapped : les données ne changent pas pendant la lecture.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [root])
 }

@@ -57,6 +57,7 @@ export function DebugPanel() {
   useEffect(() => {
     if (!file) return
     let cancelled = false
+    // eslint-disable-next-line react/set-state-in-effect -- reset avant le parsing asynchrone du fichier
     setResult(null)
     void importSncfCsv(file, { includeOptions }).then((r) => {
       if (!cancelled) setResult(r)
