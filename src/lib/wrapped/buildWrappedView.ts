@@ -1,4 +1,5 @@
 import { CARD_TOP, type WrappedStats } from '../parsing'
+import { abbreviateCityName } from './cityAbbrev'
 import { cap, fmtEur, fmtNum, plural } from './format'
 import { buildFranceMapModel, buildMapModel, type FranceMapModel, type MapModel } from './mapModel'
 import { WEEKDAYS_FR } from '../parsing'
@@ -175,8 +176,10 @@ export function buildWrappedView(s: WrappedStats): WrappedView {
     map,
     mapTitle: all ? 'Vos lignes de la période' : "Vos lignes de l'année",
     franceMap: buildFranceMapModel(s),
-    cardCities: destinations.items.slice(0, CARD_TOP).map((v, i) => ({ n: `N°${i + 1}`, name: v.city.name })),
-    cardRoutes: routes.items.slice(0, CARD_TOP).map((r, i) => ({ n: `N°${i + 1}`, name: r.label })),
+    cardCities: destinations.items.slice(0, CARD_TOP).map((v, i) => ({ n: `N°${i + 1}`, name: abbreviateCityName(v.city.name) })),
+    cardRoutes: routes.items
+      .slice(0, CARD_TOP)
+      .map((r, i) => ({ n: `N°${i + 1}`, name: `${abbreviateCityName(r.cityA.name)} ↔ ${abbreviateCityName(r.cityB.name)}` })),
     recapNote: "Km estimés à vol d'oiseau entre les gares (+ 20 %) · Contient des données SNCF Open Data (licence ODbL)",
   }
 }
