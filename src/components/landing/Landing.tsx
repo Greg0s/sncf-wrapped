@@ -74,7 +74,7 @@ export function Landing({ openData, openImport, modal }: { openData: () => void;
                 style={css(
                   `font-family: 'Schibsted Grotesk', sans-serif; font-size: 17px; font-weight: 700; color: #0E1219; background: #8DE8FD; border: none; border-radius: 999px; padding: 17px 30px; cursor: pointer; transition: transform .18s ease, filter .2s ease; background: var(--ac);`,
                 )}
-                className="hv-cta"
+                className="hv-cta cta-import"
               >
                 Importer mes données
               </button>
