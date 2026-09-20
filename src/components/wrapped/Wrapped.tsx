@@ -54,10 +54,11 @@ export function Wrapped({ view, onBack }: { view: WrappedView; onBack: () => voi
           type="button"
           onClick={onBack}
           style={css(
-            `font-family: 'Schibsted Grotesk', sans-serif; font-size: 13px; font-weight: 600; color: #F1F4F7; background: rgba(27,33,48,.85); backdrop-filter: blur(6px); border: none; border-radius: 999px; padding: 9px 16px; cursor: pointer; flex: 0 0 auto;`,
+            `font-family: 'Schibsted Grotesk', sans-serif; font-size: 13px; font-weight: 600; color: #F1F4F7; background: rgba(27,33,48,.85); backdrop-filter: blur(6px); border: none; border-radius: 999px; padding: 9px 16px; cursor: pointer; flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; line-height: 1;`,
           )}
         >
-          ← Retour
+          <span aria-hidden="true">←</span>
+          <span>Retour</span>
         </button>
         <div style={css(`display: flex; gap: 4px; flex: 1 1 auto;`)}>
           {view.sections.map((s, i) => (
