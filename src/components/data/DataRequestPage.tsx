@@ -151,13 +151,23 @@ export function DataRequestPage({
               `background: #1B2130; border-radius: 22px; padding: clamp(16px, 2.6vw, 24px); display: flex; flex-direction: column; gap: 10px;`,
             )}
           >
-            <div
-              style={css(
-                `width: 30px; height: 30px; border-radius: 50%; background: #8DE8FD; color: #0E1219; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; background: var(--ac);`,
-              )}
-            >
-              1
-            </div>
+            {sent ? (
+              <div
+                style={css(
+                  `width: 30px; height: 30px; border-radius: 50%; background: #2FBF71; color: #0E1219; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800;`,
+                )}
+              >
+                ✓
+              </div>
+            ) : (
+              <div
+                style={css(
+                  `width: 30px; height: 30px; border-radius: 50%; background: #8DE8FD; color: #0E1219; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; background: var(--ac);`,
+                )}
+              >
+                1
+              </div>
+            )}
             <h3 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>Envoyez la demande</h3>
             <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>
               Indiquez vos informations et envoyez l'email prérempli en moins de 30s
@@ -168,13 +178,23 @@ export function DataRequestPage({
               `background: #1B2130; border-radius: 22px; padding: clamp(16px, 2.6vw, 24px); display: flex; flex-direction: column; gap: 10px;`,
             )}
           >
-            <div
-              style={css(
-                `width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid rgba(241,244,247,.3); color: #AEB7C6; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;`,
-              )}
-            >
-              2
-            </div>
+            {sent ? (
+              <div
+                style={css(
+                  `width: 30px; height: 30px; border-radius: 50%; background: #8DE8FD; color: #0E1219; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; background: var(--ac);`,
+                )}
+              >
+                2
+              </div>
+            ) : (
+              <div
+                style={css(
+                  `width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid rgba(241,244,247,.3); color: #AEB7C6; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;`,
+                )}
+              >
+                2
+              </div>
+            )}
             <h3 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>Attendez la réponse</h3>
             <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>Sous 1 mois maximum, souvent 2 semaines environ</p>
           </div>
@@ -386,57 +406,6 @@ export function DataRequestPage({
                   <p style={css(`margin: 0; font-size: 14px; color: #8A93A6;`)}>
                     Votre application mail s'est ouverte avec le message pré-rempli. Vérifiez-le et envoyez-le.
                   </p>
-                </div>
-              </div>
-              <div
-                style={css(
-                  `background: #151A25; border-radius: 20px; padding: clamp(16px, 2.6vw, 22px); display: flex; flex-direction: column; gap: 14px;`,
-                )}
-              >
-                <div style={css(`display: flex; gap: 12px; align-items: flex-start;`)}>
-                  <div
-                    style={css(
-                      `width: 26px; height: 26px; flex: 0 0 auto; border-radius: 50%; background: #2FBF71; color: #0E1219; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800;`,
-                    )}
-                  >
-                    ✓
-                  </div>
-                  <div style={css(`min-width: 0;`)}>
-                    <div style={css(`font-size: 15px; font-weight: 700; letter-spacing: -.02em;`)}>Demande envoyée</div>
-                    <div style={css(`font-size: 13px; color: #8A93A6; margin-top: 3px;`)}>
-                      À dpo@connect.sncf, au titre des articles 15 et 20 du RGPD.
-                    </div>
-                  </div>
-                </div>
-                <div style={css(`display: flex; gap: 12px; align-items: flex-start;`)}>
-                  <div
-                    style={css(
-                      `width: 26px; height: 26px; flex: 0 0 auto; border-radius: 50%; border: 1.5px solid #8DE8FD; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; border-color: var(--ac);`,
-                    )}
-                  >
-                    <span style={css(`color: #8DE8FD; color: var(--ac);`)}>2</span>
-                  </div>
-                  <div style={css(`min-width: 0;`)}>
-                    <div style={css(`font-size: 15px; font-weight: 700; letter-spacing: -.02em;`)}>Attendez la réception du fichier</div>
-                    <div style={css(`font-size: 13px; color: #8A93A6; margin-top: 3px;`)}>
-                      SNCF Connect a un mois pour répondre. Le fichier arrive par e-mail, à l'adresse de votre compte.
-                    </div>
-                  </div>
-                </div>
-                <div style={css(`display: flex; gap: 12px; align-items: flex-start;`)}>
-                  <div
-                    style={css(
-                      `width: 26px; height: 26px; flex: 0 0 auto; border-radius: 50%; border: 1.5px solid rgba(241,244,247,.3); color: #AEB7C6; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;`,
-                    )}
-                  >
-                    3
-                  </div>
-                  <div style={css(`min-width: 0;`)}>
-                    <div style={css(`font-size: 15px; font-weight: 700; letter-spacing: -.02em;`)}>Revenez sur le site et importez-le</div>
-                    <div style={css(`font-size: 13px; color: #8A93A6; margin-top: 3px;`)}>
-                      Rien à conserver ici : gardez simplement ce lien de côté.
-                    </div>
-                  </div>
                 </div>
               </div>
               <div style={css(`display: flex; flex-wrap: wrap; gap: 10px;`)}>
