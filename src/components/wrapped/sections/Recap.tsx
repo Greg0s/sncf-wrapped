@@ -14,8 +14,13 @@ const FORMATS = [
 // A horizontal drag shorter than this is a tap or a scroll attempt, not a format swipe.
 const SWIPE_THRESHOLD_PX = 40
 
-// Tallest format ('story'), used to keep the preview slot's height constant across format switches.
+// Tallest and widest formats ('story' and 'square'/'wide'), used to keep the preview slot's size
+// constant across format switches: the slide track below relies on a fixed slot per format.
 const MAX_FORMAT_H = Math.max(...FORMATS.map((f) => f.h))
+const MAX_FORMAT_W = Math.max(...FORMATS.map((f) => f.w))
+
+// Duration of the slide transition between formats, in ms.
+const FORMAT_SLIDE_MS = 420
 
 // Readable filename from the displayed period ("Édition 2024" -> "edition-2024").
 function slugify(text: string): string {
@@ -72,10 +77,8 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
     changeFormat(dx < 0 ? 1 : -1)
   }
 
-  const [isSquare, isWide, isStory] = [fmt.key === 'square', fmt.key === 'wide', fmt.key === 'story']
-  const [cardW, cardH] = [fmt.w, fmt.h]
-  const [boxW, boxH] = [Math.round(fmt.w * Number(fit)), Math.round(fmt.h * Number(fit))]
   const slotH = Math.round(MAX_FORMAT_H * Number(fit))
+  const stageW = Math.round(MAX_FORMAT_W * Number(fit))
   const dlLabel = downloading ? 'Génération…' : `Télécharger · ${fmt.dims}`
 
   const handleDownload = async () => {
@@ -138,18 +141,41 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
         </div>
       </div>
       <div style={css(`height: ${slotH}px; display: flex; align-items: center; justify-content: center;`)}>
+        {/* Fixed-size viewport (biggest format's dims) so the slide track below lines formats up side by side. */}
         <div
           data-anim="scale"
           data-delay="120"
-          onPointerDown={onCardPointerDown}
-          onPointerUp={onCardPointerUp}
-          onPointerCancel={onCardPointerCancel}
-          style={css(`width: ${boxW}px; height: ${boxH}px; touch-action: pan-y;`)}
+          style={css(`width: ${stageW}px; height: ${slotH}px; overflow: hidden; position: relative;`)}
         >
+          {/* All formats are always mounted, laid out side by side; changing `format` only moves this
+              track's translateX and crossfades each slide's opacity, so the format switch (swipe or
+              dots) animates as a CSS transition. */}
           <div
-            ref={cardRef}
+            onPointerDown={onCardPointerDown}
+            onPointerUp={onCardPointerUp}
+            onPointerCancel={onCardPointerCancel}
             style={css(
-              `width: ${cardW}px; height: ${cardH}px; transform: scale(${fit}); transform-origin: top left; background: #0E1219; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column;`,
+              `display: flex; width: ${stageW * FORMATS.length}px; height: 100%; transform: translateX(-${formatIndex * stageW}px); transition: transform ${FORMAT_SLIDE_MS}ms cubic-bezier(.16,.84,.26,1); touch-action: pan-y;`,
+            )}
+          >
+          {FORMATS.map((f) => {
+            const isSquare = f.key === 'square'
+            const isWide = f.key === 'wide'
+            const isStory = f.key === 'story'
+            const boxW = Math.round(f.w * Number(fit))
+            const boxH = Math.round(f.h * Number(fit))
+            return (
+          <div
+            key={f.key}
+            style={css(
+              `flex: 0 0 ${stageW}px; height: 100%; display: flex; align-items: center; justify-content: center; opacity: ${f.key === fmt.key ? 1 : 0}; transition: opacity ${FORMAT_SLIDE_MS}ms ease;`,
+            )}
+          >
+          <div style={css(`width: ${boxW}px; height: ${boxH}px;`)}>
+          <div
+            ref={f.key === fmt.key ? cardRef : undefined}
+            style={css(
+              `width: ${f.w}px; height: ${f.h}px; transform: scale(${fit}); transform-origin: top left; background: #0E1219; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column;`,
             )}
           >
           {isSquare && (
@@ -545,6 +571,11 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
               </div>
             </>
           )}
+          </div>
+          </div>
+          </div>
+            )
+          })}
           </div>
         </div>
       </div>
