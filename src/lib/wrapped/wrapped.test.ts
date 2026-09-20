@@ -307,6 +307,23 @@ describe('carte des trajets', () => {
     expect(Math.max(...end.arcs.map((a) => Number(a.w)))).toBeCloseTo(4.6, 5)
   })
 
+  it('deux lignes apparaissant le même mois se tracent à la même vitesse, pas en la même durée', () => {
+    // Lyon (short hop) and Paris (long haul) both appear for the first time in January: the short
+    // line must finish drawing well before the long one, instead of both stretching across the month.
+    const { view: v } = viewOf([
+      { departure: '2026-01-05T08:00:00.000Z', origin: SEC, destination: 'LYON PART DIEU', amount: '10' },
+      { departure: '2026-01-20T08:00:00.000Z', origin: SEC, destination: 'PARIS GARE DE LYON', amount: '50' },
+    ])
+    const m = v.map!
+    const lyon = m.routes.findIndex((r) => r.name.includes('Lyon'))
+    const paris = m.routes.findIndex((r) => r.name.includes('Paris'))
+    expect(m.routes[paris].length).toBeGreaterThan(m.routes[lyon].length)
+    const mid = evaluateMap(m, 0.5)
+    expect(mid.arcs[lyon].off).toBe(0) // shorter line: already fully drawn at the same speed
+    expect(mid.arcs[paris].off).toBeGreaterThan(0)
+    expect(mid.arcs[paris].off).toBeLessThan(100)
+  })
+
   it('les libellés ne se chevauchent pas (ou sont masqués)', () => {
     const shown = model.cities.filter((c) => !c.label.hidden)
     expect(shown.length).toBeGreaterThanOrEqual(3)
