@@ -28,6 +28,7 @@ export function Routes({ routes, heading, index, label }: { routes: RouteRow[]; 
           <Fragment key={i}>
             <div
               data-anim="up"
+              data-delay={140 + i * 60}
               style={css(
                 `background: #1B2130; border-radius: 20px; padding: clamp(7px, 1.2vh, 14px) clamp(14px, 2.6vw, 22px); display: flex; flex-wrap: wrap; gap: 8px clamp(12px, 2.6vw, 24px); align-items: center;`,
               )}
