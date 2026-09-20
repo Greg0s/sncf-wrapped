@@ -23,7 +23,18 @@ export function Kilometers({ d, star, index, label }: { d: DisplayData; star: Wr
       >
         <div style={css(`position: absolute; left: 0; right: 0; top: 14px; height: 34px; pointer-events: none; opacity: .7;`)}>
           <div
-            style={css(`position: absolute; top: 0; left: 0; display: flex; align-items: flex-end; gap: 3px; animation: glide 9s linear infinite;`)}
+            style={css(
+              `position: absolute; top: 0; left: 0; display: flex; align-items: flex-end; gap: 3px; animation: glide 9s linear infinite, glideFade 9s linear infinite;`,
+            )}
+          >
+            <div style={css(`width: 48px; height: 20px; background: #0E1219; border-radius: 4px 12px 2px 2px;`)} />
+            <div style={css(`width: 32px; height: 16px; background: rgba(14,18,25,.7); border-radius: 3px;`)} />
+            <div style={css(`width: 32px; height: 16px; background: rgba(14,18,25,.45); border-radius: 3px;`)} />
+          </div>
+          <div
+            style={css(
+              `position: absolute; top: 0; left: 0; display: flex; align-items: flex-end; gap: 3px; animation: glide 9s linear infinite -4.5s, glideFade 9s linear infinite -4.5s;`,
+            )}
           >
             <div style={css(`width: 48px; height: 20px; background: #0E1219; border-radius: 4px 12px 2px 2px;`)} />
             <div style={css(`width: 32px; height: 16px; background: rgba(14,18,25,.7); border-radius: 3px;`)} />
