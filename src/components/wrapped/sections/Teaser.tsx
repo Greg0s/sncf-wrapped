@@ -37,7 +37,7 @@ export function Teaser({ d, index }: { d: DisplayData; index: number }) {
           `font-size: clamp(84px, 26vw, 250px); font-weight: 800; letter-spacing: -.07em; line-height: .82; color: #8DE8FD; color: var(--ac);`,
         )}
       >
-        <Roll final={d.big} />
+        <Roll final={d.years[0] ?? d.big} cycle={d.years} />
       </div>
       <p
         data-anim="up"

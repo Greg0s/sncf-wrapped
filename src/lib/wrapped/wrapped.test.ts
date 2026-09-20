@@ -127,7 +127,7 @@ describe('buildWrappedView — scénario complet', () => {
   })
 
   it('remplit le teaser et la carte à partager avec la période', () => {
-    expect(view.d).toMatchObject({ period: 'Édition 2026', big: '2026', bigA: '2026', bigB: '2026' })
+    expect(view.d).toMatchObject({ period: 'Édition 2026', big: '2026', bigA: '2026', bigB: '2026', years: ['2026'] })
   })
 
   it('rédige les notes des écrans Kilomètres et Budget à partir des chiffres', () => {
@@ -172,6 +172,16 @@ describe('buildWrappedView — scénario complet', () => {
     expect(view.cardCities).toHaveLength(3)
     expect(view.cardCities[0]).toEqual({ n: 'N°1', name: 'Annecy' })
     expect(view.cardRoutes.map((r) => r.name)).toEqual(['St-Étienne ↔ Paris', 'St-Étienne ↔ Annecy', 'St-Étienne ↔ Roanne'])
+  })
+})
+
+describe('buildWrappedView — plusieurs années', () => {
+  it('liste les années couvertes pour le teaser (période « toutes années »)', () => {
+    const parsed = parseSncfCsv(buildSncfCsv([...scenario, { departure: '2025-12-20T10:00:00.000Z', orderDate: '2025-12-19', origin: SEC, destination: 'ROANNE', amount: '9,2' }]))
+    if (!parsed.ok) throw new Error(parsed.error.message)
+    const ds = buildTripDataset(parsed.data.trips, index, '2026-06-30')
+    const view = buildWrappedView(computeWrappedStats(ds, { kind: 'all' }))
+    expect(view.d).toMatchObject({ big: '2 ans', bigA: '2025', bigB: '2026', years: ['2025', '2026'] })
   })
 })
 

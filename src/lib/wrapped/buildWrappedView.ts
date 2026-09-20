@@ -29,6 +29,8 @@ export interface DisplayData {
   big: string
   bigA: string
   bigB: string
+  /** Years covered, in order; more than one only for the "all years" period (teaser: cycles through them). */
+  years: string[]
   km: string
   kmNote: string
   trips: string
@@ -124,6 +126,7 @@ export function buildWrappedView(s: WrappedStats): WrappedView {
     big: s.display.big,
     bigA: s.display.bigStart,
     bigB: s.display.bigEnd,
+    years: s.years.map(String),
     km: fmtNum(distance.estimatedKm),
     kmNote: kmNote(distance.earthLaps, s.tripCount),
     trips: fmtNum(s.tripCount),

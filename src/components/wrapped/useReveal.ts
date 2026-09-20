@@ -7,6 +7,8 @@ import { REVEAL_SPEED as SP } from './animation'
  *   data-lanim / data-anim = "up" | "scale"  reveal (offset by data-delay, in ms)
  *   data-roll + data-final                   number whose digits scroll
  *   data-roll-suspense = "true"              on data-roll, use the right-to-left growing variant
+ *   data-roll-cycle = "2023,2025,2026"       on data-roll, loop through these values instead of settling
+ *                                             once (teaser: years covered), each with its own scroll-in
  *   data-bar = percentage                    bar that fills up
  *   data-draw = rank                         line that draws itself
  *   data-sec / data-seg                      screen / segment of the progress bar
@@ -50,13 +52,11 @@ export function useLandingReveal(root: RefObject<HTMLElement | null>) {
 
 const rolling = new WeakMap<HTMLElement, number>()
 
-/** The digits scroll at random then settle from left to right on the final value. */
-function roll(el: HTMLElement) {
+/** Scrambles `el`'s digits at random then settles them, left to right, on `final` over `duration` ms. */
+function scrambleTo(el: HTMLElement, final: string, duration: number, onDone?: () => void) {
   cancelAnimationFrame(rolling.get(el) ?? 0)
-  const final = el.dataset.final || el.textContent || ''
   const chars = final.split('')
   const digits = chars.map((c, i) => (/\d/.test(c) ? i : -1)).filter((i) => i >= 0)
-  const duration = 900 / SP
   const t0 = performance.now()
   const step = (now: number) => {
     const p = Math.min(1, (now - t0) / duration)
@@ -67,9 +67,17 @@ function roll(el: HTMLElement) {
     })
     el.textContent = out.join('')
     if (p < 1 && el.isConnected) rolling.set(el, requestAnimationFrame(step))
-    else el.textContent = final
+    else {
+      el.textContent = final
+      onDone?.()
+    }
   }
   rolling.set(el, requestAnimationFrame(step))
+}
+
+/** The digits scroll at random then settle from left to right on the final value. */
+function roll(el: HTMLElement) {
+  scrambleTo(el, el.dataset.final || el.textContent || '', 900 / SP)
 }
 
 const SUSPENSE_DURATION = 1300 / SP
@@ -119,6 +127,44 @@ function rollSuspense(el: HTMLElement) {
   rolling.set(el, requestAnimationFrame(step))
 }
 
+// Per year: a quick scramble-and-settle, then a hold long enough to read it, before moving to the next.
+const CYCLE_STEP_MS = 900 / SP // ~1.5s per year at the default reveal speed
+const CYCLE_ROLL_MS = CYCLE_STEP_MS / 3
+const cycleTimers = new WeakMap<HTMLElement, number>()
+const cycleGen = new WeakMap<HTMLElement, number>()
+
+/** Stops a running `rollCycle` on `el`, if any (used both to switch year and on screen exit). */
+function stopCycle(el: HTMLElement) {
+  cycleGen.set(el, (cycleGen.get(el) ?? 0) + 1)
+  cancelAnimationFrame(rolling.get(el) ?? 0)
+  clearTimeout(cycleTimers.get(el))
+}
+
+/** Loops through `data-roll-cycle`'s values (teaser: the years covered), each with its own scramble-in. */
+function rollCycle(el: HTMLElement) {
+  const years = (el.dataset.rollCycle || '').split(',').filter(Boolean)
+  if (years.length < 2) return roll(el)
+  stopCycle(el)
+  const gen = (cycleGen.get(el) ?? 0) + 1
+  cycleGen.set(el, gen)
+  let index = 0
+  const step = () => {
+    if (cycleGen.get(el) !== gen || !el.isConnected) return
+    el.dataset.final = years[index]
+    scrambleTo(el, years[index], CYCLE_ROLL_MS, () => {
+      if (cycleGen.get(el) !== gen || !el.isConnected) return
+      cycleTimers.set(
+        el,
+        window.setTimeout(() => {
+          index = (index + 1) % years.length
+          step()
+        }, CYCLE_STEP_MS - CYCLE_ROLL_MS),
+      )
+    })
+  }
+  step()
+}
+
 const SEGMENT_OFF = 'rgba(241,244,247,.22)'
 
 /**
@@ -150,9 +196,11 @@ export function useWrappedScroll(root: RefObject<HTMLElement | null>, onMap: (ev
         bar.style.width = on ? `${bar.dataset.bar}%` : '0%'
       })
       section.querySelectorAll<HTMLElement>('[data-roll]').forEach((node) => {
-        if (on) (node.dataset.rollSuspense === 'true' ? rollSuspense : roll)(node)
-        else {
-          cancelAnimationFrame(rolling.get(node) ?? 0)
+        if (on) {
+          if (node.dataset.rollCycle) rollCycle(node)
+          else (node.dataset.rollSuspense === 'true' ? rollSuspense : roll)(node)
+        } else {
+          stopCycle(node)
           node.textContent = (node.dataset.final || '').replace(/\d/g, '0')
         }
       })

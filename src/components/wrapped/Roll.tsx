@@ -6,13 +6,32 @@ import { useLayoutEffect, useRef, type CSSProperties } from 'react'
  * React children, only the final value in `data-final`, and an initial zeroed-out state before the reveal.
  * `suspense` switches to the variant where digits settle right-to-left and the number grows to its
  * final width during the animation, instead of the width being fixed from the first frame.
+ * `cycle`, with more than one value, loops through them (teaser: the years covered) instead of settling
+ * once — see `rollCycle` in useReveal.ts.
  */
-export function Roll({ final, style, suspense }: { final: string; style?: CSSProperties; suspense?: boolean }) {
+export function Roll({
+  final,
+  style,
+  suspense,
+  cycle,
+}: {
+  final: string
+  style?: CSSProperties
+  suspense?: boolean
+  cycle?: string[]
+}) {
   const ref = useRef<HTMLSpanElement>(null)
   useLayoutEffect(() => {
     if (ref.current) ref.current.textContent = final.replace(/\d/g, '0')
   }, [final])
   return (
-    <span ref={ref} data-roll="true" data-roll-suspense={suspense ? 'true' : undefined} data-final={final} style={style} />
+    <span
+      ref={ref}
+      data-roll="true"
+      data-roll-suspense={suspense ? 'true' : undefined}
+      data-roll-cycle={cycle && cycle.length > 1 ? cycle.join(',') : undefined}
+      data-final={final}
+      style={style}
+    />
   )
 }
