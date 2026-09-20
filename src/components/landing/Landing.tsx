@@ -88,16 +88,6 @@ export function Landing({
               >
                 Voir mon récap
               </button>
-              <button
-                type="button"
-                onClick={openData}
-                style={css(
-                  `font-family: 'Schibsted Grotesk', sans-serif; font-size: 17px; font-weight: 600; color: #F1F4F7; background: transparent; border: 1.5px solid rgba(241,244,247,.35); border-radius: 999px; padding: 16px 28px; cursor: pointer; transition: border-color .2s ease, background .2s ease;`,
-                )}
-                className="hv-outline"
-              >
-                Comment récupérer mes données ?
-              </button>
             </div>
           </div>
         </section>
