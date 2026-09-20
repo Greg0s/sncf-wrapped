@@ -205,7 +205,11 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
               `flex: 0 0 ${stageW}px; height: 100%; display: flex; align-items: center; justify-content: center; opacity: ${f.key === fmt.key ? 1 : 0}; transition: ${isDesktop ? 'none' : `opacity ${FORMAT_SLIDE_MS}ms ease`};`,
             )}
           >
-          <div style={css(`width: ${boxW}px; height: ${boxH}px;`)}>
+          <div
+            style={css(
+              `width: ${boxW}px; height: ${boxH}px; border-radius: ${Math.round(24 * Number(fit))}px; box-shadow: 0 ${Math.round(28 * Number(fit))}px ${Math.round(64 * Number(fit))}px rgba(0,0,0,.55), 0 ${Math.round(6 * Number(fit))}px ${Math.round(16 * Number(fit))}px rgba(0,0,0,.4);`,
+            )}
+          >
           <div
             ref={f.key === fmt.key ? cardRef : undefined}
             style={css(
