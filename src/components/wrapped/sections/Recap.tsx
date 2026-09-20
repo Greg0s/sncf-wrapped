@@ -92,6 +92,14 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
   const stageW = Math.round(MAX_FORMAT_W * Number(fit))
   const dlLabel = downloading ? 'Génération…' : `Télécharger · ${fmt.dims}`
 
+  // Active card's on-screen box, used to size the drop shadow below: it's drawn as a sibling of the
+  // carousel's clipped stage (not inside it), so the shadow bleeds evenly on every side instead of
+  // being cut by the overflow:hidden window that hides the other formats' slides.
+  const cardBoxW = Math.round(fmt.w * Number(fit))
+  const cardBoxH = Math.round(fmt.h * Number(fit))
+  const cardRadius = Math.round(24 * Number(fit))
+  const cardShadow = `0 ${Math.round(28 * Number(fit))}px ${Math.round(64 * Number(fit))}px rgba(0,0,0,.55), 0 ${Math.round(6 * Number(fit))}px ${Math.round(16 * Number(fit))}px rgba(0,0,0,.4)`
+
   const handleDownload = async () => {
     const node = cardRef.current
     if (!node || downloading) return
@@ -174,7 +182,15 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
           </div>
         </div>
       )}
-      <div style={css(`height: ${slotH}px; display: flex; align-items: center; justify-content: center;`)}>
+      <div style={css(`height: ${slotH}px; display: flex; align-items: center; justify-content: center; position: relative;`)}>
+        {/* Drop shadow for the active card, centered on this box. Kept outside the clipped stage below
+            so the carousel's overflow:hidden (which hides the other formats' slides) never cuts it. */}
+        <div
+          aria-hidden="true"
+          style={css(
+            `position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: ${cardBoxW}px; height: ${cardBoxH}px; border-radius: ${cardRadius}px; box-shadow: ${cardShadow}; transition: ${isDesktop ? 'none' : `width ${FORMAT_SLIDE_MS}ms cubic-bezier(.16,.84,.26,1), height ${FORMAT_SLIDE_MS}ms cubic-bezier(.16,.84,.26,1)`};`,
+          )}
+        />
         {/* Fixed-size viewport (biggest format's dims) so the slide track below lines formats up side by side. */}
         <div
           data-anim="scale"
@@ -205,11 +221,7 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
               `flex: 0 0 ${stageW}px; height: 100%; display: flex; align-items: center; justify-content: center; opacity: ${f.key === fmt.key ? 1 : 0}; transition: ${isDesktop ? 'none' : `opacity ${FORMAT_SLIDE_MS}ms ease`};`,
             )}
           >
-          <div
-            style={css(
-              `width: ${boxW}px; height: ${boxH}px; border-radius: ${Math.round(24 * Number(fit))}px; box-shadow: 0 ${Math.round(28 * Number(fit))}px ${Math.round(64 * Number(fit))}px rgba(0,0,0,.55), 0 ${Math.round(6 * Number(fit))}px ${Math.round(16 * Number(fit))}px rgba(0,0,0,.4);`,
-            )}
-          >
+          <div style={css(`width: ${boxW}px; height: ${boxH}px;`)}>
           <div
             ref={f.key === fmt.key ? cardRef : undefined}
             style={css(
