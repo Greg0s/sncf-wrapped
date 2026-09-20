@@ -170,7 +170,7 @@ describe('buildWrappedView — scénario complet', () => {
 
   it('prépare la carte à partager : 3 lignes au plus, itinéraires en noms de villes', () => {
     expect(view.cardCities).toHaveLength(3)
-    expect(view.cardCities[0]).toEqual({ n: 'N°1', name: 'Annecy' })
+    expect(view.cardCities[0]).toEqual({ n: '1', name: 'Annecy' })
     expect(view.cardRoutes.map((r) => r.name)).toEqual(['St-Étienne ↔ Paris', 'St-Étienne ↔ Annecy', 'St-Étienne ↔ Roanne'])
   })
 })
