@@ -4,12 +4,12 @@ import { useLandingReveal } from '../wrapped/useReveal'
 
 export function Landing({
   openData,
-  openImport,
+  openChoice,
   openLegal,
   modal,
 }: {
   openData: () => void
-  openImport: () => void
+  openChoice: () => void
   openLegal: () => void
   modal: ReactNode
 }) {
@@ -80,13 +80,13 @@ export function Landing({
             <div style={css(`display: flex; flex-wrap: wrap; gap: 10px; padding-top: 4px;`)}>
               <button
                 type="button"
-                onClick={openImport}
+                onClick={openChoice}
                 style={css(
                   `font-family: 'Schibsted Grotesk', sans-serif; font-size: 17px; font-weight: 700; color: #0E1219; background: #8DE8FD; border: none; border-radius: 999px; padding: 17px 30px; cursor: pointer; transition: transform .18s ease, filter .2s ease; background: var(--ac);`,
                 )}
                 className="hv-cta cta-import"
               >
-                Importer mes données
+                Voir mon récap
               </button>
               <button
                 type="button"
