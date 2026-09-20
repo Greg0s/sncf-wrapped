@@ -1,5 +1,4 @@
 import { css } from '../../../lib/css'
-import { Roll } from '../Roll'
 import type { DisplayData } from '../../../lib/wrapped'
 
 export function Anticipation({ d, index, label }: { d: DisplayData; index: number; label?: string | null }) {
@@ -23,12 +22,13 @@ export function Anticipation({ d, index, label }: { d: DisplayData; index: numbe
       >
         <div style={css(`display: flex; flex-wrap: wrap; gap: clamp(14px, 3vw, 36px); align-items: baseline;`)}>
           <div style={css(`display: flex; align-items: baseline; gap: 10px; flex: 0 1 auto;`)}>
-            <Roll
-              final={d.adv}
+            <span
               style={css(
                 `font-size: clamp(54px, 13vw, 128px); font-weight: 800; letter-spacing: -.055em; line-height: .86; color: #8DE8FD; color: var(--ac);`,
               )}
-            />
+            >
+              {d.adv}
+            </span>
             <span style={css(`font-size: clamp(20px, 3.2vw, 32px); font-weight: 700; letter-spacing: -.03em;`)}>{d.advUnit}</span>
           </div>
           <p style={css(`margin: 0; flex: 1 1 220px; min-width: 0; font-size: clamp(15px, 1.9vw, 20px); line-height: 1.35; color: #DCE1EA;`)}>
