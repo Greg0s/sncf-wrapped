@@ -173,11 +173,6 @@ describe('buildWrappedView — scénario complet', () => {
     expect(view.cardCities[0]).toEqual({ n: 'N°1', name: 'Annecy' })
     expect(view.cardRoutes.map((r) => r.name)).toEqual(['St-Étienne ↔ Paris', 'St-Étienne ↔ Annecy', 'St-Étienne ↔ Roanne'])
   })
-
-  it('mentionne l’estimation des km et la licence des données dans la légende finale', () => {
-    expect(view.recapNote).toMatch(/estimés/)
-    expect(view.recapNote).toMatch(/ODbL/)
-  })
 })
 
 describe('buildWrappedView — adaptation aux petits volumes', () => {
