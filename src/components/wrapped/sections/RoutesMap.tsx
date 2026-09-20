@@ -16,9 +16,12 @@ export function RoutesMap({ index, label, model, mapRef }: { index: number; labe
   const raf = useRef(0)
   const months = model.months.length
 
+  // No `setP(0)` here: resetting would mutate this screen's DOM while it's still leaving the
+  // viewport (mid tap-navigation scroll), which fights the scroller's mandatory scroll-snap on
+  // WebKit and bounces the page back to this section. `play()` already resets `p` on its own
+  // next start, so leaving the map mid-animation and coming back still replays from the top.
   const stop = () => {
     cancelAnimationFrame(raf.current)
-    setP(0)
   }
   const play = () => {
     cancelAnimationFrame(raf.current)
