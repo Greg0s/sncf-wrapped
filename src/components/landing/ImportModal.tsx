@@ -26,9 +26,19 @@ interface ImportModalProps {
   onClose: () => void
   onReset: () => void
   onGo: () => void
+  /** No file yet: user picks the "how do I get my data" path instead. */
+  onNoData: () => void
 }
 
-export function ImportModal({ state, periods, onFile: pick, onClose: closeImport, onReset: reset, onGo: go }: ImportModalProps) {
+export function ImportModal({
+  state,
+  periods,
+  onFile: pick,
+  onClose: closeImport,
+  onReset: reset,
+  onGo: go,
+  onNoData: noData,
+}: ImportModalProps) {
   const inputId = useId()
   const input = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
@@ -86,6 +96,7 @@ export function ImportModal({ state, periods, onFile: pick, onClose: closeImport
         <div style={css(`display: flex; flex-direction: column; gap: 11px;`)}>
           {notLoaded && (
             <>
+              <span style={css(`font-size: 15px; font-weight: 700; letter-spacing: -.02em;`)}>J'ai déjà mes données</span>
               <div
                 onDragOver={onDragOver}
                 onDragLeave={onDragLeave}
@@ -127,6 +138,18 @@ export function ImportModal({ state, periods, onFile: pick, onClose: closeImport
                   ? `Lecture de ${state.fileName}…`
                   : "Le fichier est lu dans votre navigateur. Il n'est ni envoyé, ni stocké."}
               </p>
+              <div style={css(`height: 1px; background: rgba(241,244,247,.12); margin: 3px 0;`)} />
+              <button
+                type="button"
+                onClick={noData}
+                style={css(
+                  `text-align: left; font-family: 'Schibsted Grotesk', sans-serif; cursor: pointer; display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 18px; border: 1.5px solid rgba(241,244,247,.2); background: #151A25; color: #F1F4F7; transition: border-color .2s ease, background .2s ease;`,
+                )}
+                className="hv-outline"
+              >
+                <span style={css(`font-size: 15px; font-weight: 700; letter-spacing: -.02em;`)}>Je n'ai rien</span>
+                <span style={css(`font-size: 13px; font-weight: 500; color: #AEB7C6;`)}>Voir comment récupérer mon historique</span>
+              </button>
             </>
           )}
           {loaded && (
