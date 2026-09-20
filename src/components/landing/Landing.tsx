@@ -4,12 +4,12 @@ import { useLandingReveal } from '../wrapped/useReveal'
 
 export function Landing({
   openData,
-  openChoice,
+  openImport,
   openLegal,
   modal,
 }: {
   openData: () => void
-  openChoice: () => void
+  openImport: () => void
   openLegal: () => void
   modal: ReactNode
 }) {
@@ -80,7 +80,7 @@ export function Landing({
             <div style={css(`display: flex; flex-wrap: wrap; gap: 10px; padding-top: 4px;`)}>
               <button
                 type="button"
-                onClick={openChoice}
+                onClick={openImport}
                 style={css(
                   `font-family: 'Schibsted Grotesk', sans-serif; font-size: 17px; font-weight: 700; color: #0E1219; background: #8DE8FD; border: none; border-radius: 999px; padding: 17px 30px; cursor: pointer; transition: transform .18s ease, filter .2s ease; background: var(--ac);`,
                 )}

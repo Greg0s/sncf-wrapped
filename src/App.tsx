@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { DataRequestPage } from './components/data/DataRequestPage'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { DebugPanel } from './components/debug/DebugPanel'
-import { ChoiceModal } from './components/landing/ChoiceModal'
 import { ImportModal, type ImportPeriod, type ImportStatus } from './components/landing/ImportModal'
 import { Landing } from './components/landing/Landing'
 import { LegalPage } from './components/legal/LegalPage'
@@ -33,7 +32,6 @@ export default function App() {
 
 function Journey() {
   const [view, setView] = useState<View>('landing')
-  const [choice, setChoice] = useState(false)
   const [modal, setModal] = useState(false)
   const [status, setStatus] = useState<ImportStatus>({ status: 'idle' })
   const [imported, setImported] = useState<Imported | null>(null)
@@ -97,7 +95,6 @@ function Journey() {
 
   const openData = () => {
     setView('data')
-    setChoice(false)
     setModal(false)
   }
   const openLegal = () => {
@@ -112,35 +109,25 @@ function Journey() {
         <Landing
           openData={openData}
           openLegal={openLegal}
-          openChoice={() => setChoice(true)}
+          openImport={() => setModal(true)}
           modal={
-            choice ? (
-              <ChoiceModal
-                onHasData={() => {
-                  setChoice(false)
-                  setModal(true)
+            modal && (
+              <ImportModal
+                state={status}
+                periods={periods}
+                onFile={(file) => void handleFile(file)}
+                onClose={closeModal}
+                onReset={() => {
+                  request.current++
+                  setImported(null)
+                  setStatus({ status: 'idle' })
+                }}
+                onGo={() => {
+                  setView('wrapped')
+                  setModal(false)
                 }}
                 onNoData={openData}
-                onClose={() => setChoice(false)}
               />
-            ) : (
-              modal && (
-                <ImportModal
-                  state={status}
-                  periods={periods}
-                  onFile={(file) => void handleFile(file)}
-                  onClose={closeModal}
-                  onReset={() => {
-                    request.current++
-                    setImported(null)
-                    setStatus({ status: 'idle' })
-                  }}
-                  onGo={() => {
-                    setView('wrapped')
-                    setModal(false)
-                  }}
-                />
-              )
             )
           }
         />
