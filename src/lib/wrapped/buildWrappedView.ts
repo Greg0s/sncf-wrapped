@@ -88,8 +88,6 @@ export interface WrappedView {
   franceMap: FranceMapModel
   cardCities: CardRow[]
   cardRoutes: CardRow[]
-  /** Caption under the shareable card. */
-  recapNote: string
 }
 
 const rank = (i: number) => String(i + 1).padStart(2, '0')
@@ -180,6 +178,5 @@ export function buildWrappedView(s: WrappedStats): WrappedView {
     cardRoutes: routes.items
       .slice(0, CARD_TOP)
       .map((r, i) => ({ n: `N°${i + 1}`, name: `${abbreviateCityName(r.cityA.name)} ↔ ${abbreviateCityName(r.cityB.name)}` })),
-    recapNote: "Km estimés à vol d'oiseau entre les gares (+ 20 %) · Contient des données SNCF Open Data (licence ODbL) et IGN Admin Express (Licence Ouverte / Etalab)",
   }
 }

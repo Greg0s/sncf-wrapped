@@ -14,6 +14,9 @@ const FORMATS = [
 // A horizontal drag shorter than this is a tap or a scroll attempt, not a format swipe.
 const SWIPE_THRESHOLD_PX = 40
 
+// Tallest format ('story'), used to keep the preview slot's height constant across format switches.
+const MAX_FORMAT_H = Math.max(...FORMATS.map((f) => f.h))
+
 // Readable filename from the displayed period ("Édition 2024" -> "edition-2024").
 function slugify(text: string): string {
   const slug = text
@@ -26,7 +29,7 @@ function slugify(text: string): string {
 }
 
 export function Recap({ index, label, view, replay }: { index: number; label?: string | null; view: WrappedView; replay: () => void }) {
-  const { d, franceMap, cardCities, cardRoutes, recapNote } = view
+  const { d, franceMap, cardCities, cardRoutes } = view
   const [format, setFormat] = useState<(typeof FORMATS)[number]['key']>(FORMATS[0].key)
   const [availH, setAvailH] = useState(300)
   const [downloading, setDownloading] = useState(false)
@@ -40,7 +43,9 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
   }, [])
 
   const fmt = FORMATS.find((f) => f.key === format) ?? FORMATS[0]
-  const fit = Math.max(0.42, Math.min(1, availH / fmt.h)).toFixed(3)
+  // Scale is derived from the tallest format (not the selected one) so the preview slot's height
+  // stays constant across format switches: surrounding content never shifts when the card does.
+  const fit = Math.max(0.42, Math.min(1, availH / MAX_FORMAT_H)).toFixed(3)
   const formatIndex = FORMATS.findIndex((f) => f.key === fmt.key)
   const changeFormat = (direction: 1 | -1) => {
     const next = FORMATS[Math.min(FORMATS.length - 1, Math.max(0, formatIndex + direction))]
@@ -70,6 +75,7 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
   const [isSquare, isWide, isStory] = [fmt.key === 'square', fmt.key === 'wide', fmt.key === 'story']
   const [cardW, cardH] = [fmt.w, fmt.h]
   const [boxW, boxH] = [Math.round(fmt.w * Number(fit)), Math.round(fmt.h * Number(fit))]
+  const slotH = Math.round(MAX_FORMAT_H * Number(fit))
   const dlLabel = downloading ? 'Génération…' : `Télécharger · ${fmt.dims}`
 
   const handleDownload = async () => {
@@ -131,20 +137,21 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
           })}
         </div>
       </div>
-      <div
-        data-anim="scale"
-        data-delay="120"
-        onPointerDown={onCardPointerDown}
-        onPointerUp={onCardPointerUp}
-        onPointerCancel={onCardPointerCancel}
-        style={css(`width: ${boxW}px; height: ${boxH}px; touch-action: pan-y;`)}
-      >
+      <div style={css(`height: ${slotH}px; display: flex; align-items: center; justify-content: center;`)}>
         <div
-          ref={cardRef}
-          style={css(
-            `width: ${cardW}px; height: ${cardH}px; transform: scale(${fit}); transform-origin: top left; background: #0E1219; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column;`,
-          )}
+          data-anim="scale"
+          data-delay="120"
+          onPointerDown={onCardPointerDown}
+          onPointerUp={onCardPointerUp}
+          onPointerCancel={onCardPointerCancel}
+          style={css(`width: ${boxW}px; height: ${boxH}px; touch-action: pan-y;`)}
         >
+          <div
+            ref={cardRef}
+            style={css(
+              `width: ${cardW}px; height: ${cardH}px; transform: scale(${fit}); transform-origin: top left; background: #0E1219; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column;`,
+            )}
+          >
           {isSquare && (
             <>
               <div
@@ -538,6 +545,7 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
               </div>
             </>
           )}
+          </div>
         </div>
       </div>
       <div data-anim="up" data-delay="300" style={css(`display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;`)}>
@@ -563,9 +571,6 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
           Revoir depuis le début
         </button>
       </div>
-      <p data-anim="up" data-delay="380" style={css(`margin: 0; font-size: 12px; color: #6C768A; text-align: center;`)}>
-        {recapNote}
-      </p>
     </section>
   )
 }
