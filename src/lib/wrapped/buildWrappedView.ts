@@ -177,9 +177,9 @@ export function buildWrappedView(s: WrappedStats): WrappedView {
     map,
     mapTitle: all ? 'Vos lignes de la période' : "Vos lignes de l'année",
     franceMap: buildFranceMapModel(s),
-    cardCities: destinations.items.slice(0, CARD_TOP).map((v, i) => ({ n: `N°${i + 1}`, name: abbreviateCityName(v.city.name) })),
+    cardCities: destinations.items.slice(0, CARD_TOP).map((v, i) => ({ n: `${i + 1}`, name: abbreviateCityName(v.city.name) })),
     cardRoutes: routes.items
       .slice(0, CARD_TOP)
-      .map((r, i) => ({ n: `N°${i + 1}`, name: `${abbreviateCityName(r.cityA.name)} ↔ ${abbreviateCityName(r.cityB.name)}` })),
+      .map((r, i) => ({ n: `${i + 1}`, name: `${abbreviateCityName(r.cityA.name)} ↔ ${abbreviateCityName(r.cityB.name)}` })),
   }
 }
