@@ -5,10 +5,11 @@ import type { WrappedView } from '../../../lib/wrapped'
 import { FranceMap } from '../FranceMap'
 
 // Formats of the shareable card: preview dimensions (px) and exported image size (exportW/exportH).
+// iconW/iconH size the little format-shape glyph on the desktop format buttons below.
 const FORMATS = [
-  { key: 'story', label: 'Story', dims: '1080 × 1920', w: 320, h: 569, exportW: 1080, exportH: 1920 },
-  { key: 'wide', label: '4:5', dims: '1080 × 1350', w: 400, h: 500, exportW: 1080, exportH: 1350 },
-  { key: 'square', label: 'Carré', dims: '1080 × 1080', w: 400, h: 400, exportW: 1080, exportH: 1080 },
+  { key: 'story', label: 'Story', dims: '1080 × 1920', w: 320, h: 569, iconW: 8, iconH: 14, exportW: 1080, exportH: 1920 },
+  { key: 'wide', label: '4:5', dims: '1080 × 1350', w: 400, h: 500, iconW: 11, iconH: 13.75, exportW: 1080, exportH: 1350 },
+  { key: 'square', label: 'Carré', dims: '1080 × 1080', w: 400, h: 400, iconW: 11, iconH: 11, exportW: 1080, exportH: 1080 },
 ] as const
 
 // A horizontal drag shorter than this is a tap or a scroll attempt, not a format swipe.
@@ -38,6 +39,9 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
   const [format, setFormat] = useState<(typeof FORMATS)[number]['key']>(FORMATS[0].key)
   const [availH, setAvailH] = useState(300)
   const [downloading, setDownloading] = useState(false)
+  // Desktop (mouse + hover) gets 3 distinct format buttons and an instant switch, like before the
+  // slide/swipe carousel was added; that carousel (dots, swipe, slide+crossfade) stays touch-only.
+  const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(hover: hover) and (pointer: fine)').matches)
   const cardRef = useRef<HTMLDivElement>(null)
   const swipeStart = useRef<{ id: number; x: number; y: number } | null>(null)
   useEffect(() => {
@@ -45,6 +49,13 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
     measure()
     window.addEventListener('resize', measure)
     return () => window.removeEventListener('resize', measure)
+  }, [])
+  useEffect(() => {
+    const mq = window.matchMedia('(hover: hover) and (pointer: fine)')
+    const update = () => setIsDesktop(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
   }, [])
 
   const fmt = FORMATS.find((f) => f.key === format) ?? FORMATS[0]
@@ -117,29 +128,52 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
       <div data-anim="up" style={css(`font-size: 14px; font-weight: 600; color: #8A93A6; text-align: center;`)}>
         {label}
       </div>
-      <div data-anim="up" data-delay="60" style={css(`display: flex; flex-direction: column; align-items: center; gap: 10px;`)}>
-        <div style={css(`font-size: 13px; font-weight: 600; color: #AEB7C6;`)}>
-          {fmt.label} · {fmt.dims}
-        </div>
-        <div style={css(`display: flex; align-items: center; gap: 8px;`)}>
+      {isDesktop ? (
+        <div data-anim="up" data-delay="60" style={css(`display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;`)}>
           {FORMATS.map((f) => {
             const on = f.key === fmt.key
+            const fg = on ? '#0E1219' : '#AEB7C6'
             return (
               <button
                 key={f.key}
                 type="button"
                 onClick={() => setFormat(f.key)}
-                aria-label={`Format ${f.label} (${f.dims})`}
-                aria-current={on || undefined}
                 style={css(
-                  `width: ${on ? 22 : 8}px; height: 8px; padding: 0; border: none; border-radius: 999px; background: ${on ? 'var(--ac)' : 'rgba(241,244,247,.28)'}; cursor: pointer; transition: width .22s cubic-bezier(.16,.84,.26,1), background .2s ease, transform .16s ease;`,
+                  `font-family: 'Schibsted Grotesk', sans-serif; font-size: 13px; font-weight: 600; color: ${fg}; background: ${on ? 'var(--ac)' : 'transparent'}; border: 1.5px solid ${on ? 'var(--ac)' : 'rgba(241,244,247,.22)'}; border-radius: 999px; padding: 8px 15px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: transform .16s ease;`,
                 )}
                 className="hv-lift-2"
-              />
+              >
+                <span style={css(`display: inline-block; width: ${f.iconW}px; height: ${f.iconH}px; border: 1.5px solid ${fg}; border-radius: 2px;`)} />
+                {f.label}
+              </button>
             )
           })}
         </div>
-      </div>
+      ) : (
+        <div data-anim="up" data-delay="60" style={css(`display: flex; flex-direction: column; align-items: center; gap: 10px;`)}>
+          <div style={css(`font-size: 13px; font-weight: 600; color: #AEB7C6;`)}>
+            {fmt.label} · {fmt.dims}
+          </div>
+          <div style={css(`display: flex; align-items: center; gap: 8px;`)}>
+            {FORMATS.map((f) => {
+              const on = f.key === fmt.key
+              return (
+                <button
+                  key={f.key}
+                  type="button"
+                  onClick={() => setFormat(f.key)}
+                  aria-label={`Format ${f.label} (${f.dims})`}
+                  aria-current={on || undefined}
+                  style={css(
+                    `width: ${on ? 22 : 8}px; height: 8px; padding: 0; border: none; border-radius: 999px; background: ${on ? 'var(--ac)' : 'rgba(241,244,247,.28)'}; cursor: pointer; transition: width .22s cubic-bezier(.16,.84,.26,1), background .2s ease, transform .16s ease;`,
+                  )}
+                  className="hv-lift-2"
+                />
+              )
+            })}
+          </div>
+        </div>
+      )}
       <div style={css(`height: ${slotH}px; display: flex; align-items: center; justify-content: center;`)}>
         {/* Fixed-size viewport (biggest format's dims) so the slide track below lines formats up side by side. */}
         <div
@@ -155,7 +189,7 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
             onPointerUp={onCardPointerUp}
             onPointerCancel={onCardPointerCancel}
             style={css(
-              `display: flex; width: ${stageW * FORMATS.length}px; height: 100%; transform: translateX(-${formatIndex * stageW}px); transition: transform ${FORMAT_SLIDE_MS}ms cubic-bezier(.16,.84,.26,1); touch-action: pan-y;`,
+              `display: flex; width: ${stageW * FORMATS.length}px; height: 100%; transform: translateX(-${formatIndex * stageW}px); transition: ${isDesktop ? 'none' : `transform ${FORMAT_SLIDE_MS}ms cubic-bezier(.16,.84,.26,1)`}; touch-action: pan-y;`,
             )}
           >
           {FORMATS.map((f) => {
@@ -168,7 +202,7 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
           <div
             key={f.key}
             style={css(
-              `flex: 0 0 ${stageW}px; height: 100%; display: flex; align-items: center; justify-content: center; opacity: ${f.key === fmt.key ? 1 : 0}; transition: opacity ${FORMAT_SLIDE_MS}ms ease;`,
+              `flex: 0 0 ${stageW}px; height: 100%; display: flex; align-items: center; justify-content: center; opacity: ${f.key === fmt.key ? 1 : 0}; transition: ${isDesktop ? 'none' : `opacity ${FORMAT_SLIDE_MS}ms ease`};`,
             )}
           >
           <div style={css(`width: ${boxW}px; height: ${boxH}px;`)}>
