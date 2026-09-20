@@ -90,7 +90,7 @@ export function DataRequestPage({
     <div style={css(`min-height: 100svh; background: #0E1219; padding: 0 clamp(12px, 3.5vw, 40px) clamp(24px, 5vw, 56px);`)}>
       <header
         style={css(
-          `display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 4px; max-width: 900px; margin: 0 auto;`,
+          `display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 4px; max-width: 1180px; margin: 0 auto;`,
         )}
       >
         <button
@@ -114,7 +114,7 @@ export function DataRequestPage({
           </div>
         </div>
       </header>
-      <main style={css(`max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: clamp(12px, 2vw, 20px);`)}>
+      <main style={css(`max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: clamp(12px, 2vw, 20px);`)}>
         <section style={css(`background: #1B2130; border-radius: 28px; padding: clamp(22px, 4.5vw, 44px); position: relative; overflow: hidden;`)}>
           <svg
             viewBox="0 0 320 90"
