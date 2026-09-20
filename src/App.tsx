@@ -75,7 +75,9 @@ function Journey() {
   }
 
   const period = imported?.periods[periodIndex]?.period
-  const accent = period ? accentFor(period, periodIndex) : ACCENTS[0]
+  const periodAccent = period ? accentFor(period, periodIndex) : ACCENTS[0]
+  // The period accent is a wrapped-only flourish: every other screen keeps the default accent.
+  const accent = view === 'wrapped' ? periodAccent : ACCENTS[0]
   const wrappedView = useMemo(() => (imported && period ? buildWrappedView(computeWrappedStats(imported.dataset, period)) : null), [imported, period])
 
   const periods: ImportPeriod[] = (imported?.periods ?? []).map((p, i) => {
