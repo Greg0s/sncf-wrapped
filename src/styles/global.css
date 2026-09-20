@@ -6,6 +6,7 @@ a { color: #8DE8FD; text-decoration: none; border-bottom: 1px solid rgba(141,232
 a:hover { color: #FFFFFF; border-bottom-color: #FFFFFF; }
 
 @keyframes glide { from { transform: translateX(-28%); } to { transform: translateX(126%); } }
+@keyframes glideFade { 0%, 100% { opacity: 0; } 12%, 88% { opacity: 1; } }
 @keyframes ties { from { background-position-x: 0; } to { background-position-x: -40px; } }
 @keyframes bob { 0%,100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(7px); opacity: 1; } }
 @keyframes eyePop { 0%,100% { transform: scale(1) rotate(-4deg); } 50% { transform: scale(1.06) rotate(4deg); } }
@@ -15,7 +16,8 @@ a:hover { color: #FFFFFF; border-bottom-color: #FFFFFF; }
 @keyframes popIn { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
 @keyframes veilIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-@keyframes dashy { to { stroke-dashoffset: -60; } }
+/* -54 = 3 x the "8 10" dash pattern length (18px), so the loop realigns with no jump */
+@keyframes dashy { to { stroke-dashoffset: -54; } }
 
 /*
  * États de survol/focus de la maquette (attributs style-hover / style-focus). Les styles de base sont en ligne,
