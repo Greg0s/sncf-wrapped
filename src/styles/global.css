@@ -6,7 +6,7 @@ a { color: #8DE8FD; text-decoration: none; border-bottom: 1px solid rgba(141,232
 a:hover { color: #FFFFFF; border-bottom-color: #FFFFFF; }
 
 @keyframes glide { from { transform: translateX(-28%); } to { transform: translateX(126%); } }
-@keyframes glideFade { 0%, 100% { opacity: 0; } 12%, 88% { opacity: 1; } }
+@keyframes glideFade { 0%, 100% { opacity: 0; } 4%, 96% { opacity: 1; } }
 @keyframes ties { from { background-position-x: 0; } to { background-position-x: -40px; } }
 @keyframes bob { 0%,100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(7px); opacity: 1; } }
 @keyframes eyePop { 0%,100% { transform: scale(1) rotate(-4deg); } 50% { transform: scale(1.06) rotate(4deg); } }
