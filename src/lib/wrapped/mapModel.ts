@@ -78,6 +78,8 @@ export interface MapRoute {
   /** Path from A (the home city, when it's part of the route) to B. */
   d: string
   totalLegs: number
+  /** On-screen chord length (A to B), used to make every line draw in at the same speed regardless of distance. */
+  length: number
 }
 
 export interface MapCity {
@@ -112,6 +114,13 @@ export interface MapModel {
   doneLabel: string
   /** Wall-clock duration of each month's playback, one entry per `months` (500-4000ms, see `buildMapModel`). */
   monthDurationsMs: number[]
+  /**
+   * Longest line among those newly appearing in each month (one entry per `months`), 0 when no line
+   * appears that month. It sets the reference draw speed: that line draws over the whole month like
+   * before, and shorter lines appearing the same month draw at the same speed (so they finish sooner)
+   * instead of all stretching to fill the month regardless of their length.
+   */
+  monthMaxNewRouteLength: number[]
   /** Every travel leg drawn on the map, oldest first: feeds the "last trips" list. */
   log: MapLeg[]
 }
@@ -272,6 +281,14 @@ export function buildMapModel(stats: WrappedStats): MapModel | null {
     return monthEvents.map((e, j) => ({ pos: idx + (j + 0.5) / monthEvents.length, label: e.label, date: e.date }))
   })
 
+  const lengths = new Map(routes.map(({ route, a, b }) => [route.key, Math.hypot(b.x - a.x, b.y - a.y)]))
+  // The month a route is first drawn: the earliest month where it has any leg.
+  const firstMonthByRoute = new Map<string, number>()
+  months.forEach((m, i) => {
+    for (const key of Object.keys(m.legs)) if (!firstMonthByRoute.has(key)) firstMonthByRoute.set(key, i)
+  })
+  const monthMaxNewRouteLength = months.map((_, i) => Math.max(0, ...[...firstMonthByRoute.entries()].filter(([, mi]) => mi === i).map(([key]) => lengths.get(key) ?? 0)))
+
   return {
     frame,
     regionOutline: regionOutlineFor(frame, routes),
@@ -280,11 +297,13 @@ export function buildMapModel(stats: WrappedStats): MapModel | null {
       name: `${abbreviateCityName(route.cityA.name)} ↔ ${abbreviateCityName(route.cityB.name)}`,
       d: arcPath(a, b, i),
       totalLegs: totals.get(route.key) ?? route.trips,
+      length: lengths.get(route.key) ?? 0,
     })),
     cities: [...cityMap.values()].map((c) => ({ ...c, label: labels.get(c.key) as MapCity['label'] })),
     months,
     totalKm: stats.distance.estimatedKm,
     maxLegs: Math.max(1, ...totals.values()),
+    monthMaxNewRouteLength,
     doneLabel: `${all ? 'Toute la période' : "Toute l'année"}, ${routes.length} ${plural(routes.length, 'ligne', 'lignes')}`,
     monthDurationsMs,
     log,
@@ -328,13 +347,19 @@ export function evaluateMap(model: MapModel, progress: number): MapState {
   const seen = (c: MapCity) => c.isHub || routesOfCity(c).some((key) => cum[key] || partial[key])
   const active = (c: MapCity) => routesOfCity(c).some((key) => partial[key])
 
+  // Lines newly appearing this month draw at the same speed regardless of their length: the longest
+  // one among them uses the whole month's frac (as before), shorter ones finish sooner instead of
+  // stretching to fill the month too.
+  const maxNewLength = done < n ? model.monthMaxNewRouteLength[done] : 0
   return {
     arcs: model.routes.map((r) => {
       const w = cum[r.key] ?? 0
       const drawing = partial[r.key] !== undefined && !w
+      const share = maxNewLength > 0 ? r.length / maxNewLength : 1
+      const drawFrac = share > 0 ? Math.min(1, frac / share) : 1
       return {
         d: r.d,
-        off: w ? 0 : drawing ? Math.round(100 - frac * 100) : 100,
+        off: w ? 0 : drawing ? Math.round(100 - drawFrac * 100) : 100,
         o: w || drawing ? (partial[r.key] ? 1 : 0.5) : 0,
         w: ((1.2 + (w / model.maxLegs) * 3.4) * k).toFixed(2),
       }
