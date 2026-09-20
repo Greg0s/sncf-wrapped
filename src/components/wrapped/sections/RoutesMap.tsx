@@ -78,10 +78,10 @@ export function RoutesMap({ index, label, model, mapRef }: { index: number; labe
               {mapKm} <span style={css(`font-size: .5em; font-weight: 700;`)}>km</span>
             </div>
           </div>
-          <div style={css(`display: flex; flex-direction: column; gap: 7px; opacity: .78;`)}>
+          <div style={css(`display: flex; flex-direction: column; gap: 7px;`)}>
             {recentRows.map((t, i) => (
               <Fragment key={i}>
-                <div style={css(`display: flex; align-items: center; gap: 10px; height: 20px; opacity: ${t ? 1 : 0};`)}>
+                <div style={css(`display: flex; align-items: center; gap: 10px; height: 20px; opacity: ${t ? 1 - i * 0.16 : 0};`)}>
                   <span style={css(`width: 6px; height: 6px; flex: 0 0 auto; border-radius: 999px; background: var(--ac);`)} />
                   <span
                     style={css(
