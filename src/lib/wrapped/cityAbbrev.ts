@@ -1,6 +1,6 @@
 /**
- * Road-sign style abbreviations ("St" for "Saint", as on French directional panels), used only on the
- * shareable card where two city names must fit side by side.
+ * Road-sign style abbreviations ("St" for "Saint", as on French directional panels), used where station
+ * names must stay short: the shareable card (two names side by side) and the trips map (screen 06).
  *
  * Only matches a prefix directly followed by a hyphen ("Saint-Étienne" → "St-Étienne"), never a bare
  * name that happens to equal one of these words ("Saintes" stays "Saintes") or a suffix ("Mont-Saint-Michel"

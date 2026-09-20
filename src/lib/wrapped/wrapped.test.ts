@@ -254,9 +254,9 @@ describe('carte des trajets', () => {
   const model = view.map!
 
   it('dessine les itinéraires réels depuis la ville de base', () => {
-    expect(model.routes.map((r) => r.name)).toEqual(['Saint-Étienne ↔ Paris', 'Saint-Étienne ↔ Annecy', 'Saint-Étienne ↔ Roanne', 'Saint-Étienne ↔ Lyon'])
+    expect(model.routes.map((r) => r.name)).toEqual(['St-Étienne ↔ Paris', 'St-Étienne ↔ Annecy', 'St-Étienne ↔ Roanne', 'St-Étienne ↔ Lyon'])
     expect(model.cities).toHaveLength(5)
-    expect(model.cities.filter((c) => c.isHub).map((c) => c.name)).toEqual(['Saint-Étienne'])
+    expect(model.cities.filter((c) => c.isHub).map((c) => c.name)).toEqual(['St-Étienne'])
     expect(model.months).toHaveLength(12)
     expect(model.doneLabel).toBe("Toute l'année, 4 lignes")
   })
@@ -279,18 +279,18 @@ describe('carte des trajets', () => {
     // only the 2 lines that occurred by mid-February so far (fewer than 5: adapts, doesn't overclaim), most recent
     // first; each is an aller-retour merged into one line since both legs fall in the same month
     expect(mid.recentTrips).toEqual([
-      { label: 'Saint-Étienne ↔ Paris', date: '14 février – 16 février' },
-      { label: 'Saint-Étienne ↔ Roanne', date: '10 janvier – 12 janvier' },
+      { label: 'St-Étienne ↔ Paris', date: '14 février – 16 février' },
+      { label: 'St-Étienne ↔ Roanne', date: '10 janvier – 12 janvier' },
     ])
     const end = evaluateMap(model, 12)
     expect(end.km).toBe(fmtNum(stats.distance.estimatedKm))
     expect(end.phase).toBe("Toute l'année, 4 lignes")
     expect(end.arcs.every((a) => a.off === 0)).toBe(true)
     expect(end.recentTrips).toEqual([
-      { label: 'Saint-Étienne ↔ Annecy', date: '5 avril' }, // same-day round trip: a single date, not a range
-      { label: 'Saint-Étienne → Lyon', date: '1 mars' },
-      { label: 'Saint-Étienne ↔ Paris', date: '14 février – 16 février' },
-      { label: 'Saint-Étienne ↔ Roanne', date: '10 janvier – 12 janvier' },
+      { label: 'St-Étienne ↔ Annecy', date: '5 avril' }, // same-day round trip: a single date, not a range
+      { label: 'St-Étienne → Lyon', date: '1 mars' },
+      { label: 'St-Étienne ↔ Paris', date: '14 février – 16 février' },
+      { label: 'St-Étienne ↔ Roanne', date: '10 janvier – 12 janvier' },
     ])
     expect(end.ticks.every((t) => t === 'done')).toBe(true)
   })

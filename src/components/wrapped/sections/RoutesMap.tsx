@@ -51,6 +51,10 @@ export function RoutesMap({ index, label, model, mapRef }: { index: number; labe
   const hub = model.cities.find((c) => c.isHub)
   const mapTicks = state.ticks.map((t) => ({ color: TICK_COLORS[t] }))
   const { recentTrips: mapRecentTrips, arcs: mapArcs, dots: mapDots, labels: mapLabels, km: mapKm, phase: mapPhase } = state
+  // Fixed number of row slots (the eventual count, once all trips have appeared) so the list filling in
+  // doesn't push the km counter, ticks and button around; slots not yet reached stay reserved but invisible.
+  const recentRowCount = Math.min(5, model.log.length)
+  const recentRows = Array.from({ length: recentRowCount }, (_, i) => mapRecentTrips[i] ?? null)
 
   return (
     <section
@@ -78,12 +82,18 @@ export function RoutesMap({ index, label, model, mapRef }: { index: number; labe
             </div>
           </div>
           <div style={css(`display: flex; flex-direction: column; gap: 7px;`)}>
-            {mapRecentTrips.map((t, i) => (
+            {recentRows.map((t, i) => (
               <Fragment key={i}>
-                <div style={css(`display: flex; align-items: center; gap: 10px;`)}>
+                <div style={css(`display: flex; align-items: center; gap: 10px; height: 20px; opacity: ${t ? 1 - i * 0.16 : 0};`)}>
                   <span style={css(`width: 6px; height: 6px; flex: 0 0 auto; border-radius: 999px; background: var(--ac);`)} />
-                  <span style={css(`flex: 1 1 auto; min-width: 0; font-size: 14px; font-weight: 600; overflow-wrap: anywhere;`)}>{t.label}</span>
-                  <span style={css(`flex: 0 0 auto; font-size: 13px; color: #8A93A6;`)}>{t.date}</span>
+                  <span
+                    style={css(
+                      `flex: 1 1 auto; min-width: 0; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`,
+                    )}
+                  >
+                    {t?.label}
+                  </span>
+                  <span style={css(`flex: 0 0 auto; font-size: 13px; color: #8A93A6;`)}>{t?.date}</span>
                 </div>
               </Fragment>
             ))}

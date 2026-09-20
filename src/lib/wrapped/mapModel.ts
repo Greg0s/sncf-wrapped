@@ -1,4 +1,5 @@
 import { monthOf, type CityRef, type RouteStat, type WrappedStats } from '../parsing'
+import { abbreviateCityName } from './cityAbbrev'
 import { fmtNum, plural } from './format'
 import { dayMonthLabel, monthName } from './phrases'
 import { regionOf, type Region } from './regions'
@@ -211,7 +212,7 @@ export function buildMapModel(stats: WrappedStats): MapModel | null {
     for (const [city, p] of [[route.cityA, a], [route.cityB, b]] as [CityRef, Pt][]) {
       const known = cityMap.get(city.key)
       if (known) known.routeKeys.push(route.key)
-      else cityMap.set(city.key, { key: city.key, name: city.name, x: p.x, y: p.y, isHub: city.key === stats.hub?.key, routeKeys: [route.key] })
+      else cityMap.set(city.key, { key: city.key, name: abbreviateCityName(city.name), x: p.x, y: p.y, isHub: city.key === stats.hub?.key, routeKeys: [route.key] })
     }
   }
   const labels = placeLabels([...cityMap.values()], frame)
@@ -240,12 +241,14 @@ export function buildMapModel(stats: WrappedStats): MapModel | null {
     const next = relevantLegs[i + 1]
     const month = monthOf(leg.date)
     const isRoundTrip = next && next.routeKey === leg.routeKey && next.from === leg.to && next.to === leg.from && monthOf(next.date) === month
+    const from = abbreviateCityName(leg.from)
+    const to = abbreviateCityName(leg.to)
     if (isRoundTrip) {
       const date = leg.date === next.date ? dayMonthLabel(leg.date, all) : `${dayMonthLabel(leg.date, all)} – ${dayMonthLabel(next.date, all)}`
-      events.push({ month, label: `${leg.from} ↔ ${leg.to}`, date })
+      events.push({ month, label: `${from} ↔ ${to}`, date })
       i++
     } else {
-      events.push({ month, label: `${leg.from} → ${leg.to}`, date: dayMonthLabel(leg.date, all) })
+      events.push({ month, label: `${from} → ${to}`, date: dayMonthLabel(leg.date, all) })
     }
   }
   const eventsByMonth = new Map<string, MapEvent[]>()
@@ -272,7 +275,12 @@ export function buildMapModel(stats: WrappedStats): MapModel | null {
   return {
     frame,
     regionOutline: regionOutlineFor(frame, routes),
-    routes: routes.map(({ route, a, b }, i) => ({ key: route.key, name: route.label, d: arcPath(a, b, i), totalLegs: totals.get(route.key) ?? route.trips })),
+    routes: routes.map(({ route, a, b }, i) => ({
+      key: route.key,
+      name: `${abbreviateCityName(route.cityA.name)} ↔ ${abbreviateCityName(route.cityB.name)}`,
+      d: arcPath(a, b, i),
+      totalLegs: totals.get(route.key) ?? route.trips,
+    })),
     cities: [...cityMap.values()].map((c) => ({ ...c, label: labels.get(c.key) as MapCity['label'] })),
     months,
     totalKm: stats.distance.estimatedKm,
