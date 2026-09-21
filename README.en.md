@@ -1,10 +1,10 @@
-# Wrapped SNCF
+# SNCF Wrapped
 
-[![CI](https://github.com/Greg0s/wrapped-sncf/actions/workflows/ci.yml/badge.svg)](https://github.com/Greg0s/wrapped-sncf/actions/workflows/ci.yml)
+[![CI](https://github.com/Greg0s/sncf-wrapped/actions/workflows/ci.yml/badge.svg)](https://github.com/Greg0s/sncf-wrapped/actions/workflows/ci.yml)
 
 *Lire en français : [README.md](README.md)*
 
-🔗 **[greg0s.github.io/wrapped-sncf](https://greg0s.github.io/wrapped-sncf/)**
+🔗 **[greg0s.github.io/sncf-wrapped](https://greg0s.github.io/sncf-wrapped/)**
 
 Your year on the rails, Wrapped-style: import your SNCF Connect personal data export and discover your kilometers, your budget, your cities, your routes and how you book, screen by screen, with a shareable card.
 
@@ -31,7 +31,7 @@ npm ci
 npm run dev
 ```
 
-The site is served at <http://localhost:5173/wrapped-sncf/>. Add `?debug` to the address for the panel that details the calculations.
+The site is served at <http://localhost:5173/sncf-wrapped/>. Add `?debug` to the address for the panel that details the calculations.
 
 | Command | Role |
 | --- | --- |
@@ -52,7 +52,7 @@ React 18, Vite, TypeScript, PapaParse, Vitest. The CSV is read by `src/lib/parsi
 
 ## Tracking and continuous improvement
 
-Outstanding work is tracked as [issues](https://github.com/Greg0s/wrapped-sncf/issues). Those labeled `auto-improve` feed a **self-improvement loop**: Claude Code's `/improve` skill handles one issue at a time, verifies with `npm run check`, and opens a draft PR for review. The principle and guardrails are in [`docs/self-improvement.md`](docs/self-improvement.md).
+Outstanding work is tracked as [issues](https://github.com/Greg0s/sncf-wrapped/issues). Those labeled `auto-improve` feed a **self-improvement loop**: Claude Code's `/improve` skill handles one issue at a time, verifies with `npm run check`, and opens a draft PR for review. The principle and guardrails are in [`docs/self-improvement.md`](docs/self-improvement.md).
 
 ## Data and licences
 
