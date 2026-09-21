@@ -143,7 +143,11 @@ function Journey() {
         />
       )}
       {view === 'legal' && <LegalPage backHome={() => setView('landing')} />}
-      {view === 'wrapped' && wrappedView && <Wrapped view={wrappedView} onBack={() => setView('landing')} />}
+      {view === 'wrapped' && wrappedView && (
+        // Keyed by period: switching period from inside the wrapped remounts the whole scrollytelling
+        // journey (fresh scroll position, reveal animations, map player) instead of patching it in place.
+        <Wrapped key={periodIndex} view={wrappedView} onBack={() => setView('landing')} periods={periods} />
+      )}
     </div>
   )
 }

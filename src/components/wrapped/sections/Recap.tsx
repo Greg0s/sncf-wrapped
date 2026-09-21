@@ -1,8 +1,13 @@
-import { toPng } from 'html-to-image'
+import { toBlob, toPng } from 'html-to-image'
 import { Fragment, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { css } from '../../../lib/css'
 import type { WrappedView } from '../../../lib/wrapped'
 import { FranceMap } from '../FranceMap'
+import type { ImportPeriod } from '../../landing/ImportModal'
+
+// Deployed site, echoed in a shared link/text — never derived from window.location (a preview or
+// local build must still point users at the real site).
+const SITE_URL = 'https://greg0s.github.io/wrapped-sncf/'
 
 // Formats of the shareable card: preview dimensions (px) and exported image size (exportW/exportH).
 // iconW/iconH size the little format-shape glyph on the desktop format buttons below.
@@ -34,11 +39,27 @@ function slugify(text: string): string {
   return slug || 'export'
 }
 
-export function Recap({ index, label, view, replay }: { index: number; label?: string | null; view: WrappedView; replay: () => void }) {
+export function Recap({
+  index,
+  label,
+  view,
+  replay,
+  periods,
+}: {
+  index: number
+  label?: string | null
+  view: WrappedView
+  replay: () => void
+  /** Other periods found in the same import (year / all-years). Empty when there's only one. */
+  periods: ImportPeriod[]
+}) {
   const { d, franceMap, cardCities, cardRoutes } = view
   const [format, setFormat] = useState<(typeof FORMATS)[number]['key']>(FORMATS[0].key)
   const [availH, setAvailH] = useState(300)
   const [downloading, setDownloading] = useState(false)
+  const [sharing, setSharing] = useState(false)
+  const [shareFallback, setShareFallback] = useState<'idle' | 'copied' | 'failed'>('idle')
+  const [periodPickerOpen, setPeriodPickerOpen] = useState(false)
   // Desktop (mouse + hover) gets 3 distinct format buttons and an instant switch, like before the
   // slide/swipe carousel was added; that carousel (dots, swipe, slide+crossfade) stays touch-only.
   const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(hover: hover) and (pointer: fine)').matches)
@@ -57,6 +78,11 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
     mq.addEventListener('change', update)
     return () => mq.removeEventListener('change', update)
   }, [])
+  useEffect(() => {
+    if (shareFallback === 'idle') return
+    const t = window.setTimeout(() => setShareFallback('idle'), 2500)
+    return () => window.clearTimeout(t)
+  }, [shareFallback])
 
   const fmt = FORMATS.find((f) => f.key === format) ?? FORMATS[0]
   // Scale is derived from the tallest format (not the selected one) so the preview slot's height
@@ -90,7 +116,9 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
 
   const slotH = Math.round(MAX_FORMAT_H * Number(fit))
   const stageW = Math.round(MAX_FORMAT_W * Number(fit))
-  const dlLabel = downloading ? 'Génération…' : `Télécharger · ${fmt.dims}`
+  // The format's dims are already shown above the card on mobile (label + dims), so the button stays
+  // short there to leave room for "Partager" next to it; desktop has no such label, so it repeats them.
+  const dlLabel = downloading ? 'Génération…' : isDesktop ? `Télécharger · ${fmt.dims}` : 'Télécharger'
 
   // Active card's on-screen box, used to size the drop shadow below: it's drawn as a sibling of the
   // carousel's clipped stage (not inside it), so the shadow bleeds evenly on every side instead of
@@ -124,6 +152,45 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
       setDownloading(false)
     }
   }
+
+  const shareText = `Mon SNCF Wrapped ${d.period} : ${d.trips} ${d.tripsLabel}, ${d.km} km, ${d.eur} € de billets.`
+
+  // Native share sheet (image + text + link) on phones that support it; falls back to copying the
+  // text and link when the platform can't share files or has no Web Share API at all (most desktops).
+  const handleShare = async () => {
+    const node = cardRef.current
+    if (!node || sharing) return
+    setSharing(true)
+    setShareFallback('idle')
+    try {
+      await document.fonts.ready
+      const blob = await toBlob(node, {
+        canvasWidth: fmt.exportW,
+        canvasHeight: fmt.exportH,
+        pixelRatio: 1,
+        backgroundColor: '#0E1219',
+        style: { transform: 'none' },
+      })
+      const file = blob && new File([blob], `sncf-wrapped-${slugify(d.period)}.png`, { type: 'image/png' })
+      if (file && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ title: 'SNCF Wrapped', text: shareText, url: SITE_URL, files: [file] })
+      } else if (navigator.share) {
+        await navigator.share({ title: 'SNCF Wrapped', text: shareText, url: SITE_URL })
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(`${shareText} ${SITE_URL}`)
+        setShareFallback('copied')
+      }
+    } catch (error) {
+      if ((error as Error)?.name !== 'AbortError') {
+        console.error('Failed to share the card', error)
+        setShareFallback('failed')
+      }
+    } finally {
+      setSharing(false)
+    }
+  }
+
+  const shareLabel = sharing ? 'Préparation…' : shareFallback === 'copied' ? 'Lien copié !' : shareFallback === 'failed' ? 'Échec, réessayez' : 'Partager'
 
   return (
     <section
@@ -643,15 +710,101 @@ export function Recap({ index, label, view, replay }: { index: number; label?: s
         </button>
         <button
           type="button"
+          onClick={() => void handleShare()}
+          disabled={sharing}
+          style={css(
+            `font-family: 'Schibsted Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: #F1F4F7; background: #262E40; border: none; border-radius: 999px; padding: 15px 22px; cursor: pointer; transition: background .2s ease; opacity: ${sharing ? 0.7 : 1};`,
+          )}
+          className="hv-bg-333D54"
+        >
+          {shareLabel}
+        </button>
+        <button
+          type="button"
           onClick={replay}
           style={css(
             `font-family: 'Schibsted Grotesk', sans-serif; font-size: 16px; font-weight: 600; color: #F1F4F7; background: transparent; border: 1.5px solid rgba(241,244,247,.35); border-radius: 999px; padding: 14px 24px; cursor: pointer; transition: border-color .2s ease;`,
           )}
           className="hv-border"
         >
-          Revoir depuis le début
+          {isDesktop ? 'Revoir depuis le début' : 'Revoir'}
         </button>
+        {periods.length > 1 && (
+          <button
+            type="button"
+            onClick={() => setPeriodPickerOpen(true)}
+            style={css(
+              `font-family: 'Schibsted Grotesk', sans-serif; font-size: 16px; font-weight: 600; color: #F1F4F7; background: transparent; border: 1.5px solid rgba(241,244,247,.35); border-radius: 999px; padding: 14px 24px; cursor: pointer; transition: border-color .2s ease;`,
+            )}
+            className="hv-border"
+          >
+            Autres périodes
+          </button>
+        )}
       </div>
+      {periodPickerOpen && (
+        <PeriodOverlay
+          periods={periods}
+          onClose={() => setPeriodPickerOpen(false)}
+          onPick={(p) => {
+            p.pick()
+            setPeriodPickerOpen(false)
+          }}
+        />
+      )}
     </section>
+  )
+}
+
+function PeriodOverlay({ periods, onClose, onPick }: { periods: ImportPeriod[]; onClose: () => void; onPick: (p: ImportPeriod) => void }) {
+  return (
+    <div
+      style={css(
+        `position: fixed; inset: 0; z-index: 40; background: rgba(6,9,14,.76); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: clamp(14px, 4vw, 40px); animation: veilIn .22s ease both;`,
+      )}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={css(
+          `width: 100%; max-width: 420px; max-height: 92svh; overflow-y: auto; background: #1B2130; border-radius: 28px; padding: clamp(16px, 3vw, 24px); animation: popIn .28s cubic-bezier(.16,.84,.26,1) both;`,
+        )}
+      >
+        <div style={css(`display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px;`)}>
+          <span style={css(`font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>Voir une autre période</span>
+          <button
+            type="button"
+            onClick={onClose}
+            style={css(
+              `font-size: 14px; background: #262E40; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; color: #F1F4F7; transition: background .2s ease;`,
+            )}
+            className="hv-bg-333D54"
+          >
+            ✕
+          </button>
+        </div>
+        <div style={css(`display: flex; flex-direction: column; gap: 6px;`)}>
+          {periods.map((p, i) => (
+            <Fragment key={i}>
+              <button
+                type="button"
+                onClick={() => onPick(p)}
+                style={css(
+                  `text-align: left; font-family: 'Schibsted Grotesk', sans-serif; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 16px; border: 1.5px solid ${p.bd}; background: ${p.bg}; color: #F1F4F7; transition: transform .16s ease, border-color .2s ease;`,
+                )}
+                className="hv-lift-2"
+              >
+                <span style={css(`width: 20px; height: 20px; flex: 0 0 auto; border-radius: 50%; background: ${p.ac};`)} />
+                <span style={css(`flex: 1 1 auto; min-width: 0;`)}>
+                  <span style={css(`display: block; font-size: 16px; font-weight: 700; letter-spacing: -.02em;`)}>{p.label}</span>
+                  <span style={css(`display: block; font-size: 12px; color: #8A93A6; margin-top: 2px;`)}>{p.sub}</span>
+                </span>
+                <span style={css(`font-size: 13px; flex: 0 0 auto; color: #8A93A6;`)}>{p.mark}</span>
+              </button>
+            </Fragment>
+          ))}
+        </div>
+      </div>
+    </div>
   )
 }
