@@ -117,10 +117,6 @@ export function Recap({
 
   const slotH = Math.round(MAX_FORMAT_H * Number(fit))
   const stageW = Math.round(MAX_FORMAT_W * Number(fit))
-  // The format's dims are already shown above the card on mobile (label + dims), so the button stays
-  // short there to leave room for "Partager" next to it; desktop has no such label, so it repeats them.
-  const dlLabel = downloading ? 'Génération…' : isDesktop ? `Télécharger · ${fmt.dims}` : 'Télécharger'
-
   // Active card's on-screen box, used to size the drop shadow below: it's drawn as a sibling of the
   // carousel's clipped stage (not inside it), so the shadow bleeds evenly on every side instead of
   // being cut by the overflow:hidden window that hides the other formats' slides.
@@ -191,7 +187,15 @@ export function Recap({
     }
   }
 
-  const shareLabel = sharing ? 'Préparation…' : shareFallback === 'copied' ? 'Lien copié !' : shareFallback === 'failed' ? 'Échec, réessayez' : 'Partager'
+  const statusLabel = downloading
+    ? 'Génération…'
+    : sharing
+      ? 'Préparation…'
+      : shareFallback === 'copied'
+        ? 'Lien copié !'
+        : shareFallback === 'failed'
+          ? 'Échec, réessayez'
+          : null
 
   return (
     <section
@@ -228,7 +232,7 @@ export function Recap({
       ) : (
         <div data-anim="up" data-delay="60" style={css(`display: flex; flex-direction: column; align-items: center; gap: 10px;`)}>
           <div style={css(`font-size: 13px; font-weight: 600; color: #AEB7C6;`)}>
-            {fmt.label} · {fmt.dims}
+            {fmt.label}
           </div>
           <div style={css(`display: flex; align-items: center; gap: 8px;`)}>
             {FORMATS.map((f) => {
@@ -697,51 +701,80 @@ export function Recap({
           </div>
         </div>
       </div>
-      <div data-anim="up" data-delay="300" style={css(`display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;`)}>
-        <button
-          type="button"
-          onClick={handleDownload}
-          disabled={downloading}
-          style={css(
-            `font-family: 'Schibsted Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: #0E1219; background: #8DE8FD; border: none; border-radius: 999px; padding: 15px 26px; cursor: pointer; transition: transform .18s ease, filter .2s ease; background: var(--ac); opacity: ${downloading ? 0.7 : 1};`,
-          )}
-          className="hv-cta"
-        >
-          {dlLabel}
-        </button>
-        <button
-          type="button"
-          onClick={() => void handleShare()}
-          disabled={sharing}
-          style={css(
-            `font-family: 'Schibsted Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: #F1F4F7; background: #262E40; border: none; border-radius: 999px; padding: 15px 22px; cursor: pointer; transition: background .2s ease; opacity: ${sharing ? 0.7 : 1};`,
-          )}
-          className="hv-bg-333D54"
-        >
-          {shareLabel}
-        </button>
-        <button
-          type="button"
-          onClick={replay}
-          style={css(
-            `font-family: 'Schibsted Grotesk', sans-serif; font-size: 16px; font-weight: 600; color: #F1F4F7; background: transparent; border: 1.5px solid rgba(241,244,247,.35); border-radius: 999px; padding: 14px 24px; cursor: pointer; transition: border-color .2s ease;`,
-          )}
-          className="hv-border"
-        >
-          {isDesktop ? 'Revoir depuis le début' : 'Revoir'}
-        </button>
-        {periods.length > 1 && (
+      <div data-anim="up" data-delay="300" style={css(`display: flex; flex-direction: column; align-items: center; gap: 10px;`)}>
+        <div className="act-bar" style={css(`display: flex; flex-wrap: wrap; align-items: center; justify-content: center;`)}>
           <button
             type="button"
-            onClick={() => setPeriodPickerOpen(true)}
+            onClick={handleDownload}
+            disabled={downloading}
+            className="act-cta hv-cta"
             style={css(
-              `font-family: 'Schibsted Grotesk', sans-serif; font-size: 16px; font-weight: 600; color: #F1F4F7; background: transparent; border: 1.5px solid rgba(241,244,247,.35); border-radius: 999px; padding: 14px 24px; cursor: pointer; transition: border-color .2s ease;`,
+              `font-family: 'Schibsted Grotesk', sans-serif; display: inline-flex; align-items: center; font-weight: 700; color: #0E1219; background: #8DE8FD; border: none; border-radius: 999px; cursor: pointer; white-space: nowrap; transition: transform .18s ease, filter .2s ease; background: var(--ac); opacity: ${downloading ? 0.7 : 1};`,
             )}
-            className="hv-border"
           >
-            Autres périodes
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 3v12" />
+              <path d="M7 11l5 5 5-5" />
+              <path d="M4 20h16" />
+            </svg>
+            Télécharger
           </button>
-        )}
+          <button
+            type="button"
+            onClick={() => void handleShare()}
+            disabled={sharing}
+            title="Partager"
+            aria-label="Partager"
+            className="act-icon hv-bg-333D54 hv-lift-2"
+            style={css(
+              `font-family: 'Schibsted Grotesk', sans-serif; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; color: #F1F4F7; background: #262E40; border: none; border-radius: 50%; padding: 0; cursor: pointer; transition: background .2s ease, transform .18s ease; opacity: ${sharing ? 0.7 : 1};`,
+            )}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="18" cy="5" r="2.6" />
+              <circle cx="6" cy="12" r="2.6" />
+              <circle cx="18" cy="19" r="2.6" />
+              <path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={replay}
+            title="Revoir depuis le début"
+            aria-label="Revoir depuis le début"
+            className="act-icon hv-border hv-lift-2"
+            style={css(
+              `font-family: 'Schibsted Grotesk', sans-serif; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; color: #F1F4F7; background: transparent; border: 1.5px solid rgba(241,244,247,.28); border-radius: 50%; padding: 0; cursor: pointer; transition: border-color .2s ease, transform .18s ease;`,
+            )}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1" />
+              <path d="M3.2 4.6v4.6h4.6" />
+            </svg>
+          </button>
+          {periods.length > 1 && (
+            <button
+              type="button"
+              onClick={() => setPeriodPickerOpen(true)}
+              title="Autres périodes"
+              aria-label="Autres périodes"
+              className="act-icon hv-border hv-lift-2"
+              style={css(
+                `font-family: 'Schibsted Grotesk', sans-serif; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; color: #F1F4F7; background: transparent; border: 1.5px solid rgba(241,244,247,.28); border-radius: 50%; padding: 0; cursor: pointer; transition: border-color .2s ease, transform .18s ease;`,
+              )}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3.5" y="5" width="17" height="15.5" rx="3" />
+                <path d="M3.5 10h17M8.5 3v4M15.5 3v4" />
+              </svg>
+            </button>
+          )}
+        </div>
+        {/* The share and download buttons have no text state of their own now: progress and the share
+            fallback result show up here, in place of the export size. */}
+        <span aria-live="polite" style={css(`font-size: 12px; color: #6C768A; text-align: center;`)}>
+          {statusLabel ?? `PNG · ${fmt.dims}`}
+        </span>
       </div>
       {periodPickerOpen && (
         <PeriodOverlay
