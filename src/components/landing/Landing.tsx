@@ -40,7 +40,7 @@ export function Landing({
           )}
           className="hv-bg-262E40"
         >
-          Obtenir les données
+          Obtenir mes données
         </button>
       </header>
       <main style={css(`max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: clamp(12px, 2vw, 20px);`)}>
@@ -74,8 +74,7 @@ export function Landing({
               Les chiffres marquants de vos années sur les rails
             </h1>
             <p style={css(`margin: 0; font-size: clamp(16px, 2vw, 20px); line-height: 1.5; color: #AEB7C6; max-width: 46ch;`)}>
-              Déposez l'export de votre historique de voyage. Kilomètres, budget, villes, itinéraires : tout est calculé sur votre appareil, puis
-              raconté écran par écran.
+              Revivez vos voyages en train des années passées et découvrez votre utilisation comme vous ne l'avez jamais vue.
             </p>
             <div style={css(`display: flex; flex-wrap: wrap; gap: 10px; padding-top: 4px;`)}>
               <button
