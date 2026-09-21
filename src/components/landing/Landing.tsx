@@ -1,5 +1,6 @@
 import { useRef, type ReactNode } from 'react'
 import { css } from '../../lib/css'
+import { Logo } from '../Logo'
 import { useLandingReveal } from '../wrapped/useReveal'
 
 export function Landing({
@@ -23,13 +24,7 @@ export function Landing({
         )}
       >
         <div style={css(`display: flex; align-items: center; gap: 10px;`)}>
-          <div
-            style={css(
-              `width: 26px; height: 26px; border-radius: 50%; background: #8DE8FD; position: relative; overflow: hidden; background: var(--ac);`,
-            )}
-          >
-            <div style={css(`position: absolute; left: 11px; top: 0; bottom: 0; width: 13px; background: #0E1219; border-radius: 13px 0 0 13px;`)} />
-          </div>
+          <Logo size={26} intro />
           <span style={css(`font-weight: 700; font-size: 17px; letter-spacing: -.02em;`)}>SNCF Wrapped</span>
         </div>
         <button

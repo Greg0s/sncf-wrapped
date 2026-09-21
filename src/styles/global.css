@@ -18,6 +18,12 @@ a:hover { color: #FFFFFF; border-bottom-color: #FFFFFF; }
 @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 /* -54 = 3 x the "8 10" dash pattern length (18px), so the loop realigns with no jump */
 @keyframes dashy { to { stroke-dashoffset: -54; } }
+/*
+ * The logo's line drawing itself (components/Logo.tsx). Its path has pathLength=1, so stroke-dashoffset = 1 - drawn share.
+ * The line overshoots the tile on both sides and is clipped there: it is only on screen from ~6% to ~93% of its
+ * length, so the keyframes sweep just that stretch (6% to 94%) instead of spending the duration off-screen.
+ */
+@keyframes logoDraw { from { stroke-dashoffset: .94; } to { stroke-dashoffset: .06; } }
 
 /*
  * États de survol/focus de la maquette (attributs style-hover / style-focus). Les styles de base sont en ligne,

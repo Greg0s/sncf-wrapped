@@ -2,6 +2,7 @@ import { toBlob, toPng } from 'html-to-image'
 import { Fragment, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { css } from '../../../lib/css'
 import type { WrappedView } from '../../../lib/wrapped'
+import { Logo } from '../../Logo'
 import { FranceMap } from '../FranceMap'
 import type { ImportPeriod } from '../../landing/ImportModal'
 
@@ -406,7 +407,7 @@ export function Recap({
                 )}
               >
                 <div style={css(`display: flex; align-items: center; gap: 9px; min-width: 0;`)}>
-                  <span style={css(`flex: 0 0 auto; width: 18px; height: 18px; border-radius: 50%; background: #8DE8FD; background: var(--ac);`)} />
+                  <Logo size={24} />
                   <div style={css(`min-width: 0;`)}>
                     <div style={css(`font-size: 15px; font-weight: 800; letter-spacing: -.025em; line-height: 1.1; white-space: nowrap;`)}>
                       SNCF Wrapped
@@ -539,7 +540,7 @@ export function Recap({
                 )}
               >
                 <div style={css(`display: flex; align-items: center; gap: 9px; min-width: 0;`)}>
-                  <span style={css(`flex: 0 0 auto; width: 18px; height: 18px; border-radius: 50%; background: #8DE8FD; background: var(--ac);`)} />
+                  <Logo size={24} />
                   <div style={css(`min-width: 0;`)}>
                     <div style={css(`font-size: 14px; font-weight: 800; letter-spacing: -.025em; line-height: 1.1; white-space: nowrap;`)}>
                       SNCF Wrapped
@@ -674,7 +675,7 @@ export function Recap({
                 )}
               >
                 <div style={css(`display: flex; align-items: center; gap: 9px; min-width: 0;`)}>
-                  <span style={css(`flex: 0 0 auto; width: 18px; height: 18px; border-radius: 50%; background: #8DE8FD; background: var(--ac);`)} />
+                  <Logo size={24} />
                   <div style={css(`min-width: 0;`)}>
                     <div style={css(`font-size: 14px; font-weight: 800; letter-spacing: -.025em; line-height: 1.1; white-space: nowrap;`)}>
                       SNCF Wrapped
