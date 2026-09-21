@@ -33,16 +33,6 @@ export function LegalPage({ backHome }: { backHome: () => void }) {
         >
           ← Retour
         </button>
-        <div style={css(`display: flex; align-items: center; gap: 10px;`)}>
-          <span style={css(`font-weight: 700; font-size: 15px; letter-spacing: -.02em;`)}>SNCF Wrapped</span>
-          <div
-            style={css(
-              `width: 22px; height: 22px; border-radius: 50%; background: #8DE8FD; position: relative; overflow: hidden; background: var(--ac);`,
-            )}
-          >
-            <div style={css(`position: absolute; left: 9px; top: 0; bottom: 0; width: 11px; background: #0E1219; border-radius: 11px 0 0 11px;`)} />
-          </div>
-        </div>
       </header>
       <main style={css(`max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: clamp(12px, 2vw, 20px);`)}>
         <section style={css(`background: #1B2130; border-radius: 28px; padding: clamp(22px, 4.5vw, 44px);`)}>
