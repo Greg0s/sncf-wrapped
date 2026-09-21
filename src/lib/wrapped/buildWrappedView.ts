@@ -44,6 +44,8 @@ export interface DisplayData {
   avg: string
   /** Most expensive month ("Juillet"), null if there's no spend. */
   month: string | null
+  /** Amount spent during that month ("87 €"), null if there's no spend. */
+  monthAmount: string | null
   /** Cheapest ticket, null if there's no paid ticket. */
   min: string | null
   adv: string
@@ -139,6 +141,7 @@ export function buildWrappedView(s: WrappedStats): WrappedView {
     eurNote: eurNote(s),
     avg: spend.avgPerTripEur !== null ? fmtEur(spend.avgPerTripEur) : '—',
     month: spend.priciestMonth ? monthName(spend.priciestMonth.month, all) : null,
+    monthAmount: spend.priciestMonth ? fmtEur(spend.priciestMonth.totalEur) : null,
     min: cheapest ? fmtEur(cheapest.priceEur) : null,
     adv: a ? String(Math.round(a.averageDays)) : '—',
     advUnit: a ? plural(Math.round(a.averageDays), 'jour', 'jours') : 'jours',
