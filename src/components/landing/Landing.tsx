@@ -71,7 +71,7 @@ export function Landing({
                 `margin: 0; font-size: clamp(38px, 8.4vw, 92px); line-height: .94; letter-spacing: -.045em; font-weight: 800; max-width: 16ch; text-wrap: balance;`,
               )}
             >
-              Votre année sur les rails, en sept écrans.
+              Les chiffres marquants de vos années sur les rails
             </h1>
             <p style={css(`margin: 0; font-size: clamp(16px, 2vw, 20px); line-height: 1.5; color: #AEB7C6; max-width: 46ch;`)}>
               Déposez l'export de votre historique de voyage. Kilomètres, budget, villes, itinéraires : tout est calculé sur votre appareil, puis
