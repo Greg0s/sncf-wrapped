@@ -103,9 +103,6 @@ export function DataRequestPage({
         >
           ← Retour
         </button>
-        <div style={css(`display: flex; align-items: center; gap: 10px;`)}>
-          <span style={css(`font-weight: 700; font-size: 15px; letter-spacing: -.02em;`)}>SNCF Wrapped</span>
-        </div>
       </header>
       <main style={css(`max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: clamp(12px, 2vw, 20px);`)}>
         <section style={css(`background: #1B2130; border-radius: 28px; padding: clamp(22px, 4.5vw, 44px); position: relative; overflow: hidden;`)}>

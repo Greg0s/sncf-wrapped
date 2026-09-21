@@ -1,4 +1,4 @@
-import { useLayoutEffect, type RefObject } from 'react'
+import { useLayoutEffect, type MutableRefObject, type RefObject } from 'react'
 import { REVEAL_SPEED as SP } from './animation'
 
 /*
@@ -166,13 +166,21 @@ function rollCycle(el: HTMLElement) {
 }
 
 const SEGMENT_OFF = 'rgba(241,244,247,.22)'
+// Beat before the map screen's animation starts, so it doesn't fire the instant the screen snaps into view.
+const MAP_PLAY_DELAY_MS = 500
 
 /**
  * Wrapped: screens scroll with scroll-snap; each screen becomes "active" past 40% visibility
  * (reveals, numbers, bars, lines) and resets when it leaves. The map player is driven via
- * `onMap` (play when the map screen becomes active, stop when it leaves).
+ * `onMap` (play when the map screen becomes active, stop when it leaves). `activeIndexRef` is kept
+ * in sync with whichever section is most visible right now: it's the single source of truth for
+ * "where are we", shared with `useStoryTapNavigation` so the two never disagree.
  */
-export function useWrappedScroll(root: RefObject<HTMLElement | null>, onMap: (event: 'play' | 'stop') => void) {
+export function useWrappedScroll(
+  root: RefObject<HTMLElement | null>,
+  onMap: (event: 'play' | 'stop') => void,
+  activeIndexRef: MutableRefObject<number>,
+) {
   useLayoutEffect(() => {
     const el = root.current
     const scroller = el?.querySelector<HTMLElement>('[data-scroller]')
@@ -210,6 +218,14 @@ export function useWrappedScroll(root: RefObject<HTMLElement | null>, onMap: (ev
     sections.forEach((s) => reveal(s, false))
 
     let mapPlaying = false
+    let mapPlayTimer = 0
+    // Latest known visibility ratio per section: kept up to date (both rises and falls) on every
+    // observer callback, so the "active" section is always derived from the current picture rather
+    // than pushed once and left stale by whichever section happened to cross 40% last. A fast,
+    // programmatic scroll (tap navigation, possibly interrupted by another tap) can otherwise report
+    // a section as briefly active on its way past, corrupting the progress bar and the "where are
+    // we" index that tap navigation relies on for its next/previous target.
+    const ratios = new Map<number, number>()
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
@@ -218,26 +234,42 @@ export function useWrappedScroll(root: RefObject<HTMLElement | null>, onMap: (ev
           const on = e.isIntersecting && e.intersectionRatio > 0.4
           reveal(section, on)
           if (section.dataset.secId === 'map') {
-            if (on && !mapPlaying) {
-              mapPlaying = true
-              onMap('play')
-            } else if (!e.isIntersecting && mapPlaying) {
-              mapPlaying = false
-              onMap('stop')
+            if (on && !mapPlaying && !mapPlayTimer) {
+              mapPlayTimer = window.setTimeout(() => {
+                mapPlayTimer = 0
+                mapPlaying = true
+                onMap('play')
+              }, MAP_PLAY_DELAY_MS)
+            } else if (!e.isIntersecting) {
+              clearTimeout(mapPlayTimer)
+              mapPlayTimer = 0
+              if (mapPlaying) {
+                mapPlaying = false
+                onMap('stop')
+              }
             }
           }
-          if (on) {
-            el.querySelectorAll<HTMLElement>('[data-seg]').forEach((seg) => {
-              seg.style.background = Number(seg.dataset.seg) <= i ? 'var(--ac)' : SEGMENT_OFF
-            })
+          ratios.set(i, e.isIntersecting ? e.intersectionRatio : 0)
+        }
+        let active = activeIndexRef.current
+        let bestRatio = 0.4
+        for (const [i, ratio] of ratios) {
+          if (ratio > bestRatio) {
+            bestRatio = ratio
+            active = i
           }
         }
+        activeIndexRef.current = active
+        el.querySelectorAll<HTMLElement>('[data-seg]').forEach((seg) => {
+          seg.style.background = Number(seg.dataset.seg) <= active ? 'var(--ac)' : SEGMENT_OFF
+        })
       },
       { root: scroller, threshold: [0, 0.42, 0.75] },
     )
     sections.forEach((s) => io.observe(s))
     return () => {
       io.disconnect()
+      clearTimeout(mapPlayTimer)
       if (mapPlaying) onMap('stop')
     }
     // Mounted once per wrapped display: the data doesn't change during playback.
@@ -247,6 +279,9 @@ export function useWrappedScroll(root: RefObject<HTMLElement | null>, onMap: (ev
 
 const TAP_TOLERANCE_PX = 10
 const INTERACTIVE_SELECTOR = 'button, a, input, select, textarea, [role="button"], [contenteditable]'
+// Longer than the CSS smooth-scroll to a neighbouring section takes to settle, so scroll-snap comes
+// back on well after the tap's own scroll (see `onPointerUp` below) is done, not mid-animation.
+const SNAP_SUSPEND_MS = 900
 
 /**
  * Instagram-style tap-to-navigate: tapping the right/left half of the screen moves to the
@@ -254,13 +289,22 @@ const INTERACTIVE_SELECTOR = 'button, a, input, select, textarea, [role="button"
  * selection, etc.) and keyboard use are untouched. A tap is only recognized when the pointer moved
  * less than TAP_TOLERANCE_PX between down and up, so a swipe-to-scroll never also navigates. Taps
  * on an interactive element (button, link…) are left alone so their own handler runs normally.
+ *
+ * `activeIndexRef` (shared with `useWrappedScroll`) says which section is currently active; taps
+ * step from there instead of guessing from `scrollTop`, which is unreliable mid-scroll. A tap fired
+ * before the previous one's smooth scroll has settled — very much how someone taps through a story —
+ * would otherwise measure a stale, in-transit position and could recompute a target behind where the
+ * user already is, which reads as the page bouncing back.
  */
-export function useStoryTapNavigation(scrollerRef: RefObject<HTMLDivElement | null>) {
+export function useStoryTapNavigation(scrollerRef: RefObject<HTMLDivElement | null>, activeIndexRef: MutableRefObject<number>) {
   useLayoutEffect(() => {
     const scroller = scrollerRef.current
     if (!scroller) return
 
     let start: { id: number; x: number; y: number } | null = null
+    // The index our own last tap is scrolling toward, until the observer confirms we got there.
+    let pendingIndex: number | null = null
+    let restoreSnapTimer = 0
 
     const onPointerDown = (e: PointerEvent) => {
       if (e.pointerType !== 'touch') return
@@ -280,13 +324,23 @@ export function useStoryTapNavigation(scrollerRef: RefObject<HTMLDivElement | nu
 
       const sections = [...scroller.querySelectorAll<HTMLElement>('[data-sec]')]
       if (sections.length === 0) return
-      const current = sections.reduce((closest, s) =>
-        Math.abs(s.offsetTop - scroller.scrollTop) < Math.abs(closest.offsetTop - scroller.scrollTop) ? s : closest,
-      )
-      const index = sections.indexOf(current)
+      if (pendingIndex !== null && activeIndexRef.current === pendingIndex) pendingIndex = null
+      const index = pendingIndex ?? activeIndexRef.current
       const forward = e.clientX > window.innerWidth / 2
       const nextIndex = Math.min(sections.length - 1, Math.max(0, index + (forward ? 1 : -1)))
-      if (nextIndex !== index) sections[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'start' })
+      if (nextIndex !== index) {
+        pendingIndex = nextIndex
+        // `scroll-snap-type: mandatory` can fight a JS-driven `scrollIntoView` on WebKit: once the
+        // scroll animation ends, the browser re-settles on the section it started from instead of
+        // the one just scrolled to. Suspending snapping for the scroll's duration removes anything
+        // for it to fight; restoring it shortly after puts native swipe-scrolling back to normal.
+        scroller.style.scrollSnapType = 'none'
+        clearTimeout(restoreSnapTimer)
+        restoreSnapTimer = window.setTimeout(() => {
+          scroller.style.scrollSnapType = ''
+        }, SNAP_SUSPEND_MS)
+        sections[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
     }
 
     scroller.addEventListener('pointerdown', onPointerDown)
@@ -296,6 +350,8 @@ export function useStoryTapNavigation(scrollerRef: RefObject<HTMLDivElement | nu
       scroller.removeEventListener('pointerdown', onPointerDown)
       scroller.removeEventListener('pointerup', onPointerUp)
       scroller.removeEventListener('pointercancel', onPointerCancel)
+      clearTimeout(restoreSnapTimer)
+      scroller.style.scrollSnapType = ''
     }
-  }, [scrollerRef])
+  }, [scrollerRef, activeIndexRef])
 }
