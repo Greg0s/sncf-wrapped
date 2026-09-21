@@ -300,6 +300,11 @@ export function useStoryTapNavigation(scrollerRef: RefObject<HTMLDivElement | nu
   useLayoutEffect(() => {
     const scroller = scrollerRef.current
     if (!scroller) return
+    // Captured once, before any tap ever runs: restoring to '' instead of this would clear the inline
+    // property rather than reinstate it (React only reapplies a style prop that itself changed, so it
+    // never re-sets what we overwrote directly on the DOM node), leaving snapping off for good after
+    // the very first tap.
+    const defaultSnapType = scroller.style.scrollSnapType
 
     let start: { id: number; x: number; y: number } | null = null
     // The index our own last tap is scrolling toward, until the observer confirms we got there.
@@ -337,7 +342,7 @@ export function useStoryTapNavigation(scrollerRef: RefObject<HTMLDivElement | nu
         scroller.style.scrollSnapType = 'none'
         clearTimeout(restoreSnapTimer)
         restoreSnapTimer = window.setTimeout(() => {
-          scroller.style.scrollSnapType = ''
+          scroller.style.scrollSnapType = defaultSnapType
         }, SNAP_SUSPEND_MS)
         sections[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
@@ -351,7 +356,7 @@ export function useStoryTapNavigation(scrollerRef: RefObject<HTMLDivElement | nu
       scroller.removeEventListener('pointerup', onPointerUp)
       scroller.removeEventListener('pointercancel', onPointerCancel)
       clearTimeout(restoreSnapTimer)
-      scroller.style.scrollSnapType = ''
+      scroller.style.scrollSnapType = defaultSnapType
     }
   }, [scrollerRef, activeIndexRef])
 }
