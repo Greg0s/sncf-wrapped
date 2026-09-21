@@ -304,7 +304,7 @@ export function buildMapModel(stats: WrappedStats): MapModel | null {
     totalKm: stats.distance.estimatedKm,
     maxLegs: Math.max(1, ...totals.values()),
     monthMaxNewRouteLength,
-    doneLabel: `${all ? 'Toute la période' : "Toute l'année"}, ${routes.length} ${plural(routes.length, 'ligne', 'lignes')}`,
+    doneLabel: `${all ? 'Toute la période' : "Sur toute l'année"}, ${routes.length} ${plural(routes.length, 'ligne', 'lignes')}`,
     monthDurationsMs,
     log,
   }

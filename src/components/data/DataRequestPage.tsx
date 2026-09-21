@@ -130,8 +130,8 @@ export function DataRequestPage({
               Obtenir vos données de voyage
             </h1>
             <p style={css(`margin: 0; font-size: clamp(15px, 1.9vw, 19px); line-height: 1.5; color: #AEB7C6; max-width: 52ch;`)}>
-              SNCF Connect ne propose pas d'export en un clic. Le RGPD vous donne le droit de demander vos données : un e-mail au délégué à la
-              protection des données suffit, et vous recevez votre historique sous un mois.
+              Pour obtenir votre récap, il faut avoir vos données d'historique SNCF connect. Heureusement, le RGPD vous donne le droit de
+              demander vos données : suivez les étapes ci-dessous pour demander vos données en 1 minute chrono.
             </p>
           </div>
         </section>
@@ -160,7 +160,7 @@ export function DataRequestPage({
             )}
             <h3 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>Envoyez la demande</h3>
             <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>
-              Indiquez vos informations et envoyez l'email prérempli en moins de 30s
+              Indiquez vos informations et envoyez l'email prérempli en moins de 30s.
             </p>
           </div>
           <div
@@ -186,7 +186,7 @@ export function DataRequestPage({
               </div>
             )}
             <h3 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>Attendez la réponse</h3>
-            <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>Sous 1 mois maximum, souvent 2 semaines environ</p>
+            <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>Sous 1 mois maximum, souvent 2 semaines environ.</p>
           </div>
           <div
             style={css(
@@ -297,7 +297,7 @@ export function DataRequestPage({
                   )}
                 >
                   <span style={css(`display: flex; flex-direction: column; gap: 3px; min-width: 0;`)}>
-                    <span style={css(`font-size: 15px; font-weight: 700; letter-spacing: -.02em;`)}>Préférez copier le texte vous-même ?</span>
+                    <span style={css(`font-size: 15px; font-weight: 700; letter-spacing: -.02em;`)}>Vous préférez copier le texte vous-même ?</span>
                     <span style={css(`font-size: 13px; color: #8A93A6;`)}>
                       Voir et copier l'e-mail, pour l'envoyer depuis le client de votre choix
                     </span>
@@ -428,7 +428,7 @@ export function DataRequestPage({
             `display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; font-size: 13px; color: #6C768A; padding: 8px 6px 0;`,
           )}
         >
-          <span>Projet non officiel — for fun by Greg</span>
+          <span>Projet non officiel — par Greg</span>
           <button
             type="button"
             onClick={openLegal}

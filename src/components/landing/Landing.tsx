@@ -40,7 +40,7 @@ export function Landing({
           )}
           className="hv-bg-262E40"
         >
-          Obtenir les données
+          Obtenir mes données
         </button>
       </header>
       <main style={css(`max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: clamp(12px, 2vw, 20px);`)}>
@@ -71,11 +71,10 @@ export function Landing({
                 `margin: 0; font-size: clamp(38px, 8.4vw, 92px); line-height: .94; letter-spacing: -.045em; font-weight: 800; max-width: 16ch; text-wrap: balance;`,
               )}
             >
-              Votre année sur les rails, en sept écrans.
+              Les chiffres marquants de vos années sur les rails
             </h1>
             <p style={css(`margin: 0; font-size: clamp(16px, 2vw, 20px); line-height: 1.5; color: #AEB7C6; max-width: 46ch;`)}>
-              Déposez l'export de votre historique de voyage. Kilomètres, budget, villes, itinéraires : tout est calculé sur votre appareil, puis
-              raconté écran par écran.
+              Revivez vos voyages en train des années passées et découvrez votre utilisation comme vous ne l'avez jamais vue.
             </p>
             <div style={css(`display: flex; flex-wrap: wrap; gap: 10px; padding-top: 4px;`)}>
               <button
@@ -104,8 +103,6 @@ export function Landing({
               <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
               <span style={css(`padding: 0 18px;`)}>Projet non officiel</span>
               <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
-              <span style={css(`padding: 0 18px;`)}>For fun by Greg</span>
-              <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
             </div>
             <div style={css(`display: flex; align-items: center;`)}>
               <span style={css(`padding: 0 18px;`)}>Lecture 100% locale</span>
@@ -113,8 +110,6 @@ export function Landing({
               <span style={css(`padding: 0 18px;`)}>#SNCFwrapped</span>
               <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
               <span style={css(`padding: 0 18px;`)}>Projet non officiel</span>
-              <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
-              <span style={css(`padding: 0 18px;`)}>For fun by Greg</span>
               <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
             </div>
           </div>
@@ -366,7 +361,7 @@ export function Landing({
             `display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; font-size: 13px; color: #6C768A; padding: 8px 6px 0;`,
           )}
         >
-          <span>Projet non officiel — for fun by Greg</span>
+          <span>Projet non officiel — par Greg</span>
           <span>Aperçus : chiffres d'exemple · Contient des données SNCF Open Data (licence ODbL) et IGN Admin Express (Licence Ouverte / Etalab)</span>
           <button
             type="button"
