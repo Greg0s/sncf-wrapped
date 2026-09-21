@@ -35,4 +35,7 @@ a:hover { color: #FFFFFF; border-bottom-color: #FFFFFF; }
 
 @media (max-width: 640px) {
   .cta-import { width: 100%; text-align: center; }
+  /* Keep the anticipation description under the day count instead of squeezed beside it (some phone widths left room for both on one row). */
+  .anticipation-head { flex-direction: column; align-items: stretch; }
+  .anticipation-head p { flex: 0 1 auto; }
 }

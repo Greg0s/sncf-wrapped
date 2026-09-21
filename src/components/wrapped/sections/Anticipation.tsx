@@ -20,7 +20,7 @@ export function Anticipation({ d, index, label }: { d: DisplayData; index: numbe
           `background: #1B2130; border-radius: 28px; padding: clamp(16px, 3vw, 30px); display: flex; flex-direction: column; gap: clamp(12px, 2vh, 20px); max-width: 920px; width: 100%;`,
         )}
       >
-        <div style={css(`display: flex; flex-wrap: wrap; gap: clamp(14px, 3vw, 36px); align-items: baseline;`)}>
+        <div className="anticipation-head" style={css(`display: flex; flex-wrap: wrap; gap: clamp(14px, 3vw, 36px); align-items: baseline;`)}>
           <div style={css(`display: flex; align-items: baseline; gap: 10px; flex: 0 1 auto;`)}>
             <span
               style={css(
