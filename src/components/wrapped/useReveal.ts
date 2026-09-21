@@ -268,6 +268,9 @@ export function useWrappedScroll(
 
 const TAP_TOLERANCE_PX = 10
 const INTERACTIVE_SELECTOR = 'button, a, input, select, textarea, [role="button"], [contenteditable]'
+// Longer than the CSS smooth-scroll to a neighbouring section takes to settle, so scroll-snap comes
+// back on well after the tap's own scroll (see `onPointerUp` below) is done, not mid-animation.
+const SNAP_SUSPEND_MS = 900
 
 /**
  * Instagram-style tap-to-navigate: tapping the right/left half of the screen moves to the
@@ -290,6 +293,7 @@ export function useStoryTapNavigation(scrollerRef: RefObject<HTMLDivElement | nu
     let start: { id: number; x: number; y: number } | null = null
     // The index our own last tap is scrolling toward, until the observer confirms we got there.
     let pendingIndex: number | null = null
+    let restoreSnapTimer = 0
 
     const onPointerDown = (e: PointerEvent) => {
       if (e.pointerType !== 'touch') return
@@ -315,6 +319,15 @@ export function useStoryTapNavigation(scrollerRef: RefObject<HTMLDivElement | nu
       const nextIndex = Math.min(sections.length - 1, Math.max(0, index + (forward ? 1 : -1)))
       if (nextIndex !== index) {
         pendingIndex = nextIndex
+        // `scroll-snap-type: mandatory` can fight a JS-driven `scrollIntoView` on WebKit: once the
+        // scroll animation ends, the browser re-settles on the section it started from instead of
+        // the one just scrolled to. Suspending snapping for the scroll's duration removes anything
+        // for it to fight; restoring it shortly after puts native swipe-scrolling back to normal.
+        scroller.style.scrollSnapType = 'none'
+        clearTimeout(restoreSnapTimer)
+        restoreSnapTimer = window.setTimeout(() => {
+          scroller.style.scrollSnapType = ''
+        }, SNAP_SUSPEND_MS)
         sections[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
     }
@@ -326,6 +339,8 @@ export function useStoryTapNavigation(scrollerRef: RefObject<HTMLDivElement | nu
       scroller.removeEventListener('pointerdown', onPointerDown)
       scroller.removeEventListener('pointerup', onPointerUp)
       scroller.removeEventListener('pointercancel', onPointerCancel)
+      clearTimeout(restoreSnapTimer)
+      scroller.style.scrollSnapType = ''
     }
   }, [scrollerRef, activeIndexRef])
 }
