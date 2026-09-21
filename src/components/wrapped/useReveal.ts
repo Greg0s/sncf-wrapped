@@ -324,7 +324,13 @@ export function useStoryTapNavigation(scrollerRef: RefObject<HTMLDivElement | nu
       if (e.pointerType !== 'touch' || !start || start.id !== e.pointerId) return
       const { x, y } = start
       start = null
-      if (Math.abs(e.clientX - x) > TAP_TOLERANCE_PX || Math.abs(e.clientY - y) > TAP_TOLERANCE_PX) return
+      if (Math.abs(e.clientX - x) > TAP_TOLERANCE_PX || Math.abs(e.clientY - y) > TAP_TOLERANCE_PX) {
+        // A real swipe, not a tap: the user just took over navigation by hand, so any section a
+        // previous tap was still heading toward is no longer where they're going. Drop it — the next
+        // tap must start from the observer's own account of where we are, not a now-irrelevant guess.
+        pendingIndex = null
+        return
+      }
       if ((e.target as HTMLElement).closest(INTERACTIVE_SELECTOR)) return
 
       const sections = [...scroller.querySelectorAll<HTMLElement>('[data-sec]')]
