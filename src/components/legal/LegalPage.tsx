@@ -55,7 +55,7 @@ export function LegalPage({ backHome }: { backHome: () => void }) {
           </p>
           <p style={css(`margin: 0;`)}>
             Contact :{' '}
-            <a href="https://github.com/Greg0s/wrapped-sncf/issues" style={css(`color: #8DE8FD; color: var(--ac);`)}>
+            <a href="https://github.com/Greg0s/sncf-wrapped/issues" style={css(`color: #8DE8FD; color: var(--ac);`)}>
               issues du dépôt GitHub
             </a>
             .
@@ -75,7 +75,7 @@ export function LegalPage({ backHome }: { backHome: () => void }) {
           </p>
           <p style={css(`margin: 0;`)}>
             Le code source est consultable sur le{' '}
-            <a href="https://github.com/Greg0s/wrapped-sncf" style={css(`color: #8DE8FD; color: var(--ac);`)}>
+            <a href="https://github.com/Greg0s/sncf-wrapped" style={css(`color: #8DE8FD; color: var(--ac);`)}>
               dépôt GitHub du projet
             </a>
             . Les données de référence des gares et villes proviennent de SNCF Open Data (licence ODbL) et de l'IGN Admin Express (Licence Ouverte

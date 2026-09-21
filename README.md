@@ -1,10 +1,10 @@
-# Wrapped SNCF
+# SNCF Wrapped
 
-[![CI](https://github.com/Greg0s/wrapped-sncf/actions/workflows/ci.yml/badge.svg)](https://github.com/Greg0s/wrapped-sncf/actions/workflows/ci.yml)
+[![CI](https://github.com/Greg0s/sncf-wrapped/actions/workflows/ci.yml/badge.svg)](https://github.com/Greg0s/sncf-wrapped/actions/workflows/ci.yml)
 
 *Read this in English: [README.en.md](README.en.md)*
 
-🔗 **[greg0s.github.io/wrapped-sncf](https://greg0s.github.io/wrapped-sncf/)**
+🔗 **[greg0s.github.io/sncf-wrapped](https://greg0s.github.io/sncf-wrapped/)**
 
 Votre année sur les rails, façon « Wrapped » : importez l'export de vos données personnelles SNCF Connect et découvrez vos kilomètres, votre budget, vos villes, vos itinéraires et votre façon de réserver, écran par écran, avec une carte à partager.
 
@@ -31,7 +31,7 @@ npm ci
 npm run dev
 ```
 
-Le site est servi sur <http://localhost:5173/wrapped-sncf/>. Ajoutez `?debug` à l'adresse pour le panneau qui détaille les calculs.
+Le site est servi sur <http://localhost:5173/sncf-wrapped/>. Ajoutez `?debug` à l'adresse pour le panneau qui détaille les calculs.
 
 | Commande | Rôle |
 | --- | --- |
@@ -52,7 +52,7 @@ React 18, Vite, TypeScript, PapaParse, Vitest. Le CSV est lu par `src/lib/parsin
 
 ## Suivi et amélioration continue
 
-Les points à traiter sont des [issues](https://github.com/Greg0s/wrapped-sncf/issues). Celles qui portent le label `auto-improve` alimentent une **boucle d'auto-amélioration** : le skill `/improve` de Claude Code traite une issue à la fois, vérifie avec `npm run check`, et ouvre une PR en brouillon pour relecture. Le principe et les garde-fous sont dans [`docs/self-improvement.md`](docs/self-improvement.md).
+Les points à traiter sont des [issues](https://github.com/Greg0s/sncf-wrapped/issues). Celles qui portent le label `auto-improve` alimentent une **boucle d'auto-amélioration** : le skill `/improve` de Claude Code traite une issue à la fois, vérifie avec `npm run check`, et ouvre une PR en brouillon pour relecture. Le principe et les garde-fous sont dans [`docs/self-improvement.md`](docs/self-improvement.md).
 
 ## Données et licences
 

@@ -1,4 +1,4 @@
-# Tech stack — Wrapped SNCF
+# Tech stack — SNCF Wrapped
 
 Project context: see [CLAUDE.md](CLAUDE.md). Constraints shaping every choice below: fully static/client-side rendering, no data sent to any server, free hosting (GitHub Pages).
 
@@ -46,16 +46,16 @@ Project context: see [CLAUDE.md](CLAUDE.md). Constraints shaping every choice be
 
 **Choice:** GitHub Pages, deployed via a GitHub Action (`actions/upload-pages-artifact` + `actions/deploy-pages`) on every push to `main`.
 
-**Rationale:** Free, already tied to the existing GitHub repo (`Greg0s/wrapped-sncf`), and sufficient since the site is fully static after build. No backend to host, so no server cost or maintenance.
+**Rationale:** Free, already tied to the existing GitHub repo (`Greg0s/sncf-wrapped`), and sufficient since the site is fully static after build. No backend to host, so no server cost or maintenance.
 
-*Implementation watch-out:* a GitHub Pages project site (`greg0s.github.io/wrapped-sncf`) is served under a subpath — remember to set `base: '/wrapped-sncf/'` in `vite.config.ts`.
+*Implementation watch-out:* a GitHub Pages project site (`greg0s.github.io/sncf-wrapped`) is served under a subpath — remember to set `base: '/sncf-wrapped/'` in `vite.config.ts`.
 
 ---
 
 ## Resulting folder architecture
 
 ```
-wrapped-sncf/
+sncf-wrapped/
 ├── .github/
 │   └── workflows/
 │       └── deploy.yml          # Vite build + GitHub Pages deployment
