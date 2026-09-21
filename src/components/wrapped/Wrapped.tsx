@@ -19,9 +19,10 @@ export function Wrapped({ view, onBack }: { view: WrappedView; onBack: () => voi
   const rootRef = useRef<HTMLDivElement>(null)
   const scrollerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapHandle>(null)
+  const activeIndexRef = useRef(0)
 
-  useWrappedScroll(rootRef, (event) => mapRef.current?.[event]())
-  useStoryTapNavigation(scrollerRef)
+  useWrappedScroll(rootRef, (event) => mapRef.current?.[event](), activeIndexRef)
+  useStoryTapNavigation(scrollerRef, activeIndexRef)
   const replay = () => scrollerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
 
   const section = (s: SectionMeta, i: number) => {
