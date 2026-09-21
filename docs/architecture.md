@@ -23,7 +23,9 @@ CSV file ─▶ decode ─▶ parseSncfCsv ─▶ buildTripDataset ─▶ comput
 | `src/lib/css.ts` | Turns the mockup's inline CSS strings into React `style` objects |
 | `src/components/wrapped/` | The 8 screens, `useReveal.ts` (all scroll/reveal animations), `Wrapped.tsx` |
 | `src/components/landing/`, `data/` | Landing + import modal, and the "get your data" (GDPR e-mail) page |
+| `src/components/Logo.tsx` | The brand mark (landing header, shareable card); its line draws itself once, on the landing's first appearance |
 | `src/components/debug/` | Calculation panel, reachable with `?debug` |
+| `public/` | Copied as-is into `dist/`: the favicon set (`favicon.svg`, the same drawing as `Logo.tsx`, plus PNG fallbacks). Never user data |
 | `scripts/` | `build-stations.mjs` (referential), `inspect-csv.ts` (console), `make-sample-csv.ts` (fictional exports) |
 
 ## Decisions (validated with the owner, 2026-09-19)
