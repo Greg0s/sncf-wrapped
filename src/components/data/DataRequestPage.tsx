@@ -133,8 +133,8 @@ export function DataRequestPage({
               Obtenir vos données de voyage
             </h1>
             <p style={css(`margin: 0; font-size: clamp(15px, 1.9vw, 19px); line-height: 1.5; color: #AEB7C6; max-width: 52ch;`)}>
-              SNCF Connect ne propose pas d'export en un clic. Le RGPD vous donne le droit de demander vos données : un e-mail au délégué à la
-              protection des données suffit, et vous recevez votre historique sous un mois.
+              Pour obtenir votre récap, il faut avoir vos données d'historique SNCF connect. Heureusement, le RGPD vous donne le droit de
+              demander vos données : suivez les étapes ci-dessous pour demander vos données en 1 minute chrono.
             </p>
           </div>
         </section>
