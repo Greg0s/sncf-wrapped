@@ -166,6 +166,8 @@ function rollCycle(el: HTMLElement) {
 }
 
 const SEGMENT_OFF = 'rgba(241,244,247,.22)'
+// Beat before the map screen's animation starts, so it doesn't fire the instant the screen snaps into view.
+const MAP_PLAY_DELAY_MS = 500
 
 /**
  * Wrapped: screens scroll with scroll-snap; each screen becomes "active" past 40% visibility
@@ -216,6 +218,7 @@ export function useWrappedScroll(
     sections.forEach((s) => reveal(s, false))
 
     let mapPlaying = false
+    let mapPlayTimer = 0
     // Latest known visibility ratio per section: kept up to date (both rises and falls) on every
     // observer callback, so the "active" section is always derived from the current picture rather
     // than pushed once and left stale by whichever section happened to cross 40% last. A fast,
@@ -231,12 +234,19 @@ export function useWrappedScroll(
           const on = e.isIntersecting && e.intersectionRatio > 0.4
           reveal(section, on)
           if (section.dataset.secId === 'map') {
-            if (on && !mapPlaying) {
-              mapPlaying = true
-              onMap('play')
-            } else if (!e.isIntersecting && mapPlaying) {
-              mapPlaying = false
-              onMap('stop')
+            if (on && !mapPlaying && !mapPlayTimer) {
+              mapPlayTimer = window.setTimeout(() => {
+                mapPlayTimer = 0
+                mapPlaying = true
+                onMap('play')
+              }, MAP_PLAY_DELAY_MS)
+            } else if (!e.isIntersecting) {
+              clearTimeout(mapPlayTimer)
+              mapPlayTimer = 0
+              if (mapPlaying) {
+                mapPlaying = false
+                onMap('stop')
+              }
             }
           }
           ratios.set(i, e.isIntersecting ? e.intersectionRatio : 0)
@@ -259,6 +269,7 @@ export function useWrappedScroll(
     sections.forEach((s) => io.observe(s))
     return () => {
       io.disconnect()
+      clearTimeout(mapPlayTimer)
       if (mapPlaying) onMap('stop')
     }
     // Mounted once per wrapped display: the data doesn't change during playback.
