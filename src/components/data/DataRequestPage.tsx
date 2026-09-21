@@ -428,7 +428,7 @@ export function DataRequestPage({
             `display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; font-size: 13px; color: #6C768A; padding: 8px 6px 0;`,
           )}
         >
-          <span>Projet non officiel — for fun by Greg</span>
+          <span>Projet non officiel — par Greg</span>
           <button
             type="button"
             onClick={openLegal}

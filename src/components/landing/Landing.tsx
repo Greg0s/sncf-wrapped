@@ -103,8 +103,6 @@ export function Landing({
               <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
               <span style={css(`padding: 0 18px;`)}>Projet non officiel</span>
               <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
-              <span style={css(`padding: 0 18px;`)}>For fun by Greg</span>
-              <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
             </div>
             <div style={css(`display: flex; align-items: center;`)}>
               <span style={css(`padding: 0 18px;`)}>Lecture 100% locale</span>
@@ -112,8 +110,6 @@ export function Landing({
               <span style={css(`padding: 0 18px;`)}>#SNCFwrapped</span>
               <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
               <span style={css(`padding: 0 18px;`)}>Projet non officiel</span>
-              <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
-              <span style={css(`padding: 0 18px;`)}>For fun by Greg</span>
               <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
             </div>
           </div>
@@ -365,7 +361,7 @@ export function Landing({
             `display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; font-size: 13px; color: #6C768A; padding: 8px 6px 0;`,
           )}
         >
-          <span>Projet non officiel — for fun by Greg</span>
+          <span>Projet non officiel — par Greg</span>
           <span>Aperçus : chiffres d'exemple · Contient des données SNCF Open Data (licence ODbL) et IGN Admin Express (Licence Ouverte / Etalab)</span>
           <button
             type="button"
