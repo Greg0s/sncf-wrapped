@@ -300,7 +300,7 @@ export function DataRequestPage({
                   )}
                 >
                   <span style={css(`display: flex; flex-direction: column; gap: 3px; min-width: 0;`)}>
-                    <span style={css(`font-size: 15px; font-weight: 700; letter-spacing: -.02em;`)}>Préférez copier le texte vous-même ?</span>
+                    <span style={css(`font-size: 15px; font-weight: 700; letter-spacing: -.02em;`)}>Vous préférez copier le texte vous-même ?</span>
                     <span style={css(`font-size: 13px; color: #8A93A6;`)}>
                       Voir et copier l'e-mail, pour l'envoyer depuis le client de votre choix
                     </span>

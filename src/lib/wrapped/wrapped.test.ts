@@ -268,7 +268,7 @@ describe('carte des trajets', () => {
     expect(model.cities).toHaveLength(5)
     expect(model.cities.filter((c) => c.isHub).map((c) => c.name)).toEqual(['St-Étienne'])
     expect(model.months).toHaveLength(12)
-    expect(model.doneLabel).toBe("Toute l'année, 4 lignes")
+    expect(model.doneLabel).toBe("Sur toute l'année, 4 lignes")
   })
 
   it('ne trace encore rien au départ : seuls la ville de base et la destination de janvier sont posées', () => {
@@ -294,7 +294,7 @@ describe('carte des trajets', () => {
     ])
     const end = evaluateMap(model, 12)
     expect(end.km).toBe(fmtNum(stats.distance.estimatedKm))
-    expect(end.phase).toBe("Toute l'année, 4 lignes")
+    expect(end.phase).toBe("Sur toute l'année, 4 lignes")
     expect(end.arcs.every((a) => a.off === 0)).toBe(true)
     expect(end.recentTrips).toEqual([
       { label: 'St-Étienne ↔ Annecy', date: '5 avril' }, // same-day round trip: a single date, not a range

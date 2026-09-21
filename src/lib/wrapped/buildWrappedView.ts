@@ -162,7 +162,7 @@ export function buildWrappedView(s: WrappedStats): WrappedView {
       // With no gap between cities, all bars are full: the mockup exaggerates gaps, we keep it proportional.
       pct: topVisits ? v.pct : 100,
     })),
-    citiesHeading: destinations.mode === 'single' ? 'Une seule ville vous a vu arriver.' : 'Les villes qui vous ont vu arriver.',
+    citiesHeading: destinations.mode === 'single' ? 'Une seule ville vous a vu arriver.' : 'Les villes que vous aimez retrouver.',
     routes: routes.items.map((r, i) => ({
       rank: rank(i),
       label: r.stations.join(' ↔ '),
