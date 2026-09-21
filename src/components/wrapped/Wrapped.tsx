@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { css } from '../../lib/css'
 import type { SectionMeta, WrappedView } from '../../lib/wrapped'
+import type { ImportPeriod } from '../landing/ImportModal'
 import { Anticipation } from './sections/Anticipation'
 import { Budget } from './sections/Budget'
 import { Cities } from './sections/Cities'
@@ -15,7 +16,7 @@ import { useStoryTapNavigation, useWrappedScroll } from './useReveal'
  * Wrapped: the mockup's screens, in vertical scroll-snap, fed by the display model.
  * Screens with no data are absent from `view.sections`; the progress bar follows their actual count.
  */
-export function Wrapped({ view, onBack }: { view: WrappedView; onBack: () => void }) {
+export function Wrapped({ view, onBack, periods }: { view: WrappedView; onBack: () => void; periods: ImportPeriod[] }) {
   const rootRef = useRef<HTMLDivElement>(null)
   const scrollerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapHandle>(null)
@@ -42,7 +43,7 @@ export function Wrapped({ view, onBack }: { view: WrappedView; onBack: () => voi
       case 'map':
         return view.map ? <RoutesMap key={s.id} model={view.map} mapRef={mapRef} index={i} label={s.label} /> : null
       case 'recap':
-        return <Recap key={s.id} view={view} index={i} label={s.label} replay={replay} />
+        return <Recap key={s.id} view={view} index={i} label={s.label} replay={replay} periods={periods} />
     }
   }
 
