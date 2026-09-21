@@ -160,7 +160,7 @@ export function DataRequestPage({
             )}
             <h3 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>Envoyez la demande</h3>
             <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>
-              Indiquez vos informations et envoyez l'email prérempli en moins de 30s
+              Indiquez vos informations et envoyez l'email prérempli en moins de 30s.
             </p>
           </div>
           <div
@@ -186,7 +186,7 @@ export function DataRequestPage({
               </div>
             )}
             <h3 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>Attendez la réponse</h3>
-            <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>Sous 1 mois maximum, souvent 2 semaines environ</p>
+            <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>Sous 1 mois maximum, souvent 2 semaines environ.</p>
           </div>
           <div
             style={css(
