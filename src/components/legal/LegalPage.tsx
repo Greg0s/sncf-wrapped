@@ -48,17 +48,7 @@ export function LegalPage({ backHome }: { backHome: () => void }) {
 
         <Section title="Éditeur du site">
           <p style={css(`margin: 0;`)}>
-            Ce site est un projet personnel, à titre non professionnel, édité par une personne physique («{' '}
-            <a
-              href="https://gregoiretinn.es"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={css(`color: #F1F4F7; text-decoration: underline; border-bottom: none; transition: opacity .2s ease;`)}
-              className="hv-opacity-80"
-            >
-              Greg
-            </a>
-            {' '}»). Conformément à l'article 6-III
+            Ce site est un projet personnel, à titre non professionnel, édité par une personne physique (« Greg »). Conformément à l'article 6-III
             de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique, l'éditeur, personne physique n'agissant pas à titre
             professionnel, n'est pas tenu de rendre publiques les informations d'identification prévues par cet article, sous réserve de les avoir
             communiquées à son hébergeur.
