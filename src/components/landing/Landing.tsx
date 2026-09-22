@@ -130,7 +130,7 @@ export function Landing({
             Votre historique connaît déjà les réponses.
           </h2>
           <p style={css(`margin: 0 0 24px; font-size: 15px; color: #AEB7C6;`)}>Sept écrans les dévoilent une par une.</p>
-          <div style={css(`display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0 32px;`)}>
+          <div className="landing-answers">
             {BLURRED_ANSWERS.map((row) => (
               <div
                 key={row.label}

@@ -68,6 +68,12 @@ a:hover { color: #FFFFFF; border-bottom-color: #FFFFFF; }
   .anticipation-head p { flex: 0 1 auto; }
 }
 
+/* Landing "blurred answers" list: fixed 3 columns on desktop (auto-fit would give 4 or 2 depending on width), 1 on mobile. */
+.landing-answers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 32px; }
+@media (max-width: 640px) {
+  .landing-answers { grid-template-columns: 1fr; }
+}
+
 /*
  * DataRequestPage "tuto" flow: 3 step cards + the form/success section, laid out with named grid areas so
  * the form can move (mobile: right under step 1, so the user fills it before seeing steps 2-3) without
