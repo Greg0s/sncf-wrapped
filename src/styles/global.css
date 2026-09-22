@@ -62,3 +62,26 @@ a:hover { color: #FFFFFF; border-bottom-color: #FFFFFF; }
   .anticipation-head { flex-direction: column; align-items: stretch; }
   .anticipation-head p { flex: 0 1 auto; }
 }
+
+/*
+ * DataRequestPage "tuto" flow: 3 step cards + the form/success section, laid out with named grid areas so
+ * the form can move (mobile: right under step 1, so the user fills it before seeing steps 2-3) without
+ * touching the DOM order desktop relies on (3 steps in a row, form below).
+ */
+.tuto-flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas: "step1 step2 step3" "form form form";
+  gap: clamp(10px, 1.8vw, 16px);
+}
+.tuto-step1 { grid-area: step1; }
+.tuto-step2 { grid-area: step2; }
+.tuto-step3 { grid-area: step3; }
+.tuto-form { grid-area: form; }
+
+@media (max-width: 640px) {
+  .tuto-flow {
+    grid-template-columns: 1fr;
+    grid-template-areas: "step1" "form" "step2" "step3";
+  }
+}
