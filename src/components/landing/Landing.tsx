@@ -129,7 +129,7 @@ export function Landing({
           >
             Votre historique connaît déjà les réponses.
           </h2>
-          <p style={css(`margin: 0 0 24px; font-size: 15px; color: #AEB7C6;`)}>Sept écrans les dévoilent une par une.</p>
+          <p style={css(`margin: 0 0 24px; font-size: 15px; color: #AEB7C6;`)}>Votre wrapped les dévoile une par une.</p>
           <div className="landing-answers">
             {BLURRED_ANSWERS.map((row) => (
               <div
