@@ -1,22 +1,34 @@
-import { useRef, type ReactNode } from 'react'
-import { css } from '../../lib/css'
-import { Logo } from '../Logo'
-import { useLandingReveal } from '../wrapped/useReveal'
+import { useRef, type ReactNode } from "react";
+import { css } from "../../lib/css";
+import { Logo } from "../Logo";
+import { useLandingReveal } from "../wrapped/useReveal";
 
-const BANNER_ITEMS = ['Lecture 100% locale', '#SNCFwrapped', 'Projet non officiel']
+const BANNER_ITEMS = [
+  "Lecture 100% locale",
+  "#SNCFwrapped",
+  "Projet non officiel",
+];
 // Repeated several times per half: on wide screens, a single pass of the 3 phrases is narrower than the
 // pill, so the marquee would run out of content and visibly snap back before looping (`translateX(-50%)`
 // needs both halves to overflow the container to read as seamless).
-const BANNER_HALF = Array.from({ length: 4 }, () => BANNER_ITEMS).flat()
+const BANNER_HALF = Array.from({ length: 4 }, () => BANNER_ITEMS).flat();
 
 const BLURRED_ANSWERS = [
-  { label: 'Votre ville la plus visitée', value: 'Marseille', color: '#8DE8FD' },
-  { label: 'Ce que le train vous a coûté', value: '2 438 €', color: '#E39BFD' },
-  { label: 'Vos kilomètres parcourus', value: '31 144 km', color: '#7BBFFC' },
-  { label: 'Votre trajet fétiche', value: 'Nantes → Paris', color: '#B5B5FE' },
-  { label: 'Le mois où vous avez craqué', value: 'Juillet', color: '#8DE8FD' },
-  { label: 'Votre plus longue échappée', value: 'Paris → Nice', color: '#E39BFD' },
-]
+  {
+    label: "Votre ville la plus visitée",
+    value: "Marseille",
+    color: "#8DE8FD",
+  },
+  { label: "Ce que le train vous a coûté", value: "2 438 €", color: "#E39BFD" },
+  { label: "Vos kilomètres parcourus", value: "31 144 km", color: "#7BBFFC" },
+  { label: "Votre trajet fétiche", value: "Nantes → Paris", color: "#B5B5FE" },
+  { label: "Le mois où vous avez craqué", value: "Juillet", color: "#8DE8FD" },
+  {
+    label: "Votre plus longue échappée",
+    value: "Paris → Nice",
+    color: "#E39BFD",
+  },
+];
 
 export function Landing({
   openData,
@@ -24,15 +36,20 @@ export function Landing({
   openLegal,
   modal,
 }: {
-  openData: () => void
-  openImport: () => void
-  openLegal: () => void
-  modal: ReactNode
+  openData: () => void;
+  openImport: () => void;
+  openLegal: () => void;
+  modal: ReactNode;
 }) {
-  const root = useRef<HTMLDivElement>(null)
-  useLandingReveal(root)
+  const root = useRef<HTMLDivElement>(null);
+  useLandingReveal(root);
   return (
-    <div ref={root} style={css(`min-height: 100svh; background: #0E1219; padding: 0 clamp(12px, 3.5vw, 40px) clamp(24px, 5vw, 56px);`)}>
+    <div
+      ref={root}
+      style={css(
+        `min-height: 100svh; background: #0E1219; padding: 0 clamp(12px, 3.5vw, 40px) clamp(24px, 5vw, 56px);`,
+      )}
+    >
       <header
         style={css(
           `display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 4px; max-width: 1180px; margin: 0 auto;`,
@@ -40,7 +57,13 @@ export function Landing({
       >
         <div style={css(`display: flex; align-items: center; gap: 10px;`)}>
           <Logo size={26} intro />
-          <span style={css(`font-weight: 700; font-size: 17px; letter-spacing: -.02em;`)}>SNCF Wrapped</span>
+          <span
+            style={css(
+              `font-weight: 700; font-size: 17px; letter-spacing: -.02em;`,
+            )}
+          >
+            SNCF Wrapped
+          </span>
         </div>
         <button
           type="button"
@@ -53,23 +76,51 @@ export function Landing({
           Obtenir mes données
         </button>
       </header>
-      <main style={css(`max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: clamp(12px, 2vw, 20px);`)}>
+      <main
+        style={css(
+          `max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: clamp(12px, 2vw, 20px);`,
+        )}
+      >
         <section
           data-lanim="scale"
-          style={css(`background: #1B2130; border-radius: 28px; padding: clamp(24px, 5vw, 56px); position: relative; overflow: hidden;`)}
+          style={css(
+            `background: #1B2130; border-radius: 28px; padding: clamp(24px, 5vw, 56px); position: relative; overflow: hidden;`,
+          )}
         >
           <svg
             viewBox="0 0 420 120"
             preserveAspectRatio="none"
-            style={css(`position: absolute; right: -6%; top: 6%; width: min(62%, 600px); height: auto; opacity: .55; pointer-events: none;`)}
+            style={css(
+              `position: absolute; right: -6%; top: 6%; width: min(62%, 600px); height: auto; opacity: .55; pointer-events: none;`,
+            )}
           >
             <defs>
-              <linearGradient id="hero-line-fade" x1="0" y1="0" x2="60" y2="0" gradientUnits="userSpaceOnUse">
+              <linearGradient
+                id="hero-line-fade"
+                x1="0"
+                y1="0"
+                x2="60"
+                y2="0"
+                gradientUnits="userSpaceOnUse"
+              >
                 <stop offset="0" stopColor="#fff" stopOpacity="0" />
                 <stop offset="1" stopColor="#fff" stopOpacity="1" />
               </linearGradient>
-              <mask id="hero-line-fade-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="120">
-                <rect x="0" y="0" width="420" height="120" fill="url(#hero-line-fade)" />
+              <mask
+                id="hero-line-fade-mask"
+                maskUnits="userSpaceOnUse"
+                x="0"
+                y="0"
+                width="420"
+                height="120"
+              >
+                <rect
+                  x="0"
+                  y="0"
+                  width="420"
+                  height="120"
+                  fill="url(#hero-line-fade)"
+                />
               </mask>
             </defs>
             <path
@@ -79,11 +130,21 @@ export function Landing({
               strokeWidth="2.4"
               strokeLinecap="round"
               mask="url(#hero-line-fade-mask)"
-              style={css(`stroke-dasharray: 8 10; animation: dashy 3.4s linear infinite; stroke: var(--ac);`)}
+              style={css(
+                `stroke-dasharray: 8 10; animation: dashy 3.4s linear infinite; stroke: var(--ac);`,
+              )}
             />
           </svg>
-          <div style={css(`position: relative; display: flex; flex-direction: column; gap: clamp(16px, 3vw, 24px); max-width: 720px;`)}>
-            <div style={css(`font-size: 13px; font-weight: 600; letter-spacing: .04em; color: #8DE8FD; color: var(--ac);`)}>
+          <div
+            style={css(
+              `position: relative; display: flex; flex-direction: column; gap: clamp(16px, 3vw, 24px); max-width: 720px;`,
+            )}
+          >
+            <div
+              style={css(
+                `font-size: 13px; font-weight: 600; letter-spacing: .04em; color: #8DE8FD; color: var(--ac);`,
+              )}
+            >
               Bilan de vos trajets en train
             </div>
             <h1
@@ -93,10 +154,19 @@ export function Landing({
             >
               Les chiffres marquants de vos années sur les rails
             </h1>
-            <p style={css(`margin: 0; font-size: clamp(16px, 2vw, 20px); line-height: 1.5; color: #AEB7C6; max-width: 46ch;`)}>
-              Revivez vos voyages en train des années passées et découvrez votre utilisation comme vous ne l'avez jamais vue.
+            <p
+              style={css(
+                `margin: 0; font-size: clamp(16px, 2vw, 20px); line-height: 1.5; color: #AEB7C6; max-width: 46ch;`,
+              )}
+            >
+              Revivez vos voyages en train des années passées et découvrez votre
+              utilisation comme vous ne l'avez jamais vue.
             </p>
-            <div style={css(`display: flex; flex-wrap: wrap; gap: 10px; padding-top: 4px;`)}>
+            <div
+              style={css(
+                `display: flex; flex-wrap: wrap; gap: 10px; padding-top: 4px;`,
+              )}
+            >
               <button
                 type="button"
                 onClick={openImport}
@@ -110,18 +180,30 @@ export function Landing({
             </div>
           </div>
         </section>
-        <div style={css(`background: #1B2130; border-radius: 999px; overflow: hidden; padding: 9px 0;`)}>
+        <div
+          style={css(
+            `background: #1B2130; border-radius: 999px; overflow: hidden; padding: 9px 0;`,
+          )}
+        >
           <div
             style={css(
               `display: flex; width: max-content; animation: marquee 34s linear infinite; font-size: 13px; font-weight: 500; color: #AEB7C6; white-space: nowrap;`,
             )}
           >
             {[0, 1].map((half) => (
-              <div key={half} style={css(`display: flex; align-items: center;`)}>
+              <div
+                key={half}
+                style={css(`display: flex; align-items: center;`)}
+              >
                 {BANNER_HALF.map((text, i) => (
-                  <span key={i} style={css(`display: flex; align-items: center;`)}>
+                  <span
+                    key={i}
+                    style={css(`display: flex; align-items: center;`)}
+                  >
                     <span style={css(`padding: 0 18px;`)}>{text}</span>
-                    <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
+                    <span style={css(`color: #8DE8FD; color: var(--ac);`)}>
+                      •
+                    </span>
                   </span>
                 ))}
               </div>
@@ -130,7 +212,9 @@ export function Landing({
         </div>
         <section
           data-lanim="up"
-          style={css(`background: #1B2130; border-radius: 28px; padding: clamp(24px, 4vw, 40px);`)}
+          style={css(
+            `background: #1B2130; border-radius: 28px; padding: clamp(24px, 4vw, 40px);`,
+          )}
         >
           <h2
             style={css(
@@ -139,15 +223,29 @@ export function Landing({
           >
             Votre historique connaît déjà les réponses.
           </h2>
-          <p style={css(`margin: 0 0 24px; font-size: 15px; color: #AEB7C6;`)}>Votre wrapped les dévoile une par une.</p>
+          <p style={css(`margin: 0 0 24px; font-size: 15px; color: #AEB7C6;`)}>
+            Votre wrapped les dévoile une par une.
+          </p>
           <div className="landing-answers">
             {BLURRED_ANSWERS.map((row) => (
               <div
                 key={row.label}
-                style={css(`display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid #262E40;`)}
+                style={css(
+                  `display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid #262E40;`,
+                )}
               >
-                <span style={css(`width: 8px; height: 8px; border-radius: 50%; background: ${row.color}; flex: 0 0 auto;`)} />
-                <span style={css(`flex: 1 1 auto; font-size: 15px; font-weight: 500; color: #DCE3EC;`)}>{row.label}</span>
+                <span
+                  style={css(
+                    `width: 8px; height: 8px; border-radius: 50%; background: ${row.color}; flex: 0 0 auto;`,
+                  )}
+                />
+                <span
+                  style={css(
+                    `flex: 1 1 auto; font-size: 15px; font-weight: 500; color: #DCE3EC;`,
+                  )}
+                >
+                  {row.label}
+                </span>
                 <span
                   style={css(
                     `flex: 0 0 auto; font-size: 15px; font-weight: 700; color: ${row.color}; filter: blur(5px); user-select: none;`,
@@ -163,7 +261,9 @@ export function Landing({
               `display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 24px; padding-top: 22px; border-top: 1px solid #262E40;`,
             )}
           >
-            <span style={css(`font-size: 14px; color: #8A93A6;`)}>Année par année, ou tout votre historique d'un coup.</span>
+            <span style={css(`font-size: 14px; color: #8A93A6;`)}>
+              Année par année, ou tout votre historique d'un coup.
+            </span>
             <button
               type="button"
               onClick={openImport}
@@ -176,7 +276,11 @@ export function Landing({
             </button>
           </div>
         </section>
-        <section style={css(`display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: clamp(12px, 2vw, 20px);`)}>
+        <section
+          style={css(
+            `display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: clamp(12px, 2vw, 20px);`,
+          )}
+        >
           <div
             data-lanim="up"
             style={css(
@@ -190,9 +294,20 @@ export function Landing({
             >
               <span style={css(`color: #8DE8FD; color: var(--ac);`)}>1</span>
             </div>
-            <h3 style={css(`margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -.02em;`)}>Demandez votre historique</h3>
-            <p style={css(`margin: 0; font-size: 15px; line-height: 1.5; color: #AEB7C6;`)}>
-              Une demande d'accès à vos données personnelles suffit. Vous recevez un fichier listant vos trajets.
+            <h3
+              style={css(
+                `margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -.02em;`,
+              )}
+            >
+              Demandez votre historique
+            </h3>
+            <p
+              style={css(
+                `margin: 0; font-size: 15px; line-height: 1.5; color: #AEB7C6;`,
+              )}
+            >
+              Une demande d'accès à vos données personnelles suffit. Vous
+              recevrez un fichier listant vos trajets.
             </p>
             <button
               type="button"
@@ -218,9 +333,20 @@ export function Landing({
             >
               <span style={css(`color: #8DE8FD; color: var(--ac);`)}>2</span>
             </div>
-            <h3 style={css(`margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -.02em;`)}>Déposez le fichier</h3>
-            <p style={css(`margin: 0; font-size: 15px; line-height: 1.5; color: #AEB7C6;`)}>
-              Il est lu sur place, par votre navigateur. Rien n'est téléversé, aucun compte n'est créé.
+            <h3
+              style={css(
+                `margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -.02em;`,
+              )}
+            >
+              Déposez le fichier
+            </h3>
+            <p
+              style={css(
+                `margin: 0; font-size: 15px; line-height: 1.5; color: #AEB7C6;`,
+              )}
+            >
+              Il est lu sur place, par votre navigateur. Rien n'est téléversé,
+              aucun compte n'est créé.
             </p>
           </div>
           <div
@@ -237,9 +363,20 @@ export function Landing({
             >
               <span style={css(`color: #8DE8FD; color: var(--ac);`)}>3</span>
             </div>
-            <h3 style={css(`margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -.02em;`)}>Choisissez la période</h3>
-            <p style={css(`margin: 0; font-size: 15px; line-height: 1.5; color: #AEB7C6;`)}>
-              Une année en particulier ou tout votre historique, puis sept écrans et une carte à partager.
+            <h3
+              style={css(
+                `margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -.02em;`,
+              )}
+            >
+              Découvrez votre wrapped
+            </h3>
+            <p
+              style={css(
+                `margin: 0; font-size: 15px; line-height: 1.5; color: #AEB7C6;`,
+              )}
+            >
+              Choisissez entre une année en particulier ou tout votre
+              historique.
             </p>
           </div>
         </section>
@@ -252,7 +389,9 @@ export function Landing({
           <svg
             viewBox="0 0 300 90"
             preserveAspectRatio="none"
-            style={css(`position: absolute; right: -4%; bottom: -8%; width: min(54%, 340px); height: auto; opacity: .45; pointer-events: none;`)}
+            style={css(
+              `position: absolute; right: -4%; bottom: -8%; width: min(54%, 340px); height: auto; opacity: .45; pointer-events: none;`,
+            )}
           >
             <path
               d="M2 74 C 46 74, 58 30, 104 36 C 140 41, 136 78, 104 72 C 76 66, 88 26, 130 18 C 186 6, 224 52, 296 30"
@@ -262,26 +401,51 @@ export function Landing({
               strokeLinecap="round"
             />
           </svg>
-          <div style={css(`width: 52px; height: 62px; flex: 0 0 auto; position: relative; animation: floaty 4.5s ease-in-out infinite;`)}>
-            <div style={css(`position: absolute; left: 11px; top: 0; width: 30px; height: 30px; border: 3px solid #0E1219; border-radius: 50%;`)} />
-            <div style={css(`position: absolute; left: 0; bottom: 3px; width: 52px; height: 39px; background: #0E1219; border-radius: 12px;`)} />
+          <div
+            style={css(
+              `width: 52px; height: 62px; flex: 0 0 auto; position: relative; animation: floaty 4.5s ease-in-out infinite;`,
+            )}
+          >
+            <div
+              style={css(
+                `position: absolute; left: 11px; top: 0; width: 30px; height: 30px; border: 3px solid #0E1219; border-radius: 50%;`,
+              )}
+            />
+            <div
+              style={css(
+                `position: absolute; left: 0; bottom: 3px; width: 52px; height: 39px; background: #0E1219; border-radius: 12px;`,
+              )}
+            />
             <div
               style={css(
                 `position: absolute; left: 23px; bottom: 16px; width: 6px; height: 13px; background: #8DE8FD; border-radius: 3px; background: var(--ac);`,
               )}
             />
           </div>
-          <div style={css(`flex: 1 1 280px; min-width: 0; position: relative;`)}>
-            <h3 style={css(`margin: 0 0 10px; font-size: clamp(20px, 3vw, 30px); font-weight: 800; letter-spacing: -.03em;`)}>
+          <div
+            style={css(`flex: 1 1 280px; min-width: 0; position: relative;`)}
+          >
+            <h3
+              style={css(
+                `margin: 0 0 10px; font-size: clamp(20px, 3vw, 30px); font-weight: 800; letter-spacing: -.03em;`,
+              )}
+            >
               Aucune de vos données n'est conservée ou analysée
             </h3>
-            <p style={css(`margin: 0; font-size: 15px; line-height: 1.55; max-width: 62ch; opacity: .85;`)}>
-              Le fichier ne quitte pas votre appareil. Les calculs tournent dans le navigateur : pas de serveur, pas de compte, pas de traçage. Vous
-              fermez l'onglet, il ne reste rien.
+            <p
+              style={css(
+                `margin: 0; font-size: 15px; line-height: 1.55; max-width: 62ch; opacity: .85;`,
+              )}
+            >
+              Le fichier ne quitte pas votre appareil. Les calculs tournent dans
+              le navigateur : pas de serveur, pas de compte, pas de traçage.
+              Vous fermez l'onglet, il ne reste rien.
             </p>
           </div>
           <div
-            style={css(`flex: 0 0 auto; font-size: 13px; font-weight: 700; border: 1.5px solid #0E1219; border-radius: 999px; padding: 10px 16px;`)}
+            style={css(
+              `flex: 0 0 auto; font-size: 13px; font-weight: 700; border: 1.5px solid #0E1219; border-radius: 999px; padding: 10px 16px;`,
+            )}
           >
             100% côté client
           </div>
@@ -292,18 +456,23 @@ export function Landing({
           )}
         >
           <span>
-            Projet non officiel — par{' '}
+            Projet non officiel — par{" "}
             <a
               href="https://gregoiretinn.es"
               target="_blank"
               rel="noopener noreferrer"
-              style={css(`color: #6C768A; text-decoration: underline; border-bottom: none; transition: opacity .2s ease;`)}
+              style={css(
+                `color: #6C768A; text-decoration: underline; border-bottom: none; transition: opacity .2s ease;`,
+              )}
               className="hv-opacity-80"
             >
               Greg
             </a>
           </span>
-          <span>Aperçus : chiffres d'exemple · Contient des données SNCF Open Data (licence ODbL) et IGN Admin Express (Licence Ouverte / Etalab)</span>
+          <span>
+            Contient des données SNCF Open Data (licence ODbL) et IGN Admin
+            Express (Licence Ouverte / Etalab)
+          </span>
           <button
             type="button"
             onClick={openLegal}
@@ -317,5 +486,5 @@ export function Landing({
       </main>
       {modal}
     </div>
-  )
+  );
 }
