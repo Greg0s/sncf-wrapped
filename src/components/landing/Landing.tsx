@@ -3,6 +3,12 @@ import { css } from '../../lib/css'
 import { Logo } from '../Logo'
 import { useLandingReveal } from '../wrapped/useReveal'
 
+const BANNER_ITEMS = ['Lecture 100% locale', '#SNCFwrapped', 'Projet non officiel']
+// Repeated several times per half: on wide screens, a single pass of the 3 phrases is narrower than the
+// pill, so the marquee would run out of content and visibly snap back before looping (`translateX(-50%)`
+// needs both halves to overflow the container to read as seamless).
+const BANNER_HALF = Array.from({ length: 4 }, () => BANNER_ITEMS).flat()
+
 export function Landing({
   openData,
   openImport,
@@ -91,22 +97,16 @@ export function Landing({
               `display: flex; width: max-content; animation: marquee 34s linear infinite; font-size: 13px; font-weight: 500; color: #AEB7C6; white-space: nowrap;`,
             )}
           >
-            <div style={css(`display: flex; align-items: center;`)}>
-              <span style={css(`padding: 0 18px;`)}>Lecture 100% locale</span>
-              <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
-              <span style={css(`padding: 0 18px;`)}>#SNCFwrapped</span>
-              <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
-              <span style={css(`padding: 0 18px;`)}>Projet non officiel</span>
-              <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
-            </div>
-            <div style={css(`display: flex; align-items: center;`)}>
-              <span style={css(`padding: 0 18px;`)}>Lecture 100% locale</span>
-              <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
-              <span style={css(`padding: 0 18px;`)}>#SNCFwrapped</span>
-              <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
-              <span style={css(`padding: 0 18px;`)}>Projet non officiel</span>
-              <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
-            </div>
+            {[0, 1].map((half) => (
+              <div key={half} style={css(`display: flex; align-items: center;`)}>
+                {BANNER_HALF.map((text, i) => (
+                  <span key={i} style={css(`display: flex; align-items: center;`)}>
+                    <span style={css(`padding: 0 18px;`)}>{text}</span>
+                    <span style={css(`color: #8DE8FD; color: var(--ac);`)}>•</span>
+                  </span>
+                ))}
+              </div>
+            ))}
           </div>
         </div>
         <section style={css(`display: grid; grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); gap: clamp(12px, 2vw, 20px);`)}>
