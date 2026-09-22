@@ -7,6 +7,14 @@ import { css } from '../../lib/css'
  * user's mail client via a mailto link).
  */
 
+function CheckIcon({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M4 12.5l5 5L20 6.5" stroke="#0E1219" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 const MAIL_TO = 'dpo@connect.sncf'
 const MAIL_SUBJECT = "Demande d'accès à mes données personnelles (art. 15 et 20 du RGPD)"
 
@@ -31,11 +39,9 @@ function buildMailBody(firstName: string, lastName: string, email: string): stri
 
 export function DataRequestPage({
   backHome,
-  goImport,
   openLegal,
 }: {
   backHome: () => void
-  goImport: () => void
   openLegal: () => void
 }) {
   const [firstName, setFirstName] = useState('')
@@ -145,10 +151,10 @@ export function DataRequestPage({
             {sent ? (
               <div
                 style={css(
-                  `width: 30px; height: 30px; border-radius: 50%; background: #2FBF71; color: #0E1219; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800;`,
+                  `width: 30px; height: 30px; border-radius: 50%; background: #2FBF71; color: #0E1219; display: flex; align-items: center; justify-content: center;`,
                 )}
               >
-                ✓
+                <CheckIcon size={15} />
               </div>
             ) : (
               <div
@@ -385,10 +391,10 @@ export function DataRequestPage({
               <div style={css(`display: flex; align-items: center; gap: 14px;`)}>
                 <div
                   style={css(
-                    `width: 46px; height: 46px; flex: 0 0 auto; border-radius: 50%; background: #2FBF71; color: #0E1219; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800;`,
+                    `width: 46px; height: 46px; flex: 0 0 auto; border-radius: 50%; background: #2FBF71; color: #0E1219; display: flex; align-items: center; justify-content: center;`,
                   )}
                 >
-                  ✓
+                  <CheckIcon size={22} />
                 </div>
                 <div style={css(`min-width: 0;`)}>
                   <h2 style={css(`margin: 0 0 4px; font-size: clamp(19px, 2.6vw, 25px); font-weight: 800; letter-spacing: -.03em;`)}>
@@ -402,23 +408,13 @@ export function DataRequestPage({
               <div style={css(`display: flex; flex-wrap: wrap; gap: 10px;`)}>
                 <button
                   type="button"
-                  onClick={goImport}
+                  onClick={unsend}
                   style={css(
                     `font-family: 'Schibsted Grotesk', sans-serif; font-size: 16px; font-weight: 700; color: #0E1219; background: #8DE8FD; border: none; border-radius: 999px; padding: 15px 26px; cursor: pointer; transition: transform .18s ease, filter .2s ease; background: var(--ac);`,
                   )}
                   className="hv-cta"
                 >
-                  J'ai déjà mon fichier, l'importer
-                </button>
-                <button
-                  type="button"
-                  onClick={unsend}
-                  style={css(
-                    `font-family: 'Schibsted Grotesk', sans-serif; font-size: 16px; font-weight: 600; color: #F1F4F7; background: transparent; border: 1.5px solid rgba(241,244,247,.35); border-radius: 999px; padding: 14px 24px; cursor: pointer; transition: border-color .2s ease;`,
-                  )}
-                  className="hv-border"
-                >
-                  Revoir le message
+                  Recommencer
                 </button>
               </div>
             </section>

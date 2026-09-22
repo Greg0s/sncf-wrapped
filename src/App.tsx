@@ -133,14 +133,7 @@ function Journey() {
         />
       )}
       {view === 'data' && (
-        <DataRequestPage
-          backHome={() => setView('landing')}
-          goImport={() => {
-            setView('landing')
-            setModal(true)
-          }}
-          openLegal={openLegal}
-        />
+        <DataRequestPage backHome={() => setView('landing')} openLegal={openLegal} />
       )}
       {view === 'legal' && <LegalPage backHome={() => setView('landing')} />}
       {view === 'wrapped' && wrappedView && (
