@@ -59,7 +59,10 @@ export function Wrapped({ view, onBack, periods }: { view: WrappedView; onBack: 
             `font-family: 'Schibsted Grotesk', sans-serif; font-size: 13px; font-weight: 600; color: #F1F4F7; background: rgba(27,33,48,.85); backdrop-filter: blur(6px); border: none; border-radius: 999px; padding: 9px 16px; cursor: pointer; flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; line-height: 1;`,
           )}
         >
-          <span aria-hidden="true">←</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M19 12H5" />
+            <path d="M11 18l-6-6 6-6" />
+          </svg>
           <span>Retour</span>
         </button>
         <div style={css(`display: flex; gap: 4px; flex: 1 1 auto;`)}>
