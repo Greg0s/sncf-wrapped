@@ -111,7 +111,10 @@ export function DataRequestPage({
         </button>
       </header>
       <main style={css(`max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: clamp(12px, 2vw, 20px);`)}>
-        <section style={css(`background: #1B2130; border-radius: 28px; padding: clamp(22px, 4.5vw, 44px); position: relative; overflow: hidden;`)}>
+        <section
+          className="tuto-hero"
+          style={css(`background: #1B2130; border-radius: 28px; padding: clamp(22px, 4.5vw, 44px); position: relative; overflow: hidden;`)}
+        >
           <svg
             viewBox="0 0 320 90"
             preserveAspectRatio="none"
