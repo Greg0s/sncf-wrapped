@@ -135,8 +135,9 @@ export function DataRequestPage({
             </p>
           </div>
         </section>
-        <section style={css(`display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: clamp(10px, 1.8vw, 16px);`)}>
+        <div className="tuto-flow">
           <div
+            className="tuto-step1"
             style={css(
               `background: #1B2130; border-radius: 22px; padding: clamp(16px, 2.6vw, 24px); display: flex; flex-direction: column; gap: 10px;`,
             )}
@@ -164,6 +165,7 @@ export function DataRequestPage({
             </p>
           </div>
           <div
+            className="tuto-step2"
             style={css(
               `background: #1B2130; border-radius: 22px; padding: clamp(16px, 2.6vw, 24px); display: flex; flex-direction: column; gap: 10px;`,
             )}
@@ -189,6 +191,7 @@ export function DataRequestPage({
             <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>Sous 1 mois maximum, souvent 2 semaines environ.</p>
           </div>
           <div
+            className="tuto-step3"
             style={css(
               `background: #1B2130; border-radius: 22px; padding: clamp(16px, 2.6vw, 24px); display: flex; flex-direction: column; gap: 10px;`,
             )}
@@ -205,10 +208,9 @@ export function DataRequestPage({
               Déposez le fichier reçu ici, et votre récap se génère aussitôt.
             </p>
           </div>
-        </section>
-        {notSent && (
-          <>
+          {notSent && (
             <section
+              className="tuto-form"
               style={css(
                 `background: #1B2130; border-radius: 28px; padding: clamp(18px, 3.4vw, 34px); display: flex; flex-direction: column; gap: 18px;`,
               )}
@@ -372,11 +374,10 @@ export function DataRequestPage({
                 )}
               </div>
             </section>
-          </>
-        )}
-        {sent && (
-          <>
+          )}
+          {sent && (
             <section
+              className="tuto-form"
               style={css(
                 `background: #1B2130; border-radius: 28px; padding: clamp(20px, 4vw, 40px); display: flex; flex-direction: column; gap: 18px; animation: popIn .3s cubic-bezier(.16,.84,.26,1) both;`,
               )}
@@ -421,8 +422,8 @@ export function DataRequestPage({
                 </button>
               </div>
             </section>
-          </>
-        )}
+          )}
+        </div>
         <footer
           style={css(
             `display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; font-size: 13px; color: #6C768A; padding: 8px 6px 0;`,
