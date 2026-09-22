@@ -61,14 +61,24 @@ export function Landing({
           <svg
             viewBox="0 0 420 120"
             preserveAspectRatio="none"
-            style={css(`position: absolute; right: -6%; top: 6%; width: min(62%, 460px); height: auto; opacity: .55; pointer-events: none;`)}
+            style={css(`position: absolute; right: -6%; top: 6%; width: min(62%, 600px); height: auto; opacity: .55; pointer-events: none;`)}
           >
+            <defs>
+              <linearGradient id="hero-line-fade" x1="0" y1="0" x2="60" y2="0" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stopColor="#fff" stopOpacity="0" />
+                <stop offset="1" stopColor="#fff" stopOpacity="1" />
+              </linearGradient>
+              <mask id="hero-line-fade-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="120">
+                <rect x="0" y="0" width="420" height="120" fill="url(#hero-line-fade)" />
+              </mask>
+            </defs>
             <path
               d="M4 96 C 60 96, 74 40, 132 48 C 178 55, 172 104, 130 96 C 96 89, 108 38, 158 26 C 224 10, 268 66, 330 50 C 372 39, 392 22, 414 16"
               fill="none"
               stroke="#8DE8FD"
               strokeWidth="2.4"
               strokeLinecap="round"
+              mask="url(#hero-line-fade-mask)"
               style={css(`stroke-dasharray: 8 10; animation: dashy 3.4s linear infinite; stroke: var(--ac);`)}
             />
           </svg>
