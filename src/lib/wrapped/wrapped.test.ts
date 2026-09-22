@@ -132,7 +132,9 @@ describe('buildWrappedView — scénario complet', () => {
 
   it('rédige les notes des écrans Kilomètres et Budget à partir des chiffres', () => {
     expect(view.d.km).toBe(fmtNum(stats.distance.estimatedKm))
-    expect(view.d.kmNote).toBe(`${earthPhrase(stats.distance.earthLaps)}, en 8 trajets.`)
+    expect(view.d.kmNote).toBe(
+      `${earthPhrase(stats.distance.earthLaps)}, en 8 trajets. Votre plus long trajet : Saint-Étienne — Paris (490 km), un samedi matin.`,
+    )
     expect(view.d.trips).toBe('8')
     expect(view.d.tripsLabel).toBe('trajets')
     expect(view.d.kmPer).toMatch(/^\d[\d ]* km \/ trajet$/)

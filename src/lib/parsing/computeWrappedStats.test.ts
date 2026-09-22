@@ -74,6 +74,21 @@ describe('computeWrappedStats — scénario de référence, année 2026', () => 
     expect(s.distance.earthLaps).toBeCloseTo(s.distance.estimatedKm / 40075, 6)
   })
 
+  it('retient le trajet le plus long (un seul aller)', () => {
+    expect(s.distance.longest).toMatchObject({
+      km: Math.round(km(SEC, 'PARIS GARE DE LYON') * RAIL_DETOUR_FACTOR),
+      from: 'Saint-Étienne',
+      to: 'Paris',
+      date: '2026-02-14',
+      roundTrip: false,
+    })
+  })
+
+  it("n'a pas de trajet le plus long sans distance connue", () => {
+    const s = computeWrappedStats(datasetOf([{ departure: '2026-02-01T10:00:00.000Z', origin: 'GENEVE', destination: 'LAUSANNE', amount: '30' }]), { kind: 'year', year: 2026 })
+    expect(s.distance.longest).toBeNull()
+  })
+
   it('additionne le budget (billets fusionnés compris) et ignore l’option et le départ à venir', () => {
     expect(s.spend.totalEur).toBe(176.6) // 9,2+9,2+45+42+10+1,2+60
     expect(s.spend.avgPerTripEur).toBeCloseTo(176.6 / 8, 1)

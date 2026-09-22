@@ -1,4 +1,4 @@
-import { MONTHS_FR, WEEKDAYS_FR, type Anticipation, type TripHighlight, type WrappedStats } from '../parsing'
+import { MONTHS_FR, WEEKDAYS_FR, type Anticipation, type DistanceHighlight, type TripHighlight, type WrappedStats } from '../parsing'
 import { cap, fmtEur, fmtNum, plural } from './format'
 
 /** "Les trois quarts du tour de la Terre": the comparison follows the order of magnitude, regardless of volume. */
@@ -18,8 +18,14 @@ export function earthPhrase(laps: number): string {
   return `${laps.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} tours de la Terre`
 }
 
-export function kmNote(laps: number, tripCount: number): string {
-  return `${earthPhrase(laps)}, en ${fmtNum(tripCount)} ${plural(tripCount, 'trajet', 'trajets')}.`
+/** "Environ 7 % du tour de la Terre, en 47 trajets. Votre plus long trajet : Paris — Marseille (664 km), un vendredi soir." */
+export function kmNote(laps: number, tripCount: number, longest: DistanceHighlight | null): string {
+  const sentences = [`${earthPhrase(laps)}, en ${fmtNum(tripCount)} ${plural(tripCount, 'trajet', 'trajets')}.`]
+  if (longest) {
+    const what = longest.from === longest.to ? `trajet à ${longest.from}` : `${longest.roundTrip ? 'aller-retour ' : ''}${longest.from} — ${longest.to}`
+    sentences.push(`Votre plus long trajet : ${what} (${fmtNum(longest.km)} km), ${whenPhrase(longest)}.`)
+  }
+  return sentences.join(' ')
 }
 
 const DAY_PART: Record<NonNullable<TripHighlight['partOfDay']>, string> = {
@@ -30,7 +36,7 @@ const DAY_PART: Record<NonNullable<TripHighlight['partOfDay']>, string> = {
 }
 
 /** "un vendredi soir" */
-export function whenPhrase(t: TripHighlight): string {
+export function whenPhrase(t: Pick<TripHighlight, 'weekday' | 'partOfDay'>): string {
   const part = t.partOfDay ? ` ${DAY_PART[t.partOfDay]}` : ''
   return `un ${WEEKDAYS_FR[t.weekday]}${part}`
 }
