@@ -72,6 +72,8 @@ a:hover { color: #FFFFFF; border-bottom-color: #FFFFFF; }
 .landing-answers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 32px; }
 @media (max-width: 640px) {
   .landing-answers { grid-template-columns: 1fr; }
+  /* Keep only 4 rows on phones so the section doesn't dominate the scroll before the import CTA. */
+  .landing-answers > *:nth-child(n + 5) { display: none; }
 }
 
 /*
