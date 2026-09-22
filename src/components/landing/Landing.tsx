@@ -362,7 +362,7 @@ export function Landing({
               href="https://gregoiretinn.es"
               target="_blank"
               rel="noopener noreferrer"
-              style={css(`color: #F1F4F7; text-decoration: underline; border-bottom: none; transition: opacity .2s ease;`)}
+              style={css(`color: #6C768A; text-decoration: underline; border-bottom: none; transition: opacity .2s ease;`)}
               className="hv-opacity-80"
             >
               Greg
