@@ -54,6 +54,17 @@ export interface TripHighlight {
   roundTrip: boolean
 }
 
+/** The single longest leg (one-way), by estimated km. */
+export interface DistanceHighlight {
+  km: number
+  date: string
+  weekday: number
+  partOfDay: TripHighlight['partOfDay']
+  from: string
+  to: string
+  roundTrip: boolean
+}
+
 export interface MonthBucket {
   /** YYYY-MM */
   month: string
@@ -111,6 +122,8 @@ export interface WrappedStats {
     /** Legs whose distance is known / unknown (station absent from the referential). */
     coveredTrips: number
     uncoveredTrips: number
+    /** Longest single leg, null if no distance is known. */
+    longest: DistanceHighlight | null
   }
 
   spend: {
@@ -210,6 +223,18 @@ export function computeWrappedStats(ds: TripDataset, period: Period, options: St
   const measured = legs.filter((l) => l.km !== null)
   const straight = sum(measured.map((l) => l.km as number))
   const estimatedKm = Math.round(straight * factor)
+  const longestLeg = measured.reduce<Leg | null>((best, l) => (best === null || (l.km as number) > (best.km as number) ? l : best), null)
+  const longest: DistanceHighlight | null = longestLeg
+    ? {
+        km: Math.round((longestLeg.km as number) * factor),
+        date: longestLeg.trip.departureDate,
+        weekday: weekdayOf(longestLeg.trip.departureDate),
+        partOfDay: partOfDay(longestLeg.trip.departureTime),
+        from: longestLeg.from.city.name,
+        to: longestLeg.to.city.name,
+        roundTrip: longestLeg.trip.roundTrip,
+      }
+    : null
 
   // ── Home city, destinations, routes ────────────────────────────────────────
   const travelLegs = legs.filter((l) => !sameCity(l))
@@ -371,6 +396,7 @@ export function computeWrappedStats(ds: TripDataset, period: Period, options: St
       earthLaps: estimatedKm / EARTH_CIRCUMFERENCE_KM,
       coveredTrips: measured.length,
       uncoveredTrips: legs.length - measured.length,
+      longest,
     },
     spend: {
       totalEur,

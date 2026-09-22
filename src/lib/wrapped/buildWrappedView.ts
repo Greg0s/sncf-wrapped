@@ -130,7 +130,7 @@ export function buildWrappedView(s: WrappedStats): WrappedView {
     bigB: s.display.bigEnd,
     years: s.years.map(String),
     km: fmtNum(distance.estimatedKm),
-    kmNote: kmNote(distance.earthLaps, s.tripCount),
+    kmNote: kmNote(distance.earthLaps, s.tripCount, distance.longest),
     trips: fmtNum(s.tripCount),
     tripsLabel: plural(s.tripCount, 'trajet', 'trajets'),
     kmPer: distance.kmPerTrip !== null ? `${fmtNum(distance.kmPerTrip)} km / trajet` : null,
