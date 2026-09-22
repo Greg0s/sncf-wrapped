@@ -150,7 +150,7 @@ export function Recap({
     }
   }
 
-  const shareText = `Mon SNCF Wrapped ${d.period} : ${d.trips} ${d.tripsLabel}, ${d.km} km, ${d.eur} € de billets.`
+  const shareText = `Voici mon bilan sur les rails ${d.period} ! 🚄 À ton tour sur ${SITE_URL}`
 
   // Native share sheet (image + text + link) on phones that support it; falls back to copying the
   // text and link when the platform can't share files or has no Web Share API at all (most desktops).
@@ -170,11 +170,11 @@ export function Recap({
       })
       const file = blob && new File([blob], `sncf-wrapped-${slugify(d.period)}.png`, { type: 'image/png' })
       if (file && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ title: 'SNCF Wrapped', text: shareText, url: SITE_URL, files: [file] })
+        await navigator.share({ title: 'SNCF Wrapped', text: shareText, files: [file] })
       } else if (navigator.share) {
-        await navigator.share({ title: 'SNCF Wrapped', text: shareText, url: SITE_URL })
+        await navigator.share({ title: 'SNCF Wrapped', text: shareText })
       } else if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(`${shareText} ${SITE_URL}`)
+        await navigator.clipboard.writeText(shareText)
         setShareFallback('copied')
       }
     } catch (error) {
