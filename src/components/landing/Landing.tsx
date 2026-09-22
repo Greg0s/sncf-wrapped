@@ -9,6 +9,15 @@ const BANNER_ITEMS = ['Lecture 100% locale', '#SNCFwrapped', 'Projet non officie
 // needs both halves to overflow the container to read as seamless).
 const BANNER_HALF = Array.from({ length: 4 }, () => BANNER_ITEMS).flat()
 
+const BLURRED_ANSWERS = [
+  { label: 'Votre ville la plus visitée', value: 'Marseille', color: '#8DE8FD' },
+  { label: 'Ce que le train vous a coûté', value: '2 438 €', color: '#E39BFD' },
+  { label: 'Vos kilomètres parcourus', value: '31 144 km', color: '#7BBFFC' },
+  { label: 'Votre trajet fétiche', value: 'Nantes → Paris', color: '#B5B5FE' },
+  { label: 'Le mois où vous avez craqué', value: 'Juillet', color: '#8DE8FD' },
+  { label: 'Votre plus longue échappée', value: 'Paris → Nice', color: '#E39BFD' },
+]
+
 export function Landing({
   openData,
   openImport,
@@ -109,136 +118,52 @@ export function Landing({
             ))}
           </div>
         </div>
-        <section style={css(`display: grid; grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); gap: clamp(12px, 2vw, 20px);`)}>
-          <div
-            data-lanim="up"
+        <section
+          data-lanim="up"
+          style={css(`background: #1B2130; border-radius: 28px; padding: clamp(24px, 4vw, 40px);`)}
+        >
+          <h2
             style={css(
-              `background: #8DE8FD; color: #0E1219; border-radius: 24px; padding: clamp(16px, 2.4vw, 22px); aspect-ratio: 4/3; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; transition: transform .25s ease; background: var(--ac);`,
+              `margin: 0 0 6px; font-size: clamp(24px, 3.4vw, 32px); font-weight: 800; letter-spacing: -.035em; line-height: 1.08; max-width: 24ch;`,
             )}
-            className="hv-lift-5"
           >
-            <div style={css(`display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font-size: 13px; font-weight: 600;`)}>
-              <span>Kilomètres</span>
-              <span style={css(`opacity: .55;`)}>01</span>
-            </div>
-            <div style={css(`display: flex; align-items: baseline; gap: 7px;`)}>
-              <span style={css(`font-size: clamp(30px, 4.6vw, 46px); font-weight: 800; letter-spacing: -.045em; line-height: .9;`)}>31 144</span>
-              <span style={css(`font-size: 15px; font-weight: 600;`)}>km</span>
-            </div>
-            <div style={css(`position: relative; height: 30px;`)}>
+            Votre historique connaît déjà les réponses.
+          </h2>
+          <p style={css(`margin: 0 0 24px; font-size: 15px; color: #AEB7C6;`)}>Votre wrapped les dévoile une par une.</p>
+          <div className="landing-answers">
+            {BLURRED_ANSWERS.map((row) => (
               <div
-                style={css(`position: absolute; left: 0; right: 0; top: 13px; height: 1.5px; background: rgba(14,18,25,.9); border-radius: 2px;`)}
-              />
-              <div
-                style={css(
-                  `position: absolute; left: 0; right: 0; top: 17px; height: 5px; background-image: repeating-linear-gradient(90deg, rgba(14,18,25,.4) 0 2px, transparent 2px 13px);`,
-                )}
-              />
-              <div style={css(`position: absolute; left: 3%; top: 0; display: flex; align-items: flex-end; gap: 2px;`)}>
-                <div style={css(`width: 26px; height: 13px; background: #0E1219; border-radius: 3px 8px 2px 2px;`)} />
-                <div style={css(`width: 16px; height: 10px; background: rgba(14,18,25,.75); border-radius: 2px;`)} />
-                <div style={css(`width: 16px; height: 10px; background: rgba(14,18,25,.45); border-radius: 2px;`)} />
-              </div>
-              <div style={css(`position: absolute; left: 44%; top: 10px; width: 8px; height: 8px; border-radius: 50%; background: #0E1219;`)} />
-              <div
-                style={css(
-                  `position: absolute; right: 0; top: 9px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #0E1219; background: #8DE8FD;`,
-                )}
-              />
-            </div>
-            <div style={css(`font-size: 13px; font-weight: 500; opacity: .8;`)}>0,78 tour de la Terre</div>
-          </div>
-          <div
-            data-lanim="up"
-            data-delay="90"
-            style={css(
-              `background: #1B2130; border-radius: 24px; padding: clamp(16px, 2.4vw, 22px); aspect-ratio: 4/3; display: flex; flex-direction: column; justify-content: space-between; transition: transform .25s ease;`,
-            )}
-            className="hv-lift-5"
-          >
-            <div style={css(`display: flex; align-items: center; justify-content: space-between; gap: 10px;`)}>
-              <div style={css(`display: flex; gap: 6px;`)}>
-                <div
+                key={row.label}
+                style={css(`display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid #262E40;`)}
+              >
+                <span style={css(`width: 8px; height: 8px; border-radius: 50%; background: ${row.color}; flex: 0 0 auto;`)} />
+                <span style={css(`flex: 1 1 auto; font-size: 15px; font-weight: 500; color: #DCE3EC;`)}>{row.label}</span>
+                <span
                   style={css(
-                    `width: 24px; height: 24px; border-radius: 50%; background: #F3BB67; color: #0E1219; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800;`,
+                    `flex: 0 0 auto; font-size: 15px; font-weight: 700; color: ${row.color}; filter: blur(5px); user-select: none;`,
                   )}
                 >
-                  $
-                </div>
-                <div
-                  style={css(
-                    `width: 24px; height: 24px; border-radius: 50%; background: #F3BB67; color: #0E1219; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800;`,
-                  )}
-                >
-                  $
-                </div>
+                  {row.value}
+                </span>
               </div>
-              <span style={css(`font-size: 13px; font-weight: 600; color: #6C768A;`)}>02</span>
-            </div>
-            <div style={css(`display: flex; align-items: flex-end; gap: 5px; height: 42px;`)}>
-              <div style={css(`flex: 1; height: 38%; background: rgba(243,187,103,.3); border-radius: 4px;`)} />
-              <div style={css(`flex: 1; height: 56%; background: rgba(243,187,103,.3); border-radius: 4px;`)} />
-              <div style={css(`flex: 1; height: 44%; background: rgba(243,187,103,.3); border-radius: 4px;`)} />
-              <div style={css(`flex: 1; height: 72%; background: rgba(243,187,103,.6); border-radius: 4px;`)} />
-              <div style={css(`flex: 1; height: 100%; background: #F3BB67; border-radius: 4px;`)} />
-              <div style={css(`flex: 1; height: 61%; background: rgba(243,187,103,.6); border-radius: 4px;`)} />
-              <div style={css(`flex: 1; height: 34%; background: rgba(243,187,103,.3); border-radius: 4px;`)} />
-            </div>
-            <div>
-              <div style={css(`font-size: clamp(30px, 4.6vw, 46px); font-weight: 800; letter-spacing: -.045em; line-height: .9; color: #F3BB67;`)}>
-                2 438 €
-              </div>
-              <div style={css(`font-size: 13px; color: #AEB7C6; margin-top: 7px;`)}>31 € par trajet · pic en juillet</div>
-            </div>
+            ))}
           </div>
           <div
-            data-lanim="up"
-            data-delay="180"
             style={css(
-              `background: #1B2130; border-radius: 24px; padding: clamp(16px, 2.4vw, 22px); aspect-ratio: 4/3; display: flex; flex-direction: column; justify-content: space-between; transition: transform .25s ease;`,
+              `display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 24px; padding-top: 22px; border-top: 1px solid #262E40;`,
             )}
-            className="hv-lift-5"
           >
-            <div
+            <span style={css(`font-size: 14px; color: #8A93A6;`)}>Année par année, ou tout votre historique d'un coup.</span>
+            <button
+              type="button"
+              onClick={openImport}
               style={css(
-                `display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font-size: 13px; font-weight: 600; color: #AEB7C6;`,
+                `font-family: 'Schibsted Grotesk', sans-serif; font-size: 15px; font-weight: 700; color: #0E1219; background: #8DE8FD; border: none; border-radius: 999px; padding: 13px 22px; cursor: pointer; transition: transform .18s ease, filter .2s ease; background: var(--ac);`,
               )}
+              className="hv-cta"
             >
-              <span>Top destinations</span>
-              <span style={css(`color: #6C768A;`)}>03</span>
-            </div>
-            <div style={css(`display: flex; flex-direction: column; gap: 10px;`)}>
-              <div>
-                <div style={css(`display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px;`)}>
-                  <span style={css(`font-size: 16px; font-weight: 700;`)}>Paris</span>
-                  <span style={css(`font-size: 13px; color: #AEB7C6;`)}>24</span>
-                </div>
-                <div style={css(`height: 5px; width: 100%; background: #8DE8FD; border-radius: 999px; background: var(--ac);`)} />
-              </div>
-              <div>
-                <div style={css(`display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px;`)}>
-                  <span style={css(`font-size: 16px; font-weight: 700;`)}>Marseille</span>
-                  <span style={css(`font-size: 13px; color: #AEB7C6;`)}>5</span>
-                </div>
-                <div style={css(`height: 5px; width: 42%; background: rgba(241,244,247,.28); border-radius: 999px;`)} />
-              </div>
-              <div>
-                <div style={css(`display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px;`)}>
-                  <span style={css(`font-size: 16px; font-weight: 700;`)}>Nantes</span>
-                  <span style={css(`font-size: 13px; color: #AEB7C6;`)}>4</span>
-                </div>
-                <div style={css(`height: 5px; width: 34%; background: rgba(241,244,247,.28); border-radius: 999px;`)} />
-              </div>
-            </div>
-            <div style={css(`display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6C768A;`)}>
-              <span style={css(`width: 7px; height: 7px; border-radius: 50%; background: #6C768A;`)} />
-              <span
-                style={css(
-                  `flex: 1 1 auto; height: 1px; background-image: repeating-linear-gradient(90deg, rgba(108,118,138,.8) 0 3px, transparent 3px 7px);`,
-                )}
-              />
-              <span>5 villes</span>
-            </div>
+              Voir mes réponses
+            </button>
           </div>
         </section>
         <section style={css(`display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: clamp(12px, 2vw, 20px);`)}>
