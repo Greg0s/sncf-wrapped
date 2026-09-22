@@ -39,6 +39,11 @@ a:hover { color: #FFFFFF; border-bottom-color: #FFFFFF; }
 .hv-border:hover { border-color: #F1F4F7 !important; }
 .focus-accent:focus { border-color: var(--ac) !important; }
 
+/* Signature link ("par Greg"): hover-only opacity fade, gated to devices that actually support hover (desktop). */
+@media (hover: hover) {
+  .hv-opacity-80:hover { opacity: .8 !important; }
+}
+
 /*
  * Action bar under the shareable card (Recap): a labelled download CTA plus round icon buttons.
  * Wide sizing by default (mockup "Boutons partage" 1A, 420px), compact on narrow screens (300px).
