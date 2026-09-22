@@ -356,7 +356,18 @@ export function Landing({
             `display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; font-size: 13px; color: #6C768A; padding: 8px 6px 0;`,
           )}
         >
-          <span>Projet non officiel — par Greg</span>
+          <span>
+            Projet non officiel — par{' '}
+            <a
+              href="https://gregoiretinn.es"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={css(`color: #F1F4F7; text-decoration: underline; border-bottom: none; transition: opacity .2s ease;`)}
+              className="hv-opacity-80"
+            >
+              Greg
+            </a>
+          </span>
           <span>Aperçus : chiffres d'exemple · Contient des données SNCF Open Data (licence ODbL) et IGN Admin Express (Licence Ouverte / Etalab)</span>
           <button
             type="button"
