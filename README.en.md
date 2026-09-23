@@ -37,7 +37,7 @@ The site is served at <http://localhost:5173/sncf-wrapped/>. Add `?debug` to the
 | --- | --- |
 | `npm run check` | Typecheck + tests + build: must pass before any PR (CI does the same) |
 | `npm test` | Tests only (including hundreds of random exports: `FUZZ_SEEDS=2500 npm test -- invariants`) |
-| `npm run sample -- out.csv --profile tiny` | Generates a **fictional** test export (profiles: `lyon`, `regional`, `tiny`, `single`, `foreign`, `roundtrips`) |
+| `npm run sample -- out.csv --profile tiny` | Generates a **fictional** test export (profiles: `lyon`, `regional`, `regional-outlier`, `tiny`, `minimal`, `single`, `foreign`, `international`, `corsica`, `roundtrips`, `huge`) |
 | `npm run inspect -- out.csv` | Prints to the console what the app computes for an export |
 
 **Never add a real export to the repo**: it contains your identity, address and phone number. `*.csv` files are git-ignored, and must also never be placed in `public/` (this folder is copied into the deployed site).

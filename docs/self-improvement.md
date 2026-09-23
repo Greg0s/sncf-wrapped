@@ -18,7 +18,7 @@ The project improves in small, verified, reviewed steps, and each step also impr
 | Backlog | `gh issue list --label auto-improve --state open` |
 | Gate | `npm run check` (typecheck + tests + build) |
 | Fuzz | `FUZZ_SEEDS=2500 npm test -- invariants`; a failure prints the seed, replay it with `randomExport(seed, stationNames)` |
-| Fictional profiles | `npm run sample -- out.csv --profile lyon\|regional\|tiny\|single\|foreign\|roundtrips`, then import in the app or `npm run inspect -- out.csv` |
+| Fictional profiles | `npm run sample -- out.csv --profile lyon\|regional\|regional-outlier\|tiny\|minimal\|single\|foreign\|international\|corsica\|roundtrips\|huge`, then import in the app or `npm run inspect -- out.csv` |
 | Lessons | `docs/learnings.md` |
 
 ## One iteration
