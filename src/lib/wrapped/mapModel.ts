@@ -28,6 +28,18 @@ interface Pt {
 /** The outline of France is only drawn if the map isn't too zoomed in (beyond that, it's just a line fragment). */
 export const showsOutline = (frame: Frame): boolean => frame.k >= 0.4
 
+/** Frame tightly bounding `points`, without the "give up and show full France" rule (see `computeFrame`). */
+function frameFor(points: Pt[]): Frame {
+  const xs = points.map((p) => p.x)
+  const ys = points.map((p) => p.y)
+  const span = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys))
+  const half = Math.max(60, span * 0.9 + 30)
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
+  const cx = clamp((Math.min(...xs) + Math.max(...xs)) / 2, 10 + half, 415 - half)
+  const cy = clamp((Math.min(...ys) + Math.max(...ys)) / 2, 10 + half, 415 - half)
+  return { x: cx - half, y: cy - half, size: half * 2, k: (half * 2) / FULL_FRAME.size }
+}
+
 /** Full France, unless all points are clustered: we zoom in (up to ×3.4) so the lines stay readable. */
 export function computeFrame(points: Pt[]): Frame {
   if (!points.length) return FULL_FRAME
@@ -35,11 +47,7 @@ export function computeFrame(points: Pt[]): Frame {
   const ys = points.map((p) => p.y)
   const span = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys))
   const half = Math.max(60, span * 0.9 + 30)
-  if (span >= 120 || half >= 150) return FULL_FRAME
-  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
-  const cx = clamp((Math.min(...xs) + Math.max(...xs)) / 2, 10 + half, 415 - half)
-  const cy = clamp((Math.min(...ys) + Math.max(...ys)) / 2, 10 + half, 415 - half)
-  return { x: cx - half, y: cy - half, size: half * 2, k: (half * 2) / FULL_FRAME.size }
+  return span >= 120 || half >= 150 ? FULL_FRAME : frameFor(points)
 }
 
 const r1 = (n: number) => Math.round(n * 10) / 10
@@ -166,9 +174,17 @@ function dominantRegion(routes: DrawnRoute[]): Region | null {
   return [...totals.values()].sort((a, b) => b.trips - a.trips || a.region.code.localeCompare(b.region.code))[0]?.region ?? null
 }
 
-/** Regional outline to draw as background, or null for the full-France view / when no region matched. */
-function regionOutlineFor(frame: Frame, routes: DrawnRoute[]): string | null {
-  return frame === FULL_FRAME ? null : (dominantRegion(routes)?.outline ?? null)
+/**
+ * Frame to draw `routes` in, and the region to show as its background (null for the full-France view
+ * or when no region matched). Once a region is chosen as background, the frame is grown if needed so
+ * the region's whole outline fits inside it — otherwise it gets clipped by the viewBox, leaving a
+ * straight, un-region-shaped edge wherever it used to run past the frame.
+ */
+function frameAndRegion(points: Pt[], routes: DrawnRoute[]): { frame: Frame; region: Region | null } {
+  const cityFrame = computeFrame(points)
+  if (cityFrame === FULL_FRAME) return { frame: cityFrame, region: null }
+  const region = dominantRegion(routes)
+  return { frame: region ? frameFor([...points, ...region.points]) : cityFrame, region }
 }
 
 function placeLabels(cities: Omit<MapCity, 'label'>[], frame: Frame): Map<string, MapCity['label']> {
@@ -213,7 +229,7 @@ export function buildMapModel(stats: WrappedStats): MapModel | null {
   if (!routes.length || !stats.timeline.length) return null
 
   const points = routes.flatMap((r) => [r.a, r.b])
-  const frame = computeFrame(points)
+  const { frame, region } = frameAndRegion(points, routes)
   const keys = new Set(routes.map((r) => r.route.key))
 
   const cityMap = new Map<string, Omit<MapCity, 'label'>>()
@@ -291,7 +307,7 @@ export function buildMapModel(stats: WrappedStats): MapModel | null {
 
   return {
     frame,
-    regionOutline: regionOutlineFor(frame, routes),
+    regionOutline: region?.outline ?? null,
     routes: routes.map(({ route, a, b }, i) => ({
       key: route.key,
       name: `${abbreviateCityName(route.cityA.name)} ↔ ${abbreviateCityName(route.cityB.name)}`,
@@ -399,12 +415,12 @@ export interface FranceMapModel {
 export function buildFranceMapModel(stats: WrappedStats): FranceMapModel {
   const routes = drawable(stats)
   if (!routes.length) return { frame: FULL_FRAME, regionOutline: null, hub: null, arcs: [] }
-  const frame = computeFrame(routes.flatMap((r) => [r.a, r.b]))
+  const { frame, region } = frameAndRegion(routes.flatMap((r) => [r.a, r.b]), routes)
   const hubKey = stats.hub?.key
   const hubPoint = routes.flatMap((r) => (r.route.cityA.key === hubKey ? [r.a] : r.route.cityB.key === hubKey ? [r.b] : []))[0] ?? null
   return {
     frame,
-    regionOutline: regionOutlineFor(frame, routes),
+    regionOutline: region?.outline ?? null,
     hub: hubPoint,
     arcs: routes.map(({ route, a, b }, i) => ({
       d: arcPath(a, b, i),
