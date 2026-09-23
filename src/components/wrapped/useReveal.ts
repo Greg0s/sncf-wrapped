@@ -8,7 +8,8 @@ import { REVEAL_SPEED as SP } from './animation'
  *   data-roll + data-final                   number whose digits scroll
  *   data-roll-suspense = "true"              on data-roll, use the right-to-left growing variant
  *   data-roll-cycle = "2023,2025,2026"       on data-roll, loop through these values instead of settling
- *                                             once (teaser: years covered), each with its own scroll-in
+ *                                             once (teaser: years covered); each change rolls in only the
+ *                                             digits that differ ("le cran", mockup 3A)
  *   data-bar = percentage                    bar that fills up
  *   data-draw = rank                         line that draws itself
  *   data-sec / data-seg                      screen / segment of the progress bar
@@ -127,40 +128,105 @@ function rollSuspense(el: HTMLElement) {
   rolling.set(el, requestAnimationFrame(step))
 }
 
-// Per year: a quick scramble-and-settle, then a hold long enough to read it, before moving to the next.
-const CYCLE_STEP_MS = 450 / SP // ~0.75s per year at the default reveal speed
-const CYCLE_ROLL_MS = CYCLE_STEP_MS / 3
+// "Le cran" (mockup 3A): only the digits that actually change move, each sliding down from above into
+// its slot with a light bounce. Digits are animated right to left, each one a beat behind the last, so a
+// multi-digit change (e.g. a decade rollover) reads as a small cascade instead of every digit snapping at
+// once. Non-changing digits are left untouched.
+const CYCLE_ROLL_MS = 620 / SP // duration of a single digit's slide
+const CYCLE_STAGGER_MS = 110 / SP // extra delay per further (more significant) digit changing alongside it
+const CYCLE_HOLD_MS = 260 / SP // pause after a year has settled before rolling to the next
 const cycleTimers = new WeakMap<HTMLElement, number>()
 const cycleGen = new WeakMap<HTMLElement, number>()
+const cycleSlots = new WeakMap<HTMLElement, HTMLElement[]>()
 
 /** Stops a running `rollCycle` on `el`, if any (used both to switch year and on screen exit). */
 function stopCycle(el: HTMLElement) {
   cycleGen.set(el, (cycleGen.get(el) ?? 0) + 1)
   cancelAnimationFrame(rolling.get(el) ?? 0)
   clearTimeout(cycleTimers.get(el))
+  el.getAnimations({ subtree: true }).forEach((a) => a.cancel())
+  if (cycleSlots.has(el)) {
+    cycleSlots.delete(el)
+    el.style.display = ''
+    el.style.height = ''
+  }
 }
 
-/** Loops through `data-roll-cycle`'s values (teaser: the years covered), each with its own scramble-in. */
+function cycleDigit(ch: string): HTMLSpanElement {
+  const span = document.createElement('span')
+  span.textContent = ch
+  span.style.cssText = 'display:block;height:1em;line-height:1;'
+  return span
+}
+
+/** Builds one slot per character of `value`, each clipping its own vertical strip of digits. */
+function buildCycleSlots(el: HTMLElement, value: string): HTMLElement[] {
+  el.textContent = ''
+  el.style.display = 'flex'
+  el.style.height = '1em'
+  const slots = [...value].map((ch) => {
+    // clip-path (not overflow:hidden) so only the top/bottom are clipped: the big, tightly tracked
+    // digits of the teaser bleed slightly into their neighbour's box, and overflow:hidden would cut
+    // that bleed off at the slot's own edges.
+    const slot = document.createElement('span')
+    slot.style.cssText = 'display:block;position:relative;height:1em;clip-path:inset(0 -30% 0 -30%);'
+    const strip = document.createElement('span')
+    strip.style.display = 'block'
+    strip.appendChild(cycleDigit(ch))
+    slot.appendChild(strip)
+    el.appendChild(slot)
+    return slot
+  })
+  cycleSlots.set(el, slots)
+  return slots
+}
+
+/** Slides every digit that differs between `prev` and `next` into place. Returns how many digits moved. */
+function stepRoll(slots: HTMLElement[], prev: string, next: string): number {
+  const changed: number[] = []
+  for (let i = prev.length - 1; i >= 0; i--) if (prev[i] !== next[i]) changed.push(i)
+  changed.forEach((charIndex, k) => {
+    const slot = slots[charIndex]
+    slot.getAnimations({ subtree: true }).forEach((a) => a.cancel())
+    const strip = document.createElement('span')
+    strip.style.cssText = 'display:block;will-change:transform;'
+    strip.appendChild(cycleDigit(next[charIndex]))
+    strip.appendChild(cycleDigit(prev[charIndex]))
+    slot.textContent = ''
+    slot.appendChild(strip)
+    const anim = strip.animate([{ transform: 'translateY(-1em)' }, { transform: 'translateY(0)' }], {
+      duration: CYCLE_ROLL_MS,
+      delay: k * CYCLE_STAGGER_MS,
+      easing: 'cubic-bezier(.3,1.35,.45,1)',
+      fill: 'both',
+    })
+    anim.onfinish = () => {
+      slot.textContent = ''
+      slot.appendChild(cycleDigit(next[charIndex]))
+    }
+  })
+  return changed.length
+}
+
+/** Loops through `data-roll-cycle`'s values (teaser: the years covered), each rolling in with "le cran". */
 function rollCycle(el: HTMLElement) {
   const years = (el.dataset.rollCycle || '').split(',').filter(Boolean)
   if (years.length < 2) return roll(el)
   stopCycle(el)
   const gen = (cycleGen.get(el) ?? 0) + 1
   cycleGen.set(el, gen)
+  let current = years[0].replace(/\d/g, '0')
+  const slots = buildCycleSlots(el, current)
   let index = 0
   const step = () => {
     if (cycleGen.get(el) !== gen || !el.isConnected) return
-    el.dataset.final = years[index]
-    scrambleTo(el, years[index], CYCLE_ROLL_MS, () => {
-      if (cycleGen.get(el) !== gen || !el.isConnected) return
-      cycleTimers.set(
-        el,
-        window.setTimeout(() => {
-          index = (index + 1) % years.length
-          step()
-        }, CYCLE_STEP_MS - CYCLE_ROLL_MS),
-      )
-    })
+    const next = years[index]
+    el.dataset.final = next
+    const changed = stepRoll(slots, current, next)
+    current = next
+    index = (index + 1) % years.length
+    const stepDuration = CYCLE_ROLL_MS + CYCLE_STAGGER_MS * Math.max(0, changed - 1) + CYCLE_HOLD_MS
+    cycleTimers.set(el, window.setTimeout(step, stepDuration))
   }
   step()
 }
