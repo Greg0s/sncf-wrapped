@@ -145,22 +145,22 @@ export function Landing({
                 `font-size: 13px; font-weight: 600; letter-spacing: .04em; color: #8DE8FD; color: var(--ac);`,
               )}
             >
-              Bilan de vos trajets en train
+              Rétrospective de vos trajets en train
             </div>
             <h1
               style={css(
                 `margin: 0; font-size: clamp(38px, 8.4vw, 92px); line-height: .94; letter-spacing: -.045em; font-weight: 800; max-width: 16ch; text-wrap: balance;`,
               )}
             >
-              Les chiffres marquants de vos années sur les rails
+              Le palmarès de vos années de voyage
             </h1>
             <p
               style={css(
                 `margin: 0; font-size: clamp(16px, 2vw, 20px); line-height: 1.5; color: #AEB7C6; max-width: 46ch;`,
               )}
             >
-              Revivez vos voyages en train des années passées et découvrez votre
-              utilisation comme vous ne l'avez jamais vue.
+              Retracez l'historique de vos trajets et découvrez vos habitudes
+              de voyage comme vous ne les avez jamais vues.
             </p>
             <div
               style={css(
