@@ -128,7 +128,7 @@ function rollSuspense(el: HTMLElement) {
 }
 
 // Per year: a quick scramble-and-settle, then a hold long enough to read it, before moving to the next.
-const CYCLE_STEP_MS = 900 / SP // ~1.5s per year at the default reveal speed
+const CYCLE_STEP_MS = 450 / SP // ~0.75s per year at the default reveal speed
 const CYCLE_ROLL_MS = CYCLE_STEP_MS / 3
 const cycleTimers = new WeakMap<HTMLElement, number>()
 const cycleGen = new WeakMap<HTMLElement, number>()
