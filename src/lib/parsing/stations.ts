@@ -82,7 +82,7 @@ export function createStationIndex(data: StationData): StationIndex {
   }
 }
 
-/** Fallback for a station unknown to the referential (e.g. a foreign station): we keep its name, without coordinates. */
+/** Fallback for a station unknown to the referential (a genuinely unknown label): we keep its name, without coordinates. */
 export function unresolvedPlace(raw: string): { raw: string; name: string; city: string; cityKey: string } {
   const label = titleCaseFr(normalizeStationName(raw).replace(BUS_SUFFIX, ''))
   return { raw, name: titleCaseFr(normalizeStationName(raw)), city: label, cityKey: `u:${normalizeStationName(raw).replace(BUS_SUFFIX, '')}` }

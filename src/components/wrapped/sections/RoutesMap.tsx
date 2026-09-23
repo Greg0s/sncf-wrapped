@@ -1,7 +1,6 @@
-import { Fragment, useEffect, useImperativeHandle, useRef, useState, type Ref } from 'react'
+import { Fragment, useEffect, useId, useImperativeHandle, useRef, useState, type Ref } from 'react'
 import { css } from '../../../lib/css'
-import { evaluateMap, showsOutline, type MapModel } from '../../../lib/wrapped'
-import { CORSICA_OUTLINE, FRANCE_OUTLINE } from '../franceOutline'
+import { CORSICA_OUTLINE, FRANCE_OUTLINE, evaluateMap, showsOutline, type MapModel } from '../../../lib/wrapped'
 
 /** Animation control by the parent screen: play when the section becomes visible, reset when it leaves. */
 export interface MapHandle {
@@ -46,6 +45,7 @@ export function RoutesMap({ index, label, model, mapRef }: { index: number; labe
   useImperativeHandle(mapRef, () => ({ play, stop }))
   useEffect(() => () => cancelAnimationFrame(raf.current), [])
 
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, '')
   const state = evaluateMap(model, p)
   const { frame } = model
   const hub = model.cities.find((c) => c.isHub)
@@ -122,6 +122,18 @@ export function RoutesMap({ index, label, model, mapRef }: { index: number; labe
             preserveAspectRatio="xMidYMid meet"
             style={css(`width: 100%; max-width: 340px; height: clamp(190px, 36vh, 320px);`)}
           >
+            {/* A route reaching a foreign city fades out where it leaves France, instead of stopping mid-air. */}
+            <defs>
+              {mapArcs.map(
+                (a, i) =>
+                  a.fade && (
+                    <linearGradient key={i} id={`${uid}-fade-${i}`} gradientUnits="userSpaceOnUse" x1={a.fade.x1} y1={a.fade.y1} x2={a.fade.x2} y2={a.fade.y2}>
+                      <stop offset="0" style={{ stopColor: 'var(--ac)' }} stopOpacity={1} />
+                      <stop offset="1" style={{ stopColor: 'var(--ac)' }} stopOpacity={0} />
+                    </linearGradient>
+                  ),
+              )}
+            </defs>
             {(model.regionOutline ? [model.regionOutline] : showsOutline(frame) ? [FRANCE_OUTLINE, CORSICA_OUTLINE] : []).map((points) => (
               <polyline key={points} points={points} fill="none" stroke="rgba(241,244,247,.18)" strokeWidth={1.2 * frame.k} strokeLinejoin="round" />
             ))}
@@ -130,7 +142,7 @@ export function RoutesMap({ index, label, model, mapRef }: { index: number; labe
                 key={i}
                 d={a.d}
                 fill="none"
-                style={{ stroke: 'var(--ac)' }}
+                style={{ stroke: a.fade ? `url(#${uid}-fade-${i})` : 'var(--ac)' }}
                 strokeWidth={a.w}
                 strokeLinecap="round"
                 opacity={a.o}

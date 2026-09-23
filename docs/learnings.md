@@ -2,6 +2,8 @@
 
 Pitfalls this project already hit. Add a lesson only if it is non-obvious and would bite again: symptom → cause → rule, at most 3 lines. Newest first.
 
+- **Telling a foreign city apart from a domestic one on the map** looked like it needed a new data flag threaded through the referential/dataset/model. It didn't: `regionOf(lat, lon) === null` (already used to pick the map's region background) is exactly that test, since every bundled French region's boundary already covers all domestic ground. → Prefer deriving a classification from existing geometry over adding a parallel flag that can drift out of sync with it.
+
 - **A region's outline (screen 06's map background) looked cut on one side** (e.g. Auvergne-Rhône-Alpes, cut right). Cause: the frame is sized from the *cities* in view, not from the region drawn behind them — a wide region around a tight local cluster overflows the frame and gets clipped by the SVG viewBox, leaving a straight, un-region-shaped edge. → Once a region is chosen as background, grow the frame (`frameFor`) to also cover the region's own outline points, not just the cities.
 
 - **An animation looked frozen at `t=0` in the built-in browser (scroll reveals never fired either).** The pane was hidden (`tabs_context` says so), and a hidden document renders no frames, so CSS animations and `IntersectionObserver` never advance; screenshots still work. → Scrub instead: `el.getAnimations()[0].pause()` then set `currentTime`, and force the `[data-anim]` reveals from the console.

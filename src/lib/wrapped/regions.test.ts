@@ -31,4 +31,11 @@ describe('regionOf', () => {
   it('returns null for a point outside every bundled region', () => {
     expect(regionOf(48.85, -20)).toBeNull() // mid-Atlantic
   })
+
+  it('returns null for a foreign city resolved by the referential (this is how the map tells it apart from a domestic one)', () => {
+    for (const station of ['GENEVE', 'BRUXELLES MIDI', 'LONDRES ST PANCRAS']) {
+      const { lat, lon } = coordsOf(station)
+      expect(regionOf(lat, lon)).toBeNull()
+    }
+  })
 })

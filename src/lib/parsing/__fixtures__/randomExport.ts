@@ -17,7 +17,10 @@ export function mulberry32(seed: number): () => number {
 }
 
 const pad = (n: number) => String(n).padStart(2, '0')
-const UNKNOWN_STATIONS = ['GENEVE', 'BRUXELLES MIDI', 'LONDRES ST PANCRAS', 'ZURICH HB', 'PARIS NORD', 'LYON SAINT EXUPERY AEROPORT', 'BARCELONE SANTS']
+// A mix of: genuinely unknown labels (no coordinates at all), a domestic label only the city
+// resolves (Paris/Lyon, via city-prefix), and foreign cities that ARE in the referential (real
+// coordinates, but outside every French region — exercises the map's cut/fade code path).
+const UNKNOWN_STATIONS = ['TOKYO SHINJUKU', 'NEW YORK PENN STATION', 'PARIS NORD', 'LYON SAINT EXUPERY AEROPORT', 'GENEVE', 'BARCELONE SANTS']
 const SIZES = [1, 2, 3, 5, 10, 40, 150, 400]
 
 function addDays(date: string, days: number): string {

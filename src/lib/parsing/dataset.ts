@@ -8,10 +8,10 @@ export interface CityRef {
   /** Opaque identifier (two stations in the same city share the same key). */
   key: string
   name: string
-  /** null when the station is missing from the referential (e.g. a foreign station). */
+  /** null when the label doesn't match anything in the referential (most foreign cities in direct connection do — see `data/README.md`). */
   lat: number | null
   lon: number | null
-  /** Position on the mockup's schematic map (CarteFrance's viewBox), null without coordinates. */
+  /** Position on the mockup's schematic map (CarteFrance's viewBox), null without coordinates. A foreign city's real position falls outside the drawn outline: the map cuts and fades its lines there (`mapModel.ts`). */
   x: number | null
   y: number | null
 }

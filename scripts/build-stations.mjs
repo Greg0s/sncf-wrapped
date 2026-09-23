@@ -55,6 +55,33 @@ const EXTRA_STATIONS = [
 ]
 stations.push(...EXTRA_STATIONS)
 
+// Major foreign cities reachable from France by a direct train sold through SNCF Connect (Eurostar,
+// Thalys, TGV Lyria, TGV/Frecciarossa, TGV/Renfe-SNCF, ICE): absent from the domestic "Gares de
+// voyageurs" dataset (SNCF doesn't operate there) and genuinely outside France, unlike the CFC set
+// above, but still real, plannable destinations — so they get real GPS coordinates (approximate
+// station/city-centre positions from public geographic data) instead of being treated as unknown.
+// The map draws their line as reaching that real position, cut and faded where it leaves France
+// (`mapModel.ts`); `regionOf` (`regions.ts`) never matches them to a French region, which is how the
+// rest of the app tells them apart from a domestic station. Extend this list, not this file's logic,
+// for more direct destinations.
+const FOREIGN_STATIONS = [
+  { name: 'Londres St Pancras', lat: 51.5308, lon: -0.1238, commune: 'intl-londres' },
+  { name: 'Bruxelles-Midi', lat: 50.8357, lon: 4.3326, commune: 'intl-bruxelles' },
+  { name: 'Amsterdam Centraal', lat: 52.3791, lon: 4.9003, commune: 'intl-amsterdam' },
+  { name: 'Luxembourg', lat: 49.5999, lon: 6.1338, commune: 'intl-luxembourg' },
+  { name: 'Genève', lat: 46.2101, lon: 6.1425, commune: 'intl-geneve' },
+  { name: 'Lausanne', lat: 46.517, lon: 6.6293, commune: 'intl-lausanne' },
+  { name: 'Berne', lat: 46.9489, lon: 7.4394, commune: 'intl-berne' },
+  { name: 'Bâle', lat: 47.5476, lon: 7.5896, commune: 'intl-bale' },
+  { name: 'Zurich HB', lat: 47.3779, lon: 8.5403, commune: 'intl-zurich' },
+  { name: 'Francfort', lat: 50.1072, lon: 8.6633, commune: 'intl-francfort' },
+  { name: 'Stuttgart', lat: 48.7841, lon: 9.1815, commune: 'intl-stuttgart' },
+  { name: 'Milan', lat: 45.4859, lon: 9.2044, commune: 'intl-milan' },
+  { name: 'Turin', lat: 45.0708, lon: 7.6647, commune: 'intl-turin' },
+  { name: 'Barcelone Sants', lat: 41.3792, lon: 2.1401, commune: 'intl-barcelone' },
+]
+stations.push(...FOREIGN_STATIONS)
+
 const byCommune = new Map()
 for (const s of stations) {
   if (!byCommune.has(s.commune)) byCommune.set(s.commune, [])

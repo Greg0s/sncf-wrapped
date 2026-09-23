@@ -55,8 +55,8 @@ describe('resolve', () => {
     expect(place?.cityKey).toBe(index.resolve('SAINT ETIENNE CHATEAUCREUX')?.cityKey)
   })
 
-  it('renvoie null pour une gare absente du référentiel (gares étrangères, libellés inconnus)', () => {
-    for (const raw of ['BRUXELLES MIDI', 'GENEVE', 'LONDRES ST PANCRAS', '', '   ']) expect(index.resolve(raw)).toBeNull()
+  it('renvoie null pour une gare absente du référentiel (libellé inconnu)', () => {
+    for (const raw of ['TOKYO SHINJUKU', 'NEW YORK PENN STATION', '', '   ']) expect(index.resolve(raw)).toBeNull()
   })
 
   it('résout les gares du réseau CFC (Corse), absentes du jeu de données SNCF Open Data mais domestiques', () => {
@@ -66,6 +66,15 @@ describe('resolve', () => {
       expect(place?.lon).not.toBeNull()
     }
     expect(index.resolve('ILE ROUSSE')?.name).toBe('Île-Rousse')
+  })
+
+  it('résout les grandes villes étrangères en liaison directe depuis la France, avec de vraies coordonnées', () => {
+    for (const raw of ['GENEVE', 'LAUSANNE', 'ZURICH HB', 'BRUXELLES MIDI', 'LONDRES ST PANCRAS', 'BARCELONE SANTS']) {
+      const place = index.resolve(raw)
+      expect(place?.lat).not.toBeNull()
+      expect(place?.lon).not.toBeNull()
+    }
+    expect(index.resolve('GENEVE')).toMatchObject({ city: 'Genève' })
   })
 
   it('fournit des coordonnées plausibles', () => {
@@ -78,6 +87,6 @@ describe('resolve', () => {
 
 describe('unresolvedPlace', () => {
   it('garde le nom lisible d’une gare inconnue', () => {
-    expect(unresolvedPlace('BRUXELLES MIDI')).toMatchObject({ name: 'Bruxelles Midi', city: 'Bruxelles Midi', cityKey: 'u:BRUXELLES MIDI' })
+    expect(unresolvedPlace('TOKYO SHINJUKU')).toMatchObject({ name: 'Tokyo Shinjuku', city: 'Tokyo Shinjuku', cityKey: 'u:TOKYO SHINJUKU' })
   })
 })

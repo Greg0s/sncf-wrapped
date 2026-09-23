@@ -1,6 +1,7 @@
 import { monthOf, type CityRef, type RouteStat, type WrappedStats } from '../parsing'
 import { abbreviateCityName } from './cityAbbrev'
 import { fmtNum, plural } from './format'
+import { CORSICA_OUTLINE, FRANCE_OUTLINE } from './franceOutline'
 import { dayMonthLabel, monthName } from './phrases'
 import { regionOf, type Region } from './regions'
 
@@ -54,12 +55,109 @@ const r1 = (n: number) => Math.round(n * 10) / 10
 /** Sign of the arcs' curvature, alternating as in the mockup (Paris +, Marseille +, Nantes −, Dijon +, Strasbourg −). */
 const CURVE_SIGNS = [1, 1, -1, 1, -1]
 
-/** Quadratic arc from a to b: the control point is offset perpendicularly by 14% of the chord. */
-export function arcPath(a: Pt, b: Pt, index: number): string {
+/** Control point of the quadratic arc from a to b: offset perpendicularly by 14% of the chord. */
+function controlPoint(a: Pt, b: Pt, index: number): Pt {
   const sign = CURVE_SIGNS[index % CURVE_SIGNS.length]
   const dx = b.x - a.x
   const dy = b.y - a.y
-  return `M${r1(a.x)} ${r1(a.y)} Q${r1((a.x + b.x) / 2 + 0.14 * sign * dy)} ${r1((a.y + b.y) / 2 - 0.14 * sign * dx)} ${r1(b.x)} ${r1(b.y)}`
+  return { x: (a.x + b.x) / 2 + 0.14 * sign * dy, y: (a.y + b.y) / 2 - 0.14 * sign * dx }
+}
+
+/** Quadratic arc from a to b: the control point is offset perpendicularly by 14% of the chord. */
+export function arcPath(a: Pt, b: Pt, index: number): string {
+  const c = controlPoint(a, b, index)
+  return `M${r1(a.x)} ${r1(a.y)} Q${r1(c.x)} ${r1(c.y)} ${r1(b.x)} ${r1(b.y)}`
+}
+
+/*
+ * A route to a foreign city (real GPS position, so drawn as if the line truly reached it) is cut
+ * where it leaves France, with a short fade instead of a hard edge — see `foreignCut` below.
+ */
+
+function parseOutline(s: string): Pt[] {
+  return s.split(' ').map((pair) => {
+    const [x, y] = pair.split(',').map(Number)
+    return { x, y }
+  })
+}
+const FRANCE_RING = parseOutline(FRANCE_OUTLINE)
+const CORSICA_RING = parseOutline(CORSICA_OUTLINE)
+
+/** Ray-casting point-in-polygon test, in the map's own SVG coordinates (see `regionOf` for the lat/lon equivalent). */
+function insideRing(pt: Pt, ring: Pt[]): boolean {
+  let inside = false
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const { x: xi, y: yi } = ring[i]
+    const { x: xj, y: yj } = ring[j]
+    if (yi > pt.y !== yj > pt.y && pt.x < ((xj - xi) * (pt.y - yi)) / (yj - yi) + xi) inside = !inside
+  }
+  return inside
+}
+function insideAnyRing(pt: Pt, rings: Pt[][]): boolean {
+  return rings.some((ring) => insideRing(pt, ring))
+}
+
+/** A city with no known position, or whose real coordinates fall outside every bundled French region. */
+function isForeign(city: CityRef): boolean {
+  return city.lat === null || city.lon === null || regionOf(city.lat, city.lon) === null
+}
+
+const lerp = (p: Pt, q: Pt, t: number): Pt => ({ x: p.x + (q.x - p.x) * t, y: p.y + (q.y - p.y) * t })
+const quadAt = (p0: Pt, c: Pt, p2: Pt, t: number): Pt => lerp(lerp(p0, c, t), lerp(c, p2, t), t)
+
+/** How far (in curve parameter) the fade extends past the point where the line leaves the outline. */
+const FADE_EXTRA_T = 0.05
+const CROSSING_SAMPLES = 48
+
+/**
+ * Where a route's arc crosses out of `rings` (the outline currently drawn: a region's, or France's),
+ * walking from the domestic end (assumed inside) towards the foreign one (assumed outside). Returns the
+ * truncated path (domestic point → a little past the crossing) and the two points the fade gradient
+ * should run between, or null if `foreign` isn't actually outside `rings` (schematic outline imprecision
+ * near the border) — the caller then falls back to the plain, uncut arc.
+ */
+function foreignCutArc(domestic: Pt, control: Pt, foreign: Pt, rings: Pt[][]): { d: string; fadeFrom: Pt; fadeTo: Pt } | null {
+  if (insideAnyRing(foreign, rings)) return null
+  let lastInsideT = 0
+  for (let i = 1; i <= CROSSING_SAMPLES; i++) {
+    const t = i / CROSSING_SAMPLES
+    if (insideAnyRing(quadAt(domestic, control, foreign, t), rings)) lastInsideT = t
+    else break
+  }
+  const tEnd = Math.min(1, lastInsideT + FADE_EXTRA_T)
+  const subControl = lerp(domestic, control, tEnd)
+  const fadeTo = quadAt(domestic, control, foreign, tEnd)
+  const fadeFrom = quadAt(domestic, control, foreign, lastInsideT)
+  return { d: `M${r1(domestic.x)} ${r1(domestic.y)} Q${r1(subControl.x)} ${r1(subControl.y)} ${r1(fadeTo.x)} ${r1(fadeTo.y)}`, fadeFrom, fadeTo }
+}
+
+/** Anchor points (map space) of the gradient a foreign-bound route should fade through, or null for a plain domestic route. */
+export interface RouteFade {
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+}
+
+/**
+ * The path to actually draw for a route, its on-screen length (for animation timing) and, when it
+ * reaches a foreign city, where it should fade out. `rings` is whichever outline is currently drawn
+ * in the background (a region's when zoomed on one, France + Corsica otherwise).
+ */
+function foreignCut(route: RouteStat, a: Pt, b: Pt, index: number, rings: Pt[][]): { d: string; length: number; fade: RouteFade | null } {
+  const aForeign = isForeign(route.cityA)
+  const bForeign = isForeign(route.cityB)
+  if (!aForeign && !bForeign) return { d: arcPath(a, b, index), length: Math.hypot(b.x - a.x, b.y - a.y), fade: null }
+
+  const control = controlPoint(a, b, index)
+  const [domestic, foreign] = aForeign ? [b, a] : [a, b]
+  const cut = foreignCutArc(domestic, control, foreign, rings)
+  if (!cut) return { d: arcPath(a, b, index), length: Math.hypot(b.x - a.x, b.y - a.y), fade: null }
+  return {
+    d: cut.d,
+    length: Math.hypot(cut.fadeTo.x - domestic.x, cut.fadeTo.y - domestic.y),
+    fade: { x1: cut.fadeFrom.x, y1: cut.fadeFrom.y, x2: cut.fadeTo.x, y2: cut.fadeTo.y },
+  }
 }
 
 type Anchor = 'start' | 'middle' | 'end'
@@ -83,11 +181,13 @@ export interface MapRoute {
   key: string
   /** "Saint-Étienne ↔ Paris" */
   name: string
-  /** Path from A (the home city, when it's part of the route) to B. */
+  /** Path from A (the home city, when it's part of the route) to B — cut short (with `fade`) when B is a foreign city. */
   d: string
   totalLegs: number
-  /** On-screen chord length (A to B), used to make every line draw in at the same speed regardless of distance. */
+  /** On-screen chord length (A to B, or to the fade's end when cut), used to make every line draw in at the same speed regardless of distance. */
   length: number
+  /** Set when this route reaches a foreign city: gradient anchors for fading the line out where it leaves France. */
+  fade: RouteFade | null
 }
 
 export interface MapCity {
@@ -144,13 +244,18 @@ interface DrawnRoute {
   b: Pt
 }
 
-/** Routes whose two cities both have a position on the map (foreign stations are excluded). All of them, not just the top-ranked ones shown on the ranking screen. */
+/**
+ * Routes whose two cities both have a position on the map (stations unknown to the referential are
+ * excluded), except a route connecting two foreign cities — nothing in it ever touches France, so it
+ * has nothing meaningful to cut/fade against and is left off the map (still counted everywhere else).
+ * All drawable routes, not just the top-ranked ones shown on the ranking screen.
+ */
 function drawable(stats: WrappedStats): DrawnRoute[] {
   return stats.allRoutes.flatMap((route) => {
     const { cityA, cityB } = route
-    return cityA.x !== null && cityA.y !== null && cityB.x !== null && cityB.y !== null
-      ? [{ route, a: { x: cityA.x, y: cityA.y }, b: { x: cityB.x, y: cityB.y } }]
-      : []
+    if (cityA.x === null || cityA.y === null || cityB.x === null || cityB.y === null) return []
+    if (isForeign(cityA) && isForeign(cityB)) return []
+    return [{ route, a: { x: cityA.x, y: cityA.y }, b: { x: cityB.x, y: cityB.y } }]
   })
 }
 
@@ -297,7 +402,11 @@ export function buildMapModel(stats: WrappedStats): MapModel | null {
     return monthEvents.map((e, j) => ({ pos: idx + (j + 0.5) / monthEvents.length, label: e.label, date: e.date }))
   })
 
-  const lengths = new Map(routes.map(({ route, a, b }) => [route.key, Math.hypot(b.x - a.x, b.y - a.y)]))
+  // Whichever outline is actually drawn behind the routes (a region's when zoomed in on one, France +
+  // Corsica otherwise) is also what a foreign-bound route's line is cut and faded against.
+  const rings: Pt[][] = region ? [region.points] : [FRANCE_RING, CORSICA_RING]
+  const cuts = new Map(routes.map(({ route, a, b }, i) => [route.key, foreignCut(route, a, b, i, rings)]))
+  const lengths = new Map(routes.map(({ route }) => [route.key, cuts.get(route.key)!.length]))
   // The month a route is first drawn: the earliest month where it has any leg.
   const firstMonthByRoute = new Map<string, number>()
   months.forEach((m, i) => {
@@ -308,13 +417,17 @@ export function buildMapModel(stats: WrappedStats): MapModel | null {
   return {
     frame,
     regionOutline: region?.outline ?? null,
-    routes: routes.map(({ route, a, b }, i) => ({
-      key: route.key,
-      name: `${abbreviateCityName(route.cityA.name)} ↔ ${abbreviateCityName(route.cityB.name)}`,
-      d: arcPath(a, b, i),
-      totalLegs: totals.get(route.key) ?? route.trips,
-      length: lengths.get(route.key) ?? 0,
-    })),
+    routes: routes.map(({ route }) => {
+      const cut = cuts.get(route.key)!
+      return {
+        key: route.key,
+        name: `${abbreviateCityName(route.cityA.name)} ↔ ${abbreviateCityName(route.cityB.name)}`,
+        d: cut.d,
+        totalLegs: totals.get(route.key) ?? route.trips,
+        length: cut.length,
+        fade: cut.fade,
+      }
+    }),
     cities: [...cityMap.values()].map((c) => ({ ...c, label: labels.get(c.key) as MapCity['label'] })),
     months,
     totalKm: stats.distance.estimatedKm,
@@ -327,7 +440,7 @@ export function buildMapModel(stats: WrappedStats): MapModel | null {
 }
 
 export interface MapState {
-  arcs: { d: string; off: number; o: number; w: string }[]
+  arcs: { d: string; off: number; o: number; w: string; fade: RouteFade | null }[]
   dots: { x: number; y: number; r: number; o: number }[]
   labels: { name: string; x: number; y: number; anchor: Anchor; o: number; fontSize: number }[]
   /** Up to 5 most recent travel legs at the current progress, most recent first. */
@@ -378,6 +491,7 @@ export function evaluateMap(model: MapModel, progress: number): MapState {
         off: w ? 0 : drawing ? Math.round(100 - drawFrac * 100) : 100,
         o: w || drawing ? (partial[r.key] ? 1 : 0.5) : 0,
         w: ((1.2 + (w / model.maxLegs) * 3.4) * k).toFixed(2),
+        fade: r.fade,
       }
     }),
     dots: model.cities.map((c) => ({ x: c.x, y: c.y, r: (c.isHub ? 6 : active(c) ? 5 : 3.6) * k, o: seen(c) ? 1 : 0 })),
@@ -408,7 +522,7 @@ export interface FranceMapModel {
   frame: Frame
   regionOutline: string | null
   hub: Pt | null
-  arcs: { d: string; w: number; dots: { x: number; y: number; r: number }[] }[]
+  arcs: { d: string; w: number; fade: RouteFade | null; dots: { x: number; y: number; r: number }[] }[]
 }
 
 /** Mini-map for the shareable card: the same routes, without animation. */
@@ -416,19 +530,25 @@ export function buildFranceMapModel(stats: WrappedStats): FranceMapModel {
   const routes = drawable(stats)
   if (!routes.length) return { frame: FULL_FRAME, regionOutline: null, hub: null, arcs: [] }
   const { frame, region } = frameAndRegion(routes.flatMap((r) => [r.a, r.b]), routes)
+  const rings: Pt[][] = region ? [region.points] : [FRANCE_RING, CORSICA_RING]
   const hubKey = stats.hub?.key
   const hubPoint = routes.flatMap((r) => (r.route.cityA.key === hubKey ? [r.a] : r.route.cityB.key === hubKey ? [r.b] : []))[0] ?? null
   return {
     frame,
     regionOutline: region?.outline ?? null,
     hub: hubPoint,
-    arcs: routes.map(({ route, a, b }, i) => ({
-      d: arcPath(a, b, i),
-      w: WIDTHS[i] ?? WIDTHS[WIDTHS.length - 1],
-      dots: [
-        ...(route.cityA.key === hubKey ? [] : [{ ...a, r: DOT_RADII[i] ?? 4.6 }]),
-        ...(route.cityB.key === hubKey ? [] : [{ ...b, r: DOT_RADII[i] ?? 4.6 }]),
-      ],
-    })),
+    arcs: routes.map(({ route, a, b }, i) => {
+      const cut = foreignCut(route, a, b, i, rings)
+      return {
+        d: cut.d,
+        w: WIDTHS[i] ?? WIDTHS[WIDTHS.length - 1],
+        fade: cut.fade,
+        dots: [
+          // No label on this mini-map: a foreign city's dot (past the fade, outside France) would read as a stray mark, so it's left off.
+          ...(route.cityA.key === hubKey || isForeign(route.cityA) ? [] : [{ ...a, r: DOT_RADII[i] ?? 4.6 }]),
+          ...(route.cityB.key === hubKey || isForeign(route.cityB) ? [] : [{ ...b, r: DOT_RADII[i] ?? 4.6 }]),
+        ],
+      }
+    }),
   }
 }
