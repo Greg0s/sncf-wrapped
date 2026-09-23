@@ -39,7 +39,7 @@ Details of the CSV side are in `csv-format.md`.
 - **Home city ("hub")** = city with the most departures + arrivals in the period. It is excluded from the destinations ranking, and comes first in route labels.
 - **Cities** group stations of one commune (INSEE code) and take the common name prefix ("Lyon Part Dieu" → "Lyon"). Known limit: a single-station city keeps its full name ("Bordeaux Saint-Jean"); accepted.
 - **Adaptive screens**: a screen without data is removed and the others renumbered; rankings shrink; headings switch to singular/tie wording. All in `buildWrappedView`.
-- **Map**: `projectToFranceMap` is an exact affine fit of the mockup's schematic map. The frame zooms when all cities are close; the France outline is only drawn at moderate zoom.
+- **Map**: `projectToFranceMap` is an exact affine fit of the mockup's schematic map. The frame zooms when all cities are close; the France outline is only drawn at moderate zoom. A route reaching a foreign city (real coordinates — see `data/README.md`) is drawn as if it truly reached that position, then cut and faded (gradient) exactly where it crosses the outline actually on screen (the region's when zoomed on one, France's otherwise) — see `foreignCut` in `mapModel.ts`. `regionOf` (a point matching no bundled French region) is how a foreign city is told apart from a domestic one.
 
 ## Porting the mockup
 

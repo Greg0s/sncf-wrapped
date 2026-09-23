@@ -32,3 +32,15 @@ merges a small hand-picked `EXTRA_STATIONS` list for them (approximate coordinat
 geographic data, not covered by the SNCF Open Data licence) so their trips still get a distance and a
 map position, instead of being treated like a foreign/unknown station. Extend that list, not this
 file, if more CFC stations need coverage.
+
+## Foreign cities in direct connection
+
+Major foreign cities reachable from France by a direct train sold through SNCF Connect (Eurostar,
+Thalys, TGV Lyria, TGV/Frecciarossa, TGV/Renfe-SNCF, ICE — e.g. Genève, Bruxelles, Londres, Barcelone,
+Milan, Francfort) are absent from the domestic dataset above for the same reason as CFC, but are
+**not domestic**: `build-stations.mjs` merges a `FOREIGN_STATIONS` list for them, with real GPS
+coordinates (approximate, from public geographic data), so their trips get a real distance. `regionOf`
+(`src/lib/wrapped/regions.ts`) never matches their coordinates to a bundled French region — that's how
+the app tells a foreign city apart from a domestic one (rather than a data flag). On the map, a route
+reaching one is drawn as if it truly reached that position, then cut and faded where it leaves France
+(`src/lib/wrapped/mapModel.ts`). Extend `FOREIGN_STATIONS`, not this file's logic, for more destinations.

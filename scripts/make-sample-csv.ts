@@ -69,11 +69,12 @@ const profiles: Record<string, () => FixtureRow[]> = {
     { departure: '2026-03-02T08:00:00.000Z', origin: 'LYON PART DIEU', destination: 'PARIS GARE DE LYON', amount: '45' },
     { departure: '2026-03-09T08:00:00.000Z', origin: 'LYON PART DIEU', destination: 'PARIS GARE DE LYON', amount: '47' },
   ],
-  // Only stations absent from the French referential: no km and no map
+  // Foreign cities in direct connection (referential): real km, and a map line cut/faded at the border
   foreign: () => [
     { departure: '2026-03-02T08:00:00.000Z', origin: 'LYON PART DIEU', destination: 'GENEVE', amount: '34' },
     { departure: '2026-03-09T08:00:00.000Z', origin: 'GENEVE', destination: 'LYON PART DIEU', amount: '36' },
     { departure: '2026-05-01T08:00:00.000Z', origin: 'PARIS NORD', destination: 'BRUXELLES MIDI', amount: '59' },
+    { departure: '2026-06-01T08:00:00.000Z', origin: 'TOKYO SHINJUKU', destination: 'LYON PART DIEU', amount: '199' }, // genuinely unresolvable label: no km, no map
   ],
   // Round-trip tickets: each ticket counts as two trips
   roundtrips: () => [
@@ -83,7 +84,7 @@ const profiles: Record<string, () => FixtureRow[]> = {
   ],
   // The absolute minimum: a single ticket, ever. Every ranking screen degrades to nothing or a single fact.
   minimal: () => [{ departure: '2026-06-14T08:30:00.000Z', orderDate: '2026-06-01', origin: 'LYON PART DIEU', destination: 'PARIS GARE DE LYON', amount: '45' }],
-  // Frequent trips abroad: valid train trips, but the stations never match the French referential (no km, no map pin)
+  // Frequent trips abroad: all in direct connection (referential), so all get real km and a map line cut/faded at the border
   international: () => [
     ...commute('LYON PART DIEU', [['GENEVE', 30], ['LAUSANNE', 38], ['ZURICH HB', 75], ['BRUXELLES MIDI', 90], ['BARCELONE SANTS', 65]], 2024, [2026, 8], 2),
     { departure: '2025-11-14T07:20:00.000Z', orderDate: '2025-10-20', origin: 'PARIS NORD', destination: 'LONDRES ST PANCRAS', amount: '99' },

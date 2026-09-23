@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { buildSncfCsv, type FixtureRow } from '../parsing/__fixtures__/sncfCsv'
-import { buildTripDataset, computeWrappedStats, createStationIndex, parseSncfCsv, type StationData } from '../parsing'
+import { buildTripDataset, computeWrappedStats, createStationIndex, parseSncfCsv, projectToFranceMap, type StationData } from '../parsing'
 import stationData from '../parsing/data/gares.json'
 import { accentFor } from './accents'
 import { buildWrappedView } from './buildWrappedView'
@@ -206,11 +206,11 @@ describe('buildWrappedView — adaptation aux petits volumes', () => {
     expect(view.sections.map((s) => s.label)).toEqual([null, '01 — Distance parcourue', '02 — Ce que ça vous a coûté', '03 — Vos destinations', '04 — Vos itinéraires', "05 — Vos lignes de l'année", '06 — Votre carte à partager'])
   })
 
-  it('retire Kilomètres et la carte quand aucune gare n’a de coordonnées (gares étrangères)', () => {
-    const { view } = viewOf([{ departure: '2026-02-01T10:00:00.000Z', origin: 'LYON PART DIEU', destination: 'GENEVE', amount: '30' }])
+  it('retire Kilomètres et la carte quand aucune gare n’a de coordonnées (libellés inconnus)', () => {
+    const { view } = viewOf([{ departure: '2026-02-01T10:00:00.000Z', origin: 'LYON PART DIEU', destination: 'TOKYO SHINJUKU', amount: '30' }])
     expect(view.sections.map((s) => s.id)).toEqual(['teaser', 'budget', 'cities', 'routes', 'anticipation', 'recap'])
     expect(view.map).toBeNull()
-    expect(view.cities[0].name).toBe('Geneve')
+    expect(view.cities[0].name).toBe('Tokyo Shinjuku')
     expect(view.routes[0].meta).toBe('') // no known distance
   })
 
@@ -346,6 +346,30 @@ describe('carte des trajets', () => {
     const many = viewOf(cities.map((dest, i) => ({ departure: `2026-02-0${i + 1}T10:00:00.000Z`, origin: SEC, destination: dest })))
     expect(many.view.routes).toHaveLength(5) // ranking screen stays capped
     expect(many.view.map!.routes).toHaveLength(6) // the map draws every geolocated route
+  })
+
+  it('coupe et estompe le trait vers une ville étrangère au lieu de le tronquer net', () => {
+    const { view } = viewOf([{ departure: '2026-02-01T10:00:00.000Z', origin: 'LYON PART DIEU', destination: 'GENEVE', amount: '30' }])
+    const route = view.map!.routes[0]
+    expect(route.fade).not.toBeNull() // the line reaching Genève fades instead of stopping mid-air
+    const geneve = view.map!.cities.find((c) => c.name.includes('Gen'))!
+    const place = index.resolve('GENEVE')!
+    const genevePos = projectToFranceMap(place.cityLat, place.cityLon)
+    // the city itself sits at its real (off-outline) position, not at the fade's end
+    expect(geneve.x).toBeCloseTo(genevePos.x, 1)
+    expect(geneve.y).toBeCloseTo(genevePos.y, 1)
+    // the drawn path is cut short of Genève's actual position (Lyon ↔ Genève is a short hop, so only
+    // the very end of the line falls outside France — but it's still genuinely cut, not drawn in full)
+    const lyon = index.resolve('LYON PART DIEU')!
+    const lyonPos = projectToFranceMap(lyon.cityLat, lyon.cityLon)
+    const fullChord = Math.hypot(genevePos.x - lyonPos.x, genevePos.y - lyonPos.y)
+    expect(route.length).toBeLessThan(fullChord)
+    const [, endX, endY] = route.d.match(/(-?[\d.]+) (-?[\d.]+)$/)!.map(Number)
+    expect(Math.hypot(endX - geneve.x, endY - geneve.y)).toBeGreaterThan(0)
+    // the shareable mini-map fades the same way, and skips the (unlabelled) foreign dot
+    const arc = view.franceMap.arcs[0]
+    expect(arc.fade).not.toBeNull()
+    expect(arc.dots).toHaveLength(0) // Lyon is the hub (no dot), Genève is foreign (no dot either)
   })
 })
 

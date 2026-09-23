@@ -25,7 +25,7 @@ export function normalizeStationName(s: string): string {
 
 const SMALL_WORDS = new Set(['de', 'du', 'des', 'la', 'le', 'les', 'sur', 'sous', 'en', 'et', 'aux', 'au', 'd', 'l'])
 
-/** "BRUXELLES MIDI" → "Bruxelles Midi" (used for stations missing from the referential). */
+/** "TOKYO SHINJUKU" → "Tokyo Shinjuku" (used for stations missing from the referential). */
 export function titleCaseFr(s: string): string {
   return s
     .toLowerCase()

@@ -100,6 +100,6 @@ export interface StationData {
 }
 
 export interface StationIndex {
-  /** Resolves an SNCF label; null if the station is unknown to the referential (e.g. a foreign station). */
+  /** Resolves an SNCF label; null if the station is unknown to the referential (major foreign cities in direct connection are known — see `data/README.md`). */
   resolve(rawName: string): Place | null
 }

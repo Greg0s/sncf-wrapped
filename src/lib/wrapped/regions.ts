@@ -52,7 +52,8 @@ function containsPoint(boundary: [number, number][], lat: number, lon: number): 
 }
 
 /**
- * Which bundled region a point falls in, null if none contains it (e.g. a foreign station).
+ * Which bundled region a point falls in, null if none contains it — this is also how the map (`mapModel.ts`)
+ * tells a foreign city (real coordinates, but outside every French region) apart from a domestic one.
  * No overseas station currently exists in the referential, so only metropolitan regions are ever matched.
  */
 export function regionOf(lat: number, lon: number): Region | null {

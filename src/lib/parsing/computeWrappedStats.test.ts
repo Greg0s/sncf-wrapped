@@ -85,7 +85,10 @@ describe('computeWrappedStats — scénario de référence, année 2026', () => 
   })
 
   it("n'a pas de trajet le plus long sans distance connue", () => {
-    const s = computeWrappedStats(datasetOf([{ departure: '2026-02-01T10:00:00.000Z', origin: 'GENEVE', destination: 'LAUSANNE', amount: '30' }]), { kind: 'year', year: 2026 })
+    const s = computeWrappedStats(
+      datasetOf([{ departure: '2026-02-01T10:00:00.000Z', origin: 'TOKYO SHINJUKU', destination: 'NEW YORK PENN STATION', amount: '30' }]),
+      { kind: 'year', year: 2026 },
+    )
     expect(s.distance.longest).toBeNull()
   })
 
@@ -281,20 +284,35 @@ describe('cas limites', () => {
     expect(s.destinations.items.map((d) => d.city.name)).toEqual(['Lyon'])
   })
 
-  it('garde une gare étrangère dans les classements, sans distance', () => {
+  it('garde une gare inconnue dans les classements, sans distance', () => {
+    const ds = datasetOf([
+      { departure: '2026-02-01T10:00:00.000Z', origin: 'LYON PART DIEU', destination: 'TOKYO SHINJUKU', amount: '30' },
+      { departure: '2026-02-10T10:00:00.000Z', origin: 'LYON PART DIEU', destination: 'ANNECY', amount: '20' },
+    ])
+    const s = computeWrappedStats(ds, { kind: 'year', year: 2026 })
+    expect(ds.unresolvedPlaces).toEqual([{ raw: 'TOKYO SHINJUKU', matchedAs: null, via: 'none', count: 1 }])
+    expect(s.destinations.items.map((d) => d.city.name).sort()).toEqual(['Annecy', 'Tokyo Shinjuku'])
+    expect(s.distance.coveredTrips).toBe(1)
+    expect(s.distance.uncoveredTrips).toBe(1)
+    expect(s.distance.estimatedKm).toBe(Math.round(km('LYON PART DIEU', 'ANNECY') * RAIL_DETOUR_FACTOR))
+    const tokyo = s.routes.items.find((r) => r.label.includes('Tokyo'))!
+    expect(tokyo.km).toBeNull()
+    expect(tokyo.cityB.x).toBeNull() // no position on the map
+  })
+
+  it('donne une distance et une position à une gare étrangère en liaison directe (référentiel)', () => {
     const ds = datasetOf([
       { departure: '2026-02-01T10:00:00.000Z', origin: 'LYON PART DIEU', destination: 'GENEVE', amount: '30' },
       { departure: '2026-02-10T10:00:00.000Z', origin: 'LYON PART DIEU', destination: 'ANNECY', amount: '20' },
     ])
     const s = computeWrappedStats(ds, { kind: 'year', year: 2026 })
-    expect(ds.unresolvedPlaces).toEqual([{ raw: 'GENEVE', matchedAs: null, via: 'none', count: 1 }])
-    expect(s.destinations.items.map((d) => d.city.name).sort()).toEqual(['Annecy', 'Geneve'])
-    expect(s.distance.coveredTrips).toBe(1)
-    expect(s.distance.uncoveredTrips).toBe(1)
-    expect(s.distance.estimatedKm).toBe(Math.round(km('LYON PART DIEU', 'ANNECY') * RAIL_DETOUR_FACTOR))
-    const geneve = s.routes.items.find((r) => r.label.includes('Geneve'))!
-    expect(geneve.km).toBeNull()
-    expect(geneve.cityB.x).toBeNull() // no position on the map
+    expect(ds.unresolvedPlaces).toEqual([])
+    expect(s.destinations.items.map((d) => d.city.name).sort()).toEqual(['Annecy', 'Genève'])
+    expect(s.distance.coveredTrips).toBe(2)
+    expect(s.distance.uncoveredTrips).toBe(0)
+    const geneve = s.routes.items.find((r) => r.label.includes('Genève'))!
+    expect(geneve.km).toBe(Math.round(km('LYON PART DIEU', 'GENEVE') * RAIL_DETOUR_FACTOR))
+    expect(geneve.cityB.x).not.toBeNull() // has a position on the map (outside France, drawn cut/faded)
   })
 
   it('n’attribue pas un prix inventé aux trajets sans montant', () => {
