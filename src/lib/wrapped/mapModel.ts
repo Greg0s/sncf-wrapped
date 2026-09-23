@@ -50,6 +50,23 @@ export function computeFrame(points: Pt[]): Frame {
   return span >= 120 || half >= 150 ? FULL_FRAME : frameFor(points)
 }
 
+/**
+ * Smallest square frame comfortably containing `points`, with just a small fixed margin instead of
+ * `frameFor`'s generous city-cluster padding. Used once a region is chosen as background: the region's
+ * own outline already has its natural extent, so fitting it snugly (not re-padding it as if it were a
+ * loose handful of cities) is what makes the map use the available space instead of looking tiny.
+ */
+const REGION_FRAME_MARGIN = 12
+function tightFrameFor(points: Pt[]): Frame {
+  const xs = points.map((p) => p.x)
+  const ys = points.map((p) => p.y)
+  const half = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) / 2 + REGION_FRAME_MARGIN
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
+  const cx = clamp((Math.min(...xs) + Math.max(...xs)) / 2, 10 + half, 415 - half)
+  const cy = clamp((Math.min(...ys) + Math.max(...ys)) / 2, 10 + half, 415 - half)
+  return { x: cx - half, y: cy - half, size: half * 2, k: (half * 2) / FULL_FRAME.size }
+}
+
 const r1 = (n: number) => Math.round(n * 10) / 10
 /** Sign of the arcs' curvature, alternating as in the mockup (Paris +, Marseille +, Nantes −, Dijon +, Strasbourg −). */
 const CURVE_SIGNS = [1, 1, -1, 1, -1]
@@ -184,7 +201,7 @@ function frameAndRegion(points: Pt[], routes: DrawnRoute[]): { frame: Frame; reg
   const cityFrame = computeFrame(points)
   if (cityFrame === FULL_FRAME) return { frame: cityFrame, region: null }
   const region = dominantRegion(routes)
-  return { frame: region ? frameFor([...points, ...region.points]) : cityFrame, region }
+  return { frame: region ? tightFrameFor([...points, ...region.points]) : cityFrame, region }
 }
 
 function placeLabels(cities: Omit<MapCity, 'label'>[], frame: Frame): Map<string, MapCity['label']> {
