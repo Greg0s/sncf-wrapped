@@ -26,7 +26,7 @@ Read this before touching `src/lib/parsing/parseSncfCsv.ts`. The format was vali
 2. **Options** (`Option posée`) are excluded; an option never adds to a paid amount.
 3. Rows with the same departure timestamp + origin + destination become **one trip**; amounts add up, the earliest order date is kept.
 4. Upcoming departures (after "today") are kept aside and excluded from statistics.
-5. Stations are matched to the referential: exact name → without a coach-station suffix (`… GARE ROUTIERE`) → unique name prefix (`PARIS BERCY`) → city name prefix (`SAINT ETIENNE CHTX …`). Unknown stations (typically foreign) keep their name but have no distance and no map position.
+5. Stations are matched to the referential: exact name → without a coach-station suffix (`… GARE ROUTIERE`) → unique name prefix (`PARIS BERCY`) → city name prefix (`SAINT ETIENNE CHTX …`). Unknown stations (typically foreign) keep their name but have no distance and no map position. The referential also carries a small hand-picked set of CFC (Corsica) stations, absent from the SNCF Open Data export but domestic — see `src/lib/parsing/data/README.md`.
 
 ## Not in the file
 
