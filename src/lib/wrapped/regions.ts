@@ -19,21 +19,25 @@ export interface Region {
   name: string
   /** SVG polyline points, already projected into the map's schematic space (see geo.ts). */
   outline: string
+  /** Same points as `outline`, pre-parsed: lets a frame be sized so the whole outline fits (see mapModel.ts). */
+  points: { x: number; y: number }[]
 }
 
 const r1 = (n: number) => Math.round(n * 10) / 10
 
-const REGIONS: (Region & { boundary: [number, number][] })[] = (data.regions as RegionData[]).map((r) => ({
-  code: r.code,
-  name: r.name,
-  boundary: r.boundary,
-  outline: r.boundary
-    .map(([lat, lon]) => {
-      const { x, y } = projectToFranceMap(lat, lon)
-      return `${r1(x)},${r1(y)}`
-    })
-    .join(' '),
-}))
+const REGIONS: (Region & { boundary: [number, number][] })[] = (data.regions as RegionData[]).map((r) => {
+  const points = r.boundary.map(([lat, lon]) => {
+    const { x, y } = projectToFranceMap(lat, lon)
+    return { x: r1(x), y: r1(y) }
+  })
+  return {
+    code: r.code,
+    name: r.name,
+    boundary: r.boundary,
+    points,
+    outline: points.map((p) => `${p.x},${p.y}`).join(' '),
+  }
+})
 
 /** Ray-casting point-in-polygon test; `boundary` points are [latitude, longitude]. */
 function containsPoint(boundary: [number, number][], lat: number, lon: number): boolean {
