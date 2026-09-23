@@ -42,6 +42,19 @@ const stations = raw.map((r, i) => {
   return { name: r.nom.trim(), lat, lon, commune: communeCode(r.codeinsee) }
 })
 
+// CFC (Chemins de Fer de la Corse) is a separate regional operator, not part of the "Gares de
+// voyageurs" dataset above, so its stations never appear in the raw export. They're still a fully
+// domestic network sold through SNCF Connect, so a small hand-picked set is merged in here
+// (approximate coordinates from public geographic data, not covered by the SNCF Open Data licence).
+const EXTRA_STATIONS = [
+  { name: 'Ajaccio', lat: 41.9192, lon: 8.7386, commune: 'cfc-ajaccio' },
+  { name: 'Bastia', lat: 42.6979, lon: 9.452, commune: 'cfc-bastia' },
+  { name: 'Calvi', lat: 42.568, lon: 8.757, commune: 'cfc-calvi' },
+  { name: 'Corte', lat: 42.3059, lon: 9.1502, commune: 'cfc-corte' },
+  { name: 'Île-Rousse', lat: 42.6367, lon: 8.933, commune: 'cfc-ile-rousse' },
+]
+stations.push(...EXTRA_STATIONS)
+
 const byCommune = new Map()
 for (const s of stations) {
   if (!byCommune.has(s.commune)) byCommune.set(s.commune, [])

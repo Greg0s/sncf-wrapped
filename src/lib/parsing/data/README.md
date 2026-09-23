@@ -22,3 +22,13 @@ node scripts/build-stations.mjs gares-raw.json
 ```
 
 The raw file is not version-controlled. After regenerating, rerun `npm test` (some tests check a few known stations).
+
+## CFC (Corsica) stations
+
+CFC (Chemins de Fer de la Corse) is a separate regional operator: its stations (Ajaccio, Bastia,
+Calvi, Corte, Île-Rousse) are fully domestic and sold through SNCF Connect, but absent from the
+"Gares de voyageurs" dataset above, which only covers the mainline SNCF network. `build-stations.mjs`
+merges a small hand-picked `EXTRA_STATIONS` list for them (approximate coordinates from public
+geographic data, not covered by the SNCF Open Data licence) so their trips still get a distance and a
+map position, instead of being treated like a foreign/unknown station. Extend that list, not this
+file, if more CFC stations need coverage.

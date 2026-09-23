@@ -59,6 +59,15 @@ describe('resolve', () => {
     for (const raw of ['BRUXELLES MIDI', 'GENEVE', 'LONDRES ST PANCRAS', '', '   ']) expect(index.resolve(raw)).toBeNull()
   })
 
+  it('résout les gares du réseau CFC (Corse), absentes du jeu de données SNCF Open Data mais domestiques', () => {
+    for (const raw of ['AJACCIO', 'BASTIA', 'CORTE', 'CALVI', 'ILE ROUSSE']) {
+      const place = index.resolve(raw)
+      expect(place?.lat).not.toBeNull()
+      expect(place?.lon).not.toBeNull()
+    }
+    expect(index.resolve('ILE ROUSSE')?.name).toBe('Île-Rousse')
+  })
+
   it('fournit des coordonnées plausibles', () => {
     const p = index.resolve('LYON PART DIEU')
     expect(p?.lat).toBeCloseTo(45.76, 1)
