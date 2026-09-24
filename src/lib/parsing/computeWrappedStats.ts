@@ -203,7 +203,7 @@ function displayOf(period: Period, years: number[]): WrappedStats['display'] {
   if (period.kind === 'year') return { period: `Édition ${period.year}`, big: String(period.year), bigStart: String(period.year), bigEnd: String(period.year) }
   if (!years.length) return { period: '—', big: '—', bigStart: '', bigEnd: '' }
   const [first, last] = [years[0], years[years.length - 1]]
-  return { period: `${first} → ${last}`, big: `${last - first + 1} ans`, bigStart: String(first), bigEnd: String(last) }
+  return { period: `de ${first} à ${last}`, big: `${last - first + 1} ans`, bigStart: String(first), bigEnd: String(last) }
 }
 
 /** Most frequent element of a count table; ties go to the first one alphabetically. */
