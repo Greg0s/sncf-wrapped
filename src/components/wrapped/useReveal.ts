@@ -51,6 +51,115 @@ export function useLandingReveal(root: RefObject<HTMLElement | null>) {
   }, [root])
 }
 
+// Delay before recomputing the ant-line on resize (mockup: same debounce as buildAntLine's own resize handler).
+const ANT_LINE_RESIZE_DEBOUNCE_MS = 120
+
+/**
+ * Anticipation screen: the decorative line running from both screen edges, through the clock icon,
+ * around the card. Its path depends on the live layout (card size/position, free space around it), so
+ * it's computed in JS rather than drawn as a fixed SVG path — a port of the mockup's buildAntLine().
+ * Runs before `useWrappedScroll` (a child's layout effect fires before its parent's), so by the time
+ * that hook measures every [data-draw] line's length, these two already have their real `d`.
+ */
+export function useAntLine(root: RefObject<HTMLElement | null>) {
+  useLayoutEffect(() => {
+    const section = root.current
+    if (!section) return
+
+    const build = () => {
+      const bg = section.querySelector<SVGSVGElement>('[data-ant-bg]')
+      const clock = section.querySelector<SVGSVGElement>('[data-ant-clock]')
+      const card = section.querySelector<HTMLElement>('[data-ant-card]')
+      if (!bg || !clock || !card) return
+      const S = section.getBoundingClientRect()
+      const W = S.width
+      const H = section.offsetHeight
+      const m = clock.getScreenCTM()
+      if (!m) return
+      const s = m.a
+      const P = (x: number, y: number): [number, number] => [m.a * x + m.e - S.left, m.d * y + m.f - S.top]
+      const [Lx, Ly] = P(438, 96)
+      const [LCx, LCy] = P(446, 84)
+      const [Rx, Ry] = P(502, 96)
+      const [RCx, RCy] = P(494, 84)
+      // Card box in section coordinates (offset*, so the reveal transform doesn't skew it).
+      const cl = card.offsetLeft
+      const ct = card.offsetTop
+      const cr = cl + card.offsetWidth
+      const cb = ct + card.offsetHeight
+      const r = (v: number) => Math.round(v * 10) / 10
+      const lp = Math.max(40, Lx * 0.42)
+      const top = ct - 18
+      const cyTop = (v: number) => Math.min(v, top)
+      const a =
+        `M ${r(-30)} ${r(cyTop(Ly + 40 * s))} C ${r(lp * 0.5)} ${r(cyTop(Ly + 60 * s))}, ${r(lp * 0.7)} ${r(Ly - 50 * s)}, ${r(lp)} ${r(cyTop(Ly - 18 * s))}` +
+        ` C ${r(lp + 28 * s)} ${r(Ly)}, ${r(lp + 14 * s)} ${r(Ly + 26 * s)}, ${r(lp - 2 * s)} ${r(Ly + 12 * s)}` +
+        ` C ${r(lp - 16 * s)} ${r(Ly - 4 * s)}, ${r(lp + 30 * s)} ${r(Ly - 16 * s)}, ${r(lp + 70 * s)} ${r(Ly - 8 * s)}` +
+        ` C ${r((lp + Lx) / 2 + 40 * s)} ${r(cyTop(Ly + 10 * s))}, ${r(Lx - 30 * s)} ${r(Ly + 4 * s)}, ${r(Lx)} ${r(Ly)}` +
+        ` L ${r(LCx)} ${r(LCy)}`
+
+      const free = W - cr
+      const below = H - cb
+      const midY = (ct + cb) / 2
+      const cw = cr - cl
+      const yMax = (v: number) => Math.min(v, H - 12)
+      const start = `M ${r(RCx)} ${r(RCy)} L ${r(Rx)} ${r(Ry)}`
+      const head =
+        free > 120
+          ? `${start} C ${r(Rx + 30 * s)} ${r(Ry + 16 * s)}, ${r(cr + Math.min(free * 0.55, 260))} ${r(Ry - 10)}, ${r(cr + Math.min(free * 0.55, 260))} ${r((Ry + midY) / 2)}` +
+            ` S ${r(cl + cw * 0.7)} ${r(midY)}, ${r(cl + cw * 0.45)} ${r(cb - 30)}`
+          : `${start} C ${r(Rx + 30 * s)} ${r(Ry + 16 * s)}, ${r(cr - 50)} ${r(ct - 30)}, ${r(cr - 60)} ${r(ct + 20)}` +
+            ` S ${r(cl + cw * 0.6)} ${r(midY)}, ${r(cl + cw * 0.45)} ${r(cb - 30)}`
+      let b: string
+      if (below >= 50) {
+        const u = Math.max(0.35, Math.min(1, (below - 12) / 150))
+        const h = Math.max(0.45, Math.min(1, cw / 700))
+        const X = cl + 80 * h
+        const Y = (v: number) => r(yMax(cb + v * u))
+        const Xh = (v: number) => r(X + v * h)
+        b =
+          head +
+          ` C ${r(cl + cw * 0.25)} ${r(cb - 30)}, ${r(X)} ${r(cb - 40)}, ${r(X)} ${r(cb)}` +
+          ` C ${r(X)} ${Y(60)}, ${Xh(60)} ${Y(112)}, ${Xh(200)} ${Y(120)}` +
+          ` C ${Xh(250)} ${Y(122)}, ${Xh(294)} ${Y(112)}, ${Xh(292)} ${Y(80)}` +
+          ` C ${Xh(290)} ${Y(46)}, ${Xh(238)} ${Y(38)}, ${Xh(220)} ${Y(70)}` +
+          ` C ${Xh(206)} ${Y(96)}, ${Xh(222)} ${Y(138)}, ${Xh(266)} ${Y(142)}` +
+          ` C ${r(Math.max(X + 380 * h, W * 0.5))} ${Y(146)}, ${r(W * 0.8)} ${Y(130)}, ${r(W + 30)} ${Y(118)}`
+      } else {
+        const inY = Math.min(midY + 20, cb - 60)
+        b = head + ` C ${r(cl + cw * 0.3)} ${r(cb - 60)}, ${r(cl + cw * 0.85)} ${r(inY)}, ${r(W + 30)} ${r(midY)}`
+      }
+
+      const pa = bg.querySelector<SVGPathElement>('[data-ant-a]')
+      const pb = bg.querySelector<SVGPathElement>('[data-ant-b]')
+      for (const [p, d] of [
+        [pa, a],
+        [pb, b],
+      ] as const) {
+        if (!p) continue
+        const shown = p.style.strokeDashoffset === '0' || p.style.strokeDashoffset === '0px'
+        p.setAttribute('d', d)
+        p.setAttribute('stroke-width', String(r(4.5 * s)))
+        const length = p.getTotalLength()
+        p.style.strokeDasharray = String(length)
+        p.style.strokeDashoffset = shown ? '0' : String(length)
+      }
+    }
+
+    build()
+    let resizeTimer = 0
+    const onResize = () => {
+      clearTimeout(resizeTimer)
+      resizeTimer = window.setTimeout(build, ANT_LINE_RESIZE_DEBOUNCE_MS)
+    }
+    window.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      clearTimeout(resizeTimer)
+    }
+  }, [root])
+}
+
 const rolling = new WeakMap<HTMLElement, number>()
 
 /** Formats `n` with fr-FR thousands grouping (regular spaces), matching `fmtNum`'s output. */

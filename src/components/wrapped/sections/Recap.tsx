@@ -202,9 +202,24 @@ export function Recap({
       data-sec={index}
       data-sec-id="recap"
       style={css(
-        `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: clamp(8px, 1.4vh, 16px); padding: clamp(46px, 7vh, 90px) clamp(14px, 4vw, 60px) clamp(14px, 2.6vh, 48px);`,
+        `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: clamp(8px, 1.4vh, 16px); padding: clamp(46px, 7vh, 90px) clamp(14px, 4vw, 60px) clamp(14px, 2.6vh, 48px); position: relative; overflow: hidden; isolation: isolate;`,
       )}
     >
+      <svg
+        viewBox="0 0 400 110"
+        preserveAspectRatio="none"
+        style={css(`position: absolute; left: -4%; top: 50%; transform: translateY(-50%); width: 108%; height: auto; opacity: .45; pointer-events: none; z-index: -1;`)}
+      >
+        <path
+          data-draw="0"
+          d="M396 20 C 330 20, 320 90, 262 82 C 216 76, 222 14, 256 20 C 292 26, 280 88, 210 84 C 140 80, 120 20, 60 30 C 30 35, 14 20, 4 10"
+          fill="none"
+          stroke="#8DE8FD"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          style={{ stroke: 'var(--ac)' }}
+        />
+      </svg>
       <div data-anim="up" style={css(`font-size: 14px; font-weight: 600; color: #8A93A6; text-align: center;`)}>
         {label}
       </div>

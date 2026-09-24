@@ -16,6 +16,8 @@ a:hover { color: #FFFFFF; border-bottom-color: #FFFFFF; }
 @keyframes popIn { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
 @keyframes veilIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes ringTick { 0%, 55%, 100% { opacity: 0; } 65%, 90% { opacity: 1; } }
 /* -54 = 3 x the "8 10" dash pattern length (18px), so the loop realigns with no jump */
 @keyframes dashy { to { stroke-dashoffset: -54; } }
 /*

@@ -8,9 +8,23 @@ export function Budget({ d, index, label }: { d: DisplayData; index: number; lab
       data-sec={index}
       data-sec-id="budget"
       style={css(
-        `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(10px, 1.8vh, 16px); padding: clamp(58px, 9vh, 96px) clamp(14px, 4vw, 60px) clamp(30px, 5vh, 60px);`,
+        `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(10px, 1.8vh, 16px); padding: clamp(58px, 9vh, 96px) clamp(14px, 4vw, 60px) clamp(30px, 5vh, 60px); position: relative; overflow: hidden; isolation: isolate;`,
       )}
     >
+      <svg
+        viewBox="0 0 400 110"
+        preserveAspectRatio="none"
+        style={css(`position: absolute; left: -4%; bottom: 5%; width: 108%; height: auto; opacity: .45; pointer-events: none; z-index: -1;`)}
+      >
+        <path
+          data-draw="0"
+          d="M4 30 C 60 30, 70 90, 120 80 C 160 72, 150 28, 118 36 C 90 44, 110 96, 170 92 C 230 88, 240 40, 282 48 C 318 55, 312 96, 280 88 C 254 81, 276 30, 330 24 C 364 20, 384 40, 398 60"
+          fill="none"
+          stroke="#F3BB67"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+        />
+      </svg>
       <div data-anim="up" style={css(`font-size: 14px; font-weight: 600; color: #8A93A6; padding-left: 6px;`)}>
         {label}
       </div>

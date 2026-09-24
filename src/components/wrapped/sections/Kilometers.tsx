@@ -8,9 +8,24 @@ export function Kilometers({ d, star, index, label }: { d: DisplayData; star: Wr
       data-sec={index}
       data-sec-id="km"
       style={css(
-        `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(10px, 1.8vh, 16px); padding: clamp(58px, 9vh, 96px) clamp(14px, 4vw, 60px) clamp(30px, 5vh, 60px);`,
+        `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(10px, 1.8vh, 16px); padding: clamp(58px, 9vh, 96px) clamp(14px, 4vw, 60px) clamp(30px, 5vh, 60px); position: relative; overflow: hidden; isolation: isolate;`,
       )}
     >
+      <svg
+        viewBox="0 0 400 110"
+        preserveAspectRatio="none"
+        style={css(`position: absolute; left: -4%; top: 2%; width: 108%; height: auto; opacity: .45; pointer-events: none; z-index: -1;`)}
+      >
+        <path
+          data-draw="0"
+          d="M396 20 C 330 20, 318 78, 262 70 C 214 63, 222 12, 264 20 C 300 27, 290 80, 236 90 C 170 102, 120 50, 60 64 C 30 71, 14 84, 2 92"
+          fill="none"
+          stroke="#8DE8FD"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          style={{ stroke: 'var(--ac)' }}
+        />
+      </svg>
       <div data-anim="up" style={css(`font-size: 14px; font-weight: 600; color: #8A93A6; padding-left: 6px;`)}>
         {label}
       </div>
