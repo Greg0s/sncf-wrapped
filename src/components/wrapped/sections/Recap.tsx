@@ -122,7 +122,6 @@ export function Recap({
   // being cut by the overflow:hidden window that hides the other formats' slides.
   const cardBoxW = Math.round(fmt.w * Number(fit))
   const cardBoxH = Math.round(fmt.h * Number(fit))
-  const cardRadius = Math.round(24 * Number(fit))
   const cardShadow = `0 ${Math.round(28 * Number(fit))}px ${Math.round(64 * Number(fit))}px rgba(0,0,0,.55), 0 ${Math.round(6 * Number(fit))}px ${Math.round(16 * Number(fit))}px rgba(0,0,0,.4)`
 
   const handleDownload = async () => {
@@ -260,7 +259,7 @@ export function Recap({
         <div
           aria-hidden="true"
           style={css(
-            `position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: ${cardBoxW}px; height: ${cardBoxH}px; border-radius: ${cardRadius}px; box-shadow: ${cardShadow}; transition: ${isDesktop ? 'none' : `width ${FORMAT_SLIDE_MS}ms cubic-bezier(.16,.84,.26,1), height ${FORMAT_SLIDE_MS}ms cubic-bezier(.16,.84,.26,1)`};`,
+            `position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: ${cardBoxW}px; height: ${cardBoxH}px; box-shadow: ${cardShadow}; transition: ${isDesktop ? 'none' : `width ${FORMAT_SLIDE_MS}ms cubic-bezier(.16,.84,.26,1), height ${FORMAT_SLIDE_MS}ms cubic-bezier(.16,.84,.26,1)`};`,
           )}
         />
         {/* Fixed-size viewport (biggest format's dims) so the slide track below lines formats up side by side. */}
@@ -297,7 +296,7 @@ export function Recap({
           <div
             ref={f.key === fmt.key ? cardRef : undefined}
             style={css(
-              `width: ${f.w}px; height: ${f.h}px; transform: scale(${fit}); transform-origin: top left; background: #0E1219; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column;`,
+              `width: ${f.w}px; height: ${f.h}px; transform: scale(${fit}); transform-origin: top left; background: #0E1219; overflow: hidden; display: flex; flex-direction: column;`,
             )}
           >
           {isSquare && (
