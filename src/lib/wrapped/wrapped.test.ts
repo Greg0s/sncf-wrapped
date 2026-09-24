@@ -408,4 +408,36 @@ describe('cadrage de la carte', () => {
     expect(arcPath({ x: 276.3, y: 229.4 }, { x: 207.9, y: 105.7 }, 0)).toBe('M276.3 229.4 Q224.8 177.1 207.9 105.7')
     expect(arcPath({ x: 276.3, y: 229.4 }, { x: 100.4, y: 171.3 }, 2)).toBe('M276.3 229.4 Q196.5 175.7 100.4 171.3')
   })
+
+  it('centre le cadre régional sur le contour, même pour une région en bord de projection (Corse)', () => {
+    // Corsica's projected position sits right at the corner of the map's coordinate space, so a frame
+    // whose center gets clamped back inside that space (to stay within the full-France canvas) ends up
+    // off-center on the region it's supposed to be showing — the bug this test guards against.
+    const corsican: FixtureRow[] = [
+      { departure: '2026-01-10T08:00:00.000Z', origin: 'AJACCIO', destination: 'BASTIA', amount: '25' },
+      { departure: '2026-01-12T18:00:00.000Z', origin: 'BASTIA', destination: 'AJACCIO', amount: '25' },
+    ]
+    const { view } = viewOf(corsican)
+    const bastia = index.resolve('BASTIA')!
+    const region = regionOf(bastia.cityLat, bastia.cityLon)!
+    expect(region.name).toBe('Corse')
+    expect(view.map!.regionOutline).toBe(region.outline)
+    const xs = region.points.map((p) => p.x)
+    const ys = region.points.map((p) => p.y)
+    const expectedCx = (Math.min(...xs) + Math.max(...xs)) / 2
+    const expectedCy = (Math.min(...ys) + Math.max(...ys)) / 2
+    const frame = view.map!.frame
+    expect(frame.x + frame.size / 2).toBeCloseTo(expectedCx, 1)
+    expect(frame.y + frame.size / 2).toBeCloseTo(expectedCy, 1)
+  })
+
+  it('garde la Corse en médaillon (contour statique, non centré) quand des trajets restent en métropole', () => {
+    const mixed: FixtureRow[] = [
+      ...scenario,
+      { departure: '2026-05-10T08:00:00.000Z', origin: 'AJACCIO', destination: 'BASTIA', amount: '25' },
+    ]
+    const { view } = viewOf(mixed)
+    expect(view.map!.regionOutline).toBeNull()
+    expect(view.map!.frame).toEqual(FULL_FRAME)
+  })
 })
