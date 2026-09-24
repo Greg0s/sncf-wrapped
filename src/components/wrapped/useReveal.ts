@@ -7,9 +7,10 @@ import { REVEAL_SPEED as SP } from './animation'
  *   data-lanim / data-anim = "up" | "scale"  reveal (offset by data-delay, in ms)
  *   data-roll + data-final                   number that counts up from zero to its final value
  *   data-roll-suspense = "true"              on data-roll, use the slower, held-longer variant
- *   data-roll-cycle = "2023,2025,2026"       on data-roll, loop through these values instead of settling
- *                                             once (teaser: years covered); each change rolls in only the
- *                                             digits that differ ("le cran", mockup 3A)
+ *   data-roll-cycle = "2023,2025,2026"       on data-roll, roll in with "le cran" (mockup 3A) — only the
+ *                                             digits that differ slide — instead of a plain count-up
+ *                                             (teaser: years covered); with a single value it settles
+ *                                             there, with several it keeps looping through them
  *   data-bar = percentage                    bar that fills up
  *   data-draw = rank                         line that draws itself
  *   data-sec / data-seg                      screen / segment of the progress bar
@@ -280,10 +281,13 @@ function stepRoll(slots: HTMLElement[], prev: string, next: string): number {
   return changed.length
 }
 
-/** Loops through `data-roll-cycle`'s values (teaser: the years covered), each rolling in with "le cran". */
+/**
+ * Rolls in `data-roll-cycle`'s values with "le cran". A single value (teaser: a period spanning one
+ * year) plays the reveal once and settles; several (teaser: the years covered) keep looping through them.
+ */
 function rollCycle(el: HTMLElement) {
   const years = (el.dataset.rollCycle || '').split(',').filter(Boolean)
-  if (years.length < 2) return roll(el)
+  if (years.length === 0) return roll(el)
   stopCycle(el)
   const gen = (cycleGen.get(el) ?? 0) + 1
   cycleGen.set(el, gen)
@@ -297,6 +301,7 @@ function rollCycle(el: HTMLElement) {
     const changed = stepRoll(slots, current, next)
     current = next
     index = (index + 1) % years.length
+    if (years.length < 2) return
     const stepDuration = CYCLE_ROLL_MS + CYCLE_STAGGER_MS * Math.max(0, changed - 1) + CYCLE_HOLD_MS
     cycleTimers.set(el, window.setTimeout(step, stepDuration))
   }
