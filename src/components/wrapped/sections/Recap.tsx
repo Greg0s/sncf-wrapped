@@ -137,7 +137,7 @@ export function Recap({
         canvasHeight: fmt.exportH,
         pixelRatio: 1, // otherwise the canvas size would depend on the device's pixel ratio
         backgroundColor: '#0E1219',
-        style: { transform: 'none' }, // ignore the preview's scale(fit), export at native size
+        style: { transform: 'none', borderRadius: '0' }, // native size, square corners (unlike the on-screen preview)
       })
       const link = document.createElement('a')
       link.href = dataUrl
@@ -166,7 +166,7 @@ export function Recap({
         canvasHeight: fmt.exportH,
         pixelRatio: 1,
         backgroundColor: '#0E1219',
-        style: { transform: 'none' },
+        style: { transform: 'none', borderRadius: '0' }, // square corners on the shared/exported image
       })
       const file = blob && new File([blob], `sncf-wrapped-${slugify(d.period)}.png`, { type: 'image/png' })
       if (file && navigator.canShare?.({ files: [file] })) {
