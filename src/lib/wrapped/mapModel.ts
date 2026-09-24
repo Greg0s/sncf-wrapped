@@ -56,15 +56,19 @@ export function computeFrame(points: Pt[]): Frame {
  * `frameFor`'s generous city-cluster padding. Used once a region is chosen as background: the region's
  * own outline already has its natural extent, so fitting it snugly (not re-padding it as if it were a
  * loose handful of cities) is what makes the map use the available space instead of looking tiny.
+ *
+ * Unlike `frameFor`, the center isn't clamped to the full-France canvas: this frame draws the region's
+ * own outline standalone (no shared background to stay aligned with), so a region sitting near the edge
+ * of the France projection (Corsica, Bretagne...) still gets centered on its own shape instead of being
+ * pushed off-center to keep the frame inside bounds that don't apply here.
  */
 const REGION_FRAME_MARGIN = 12
 function tightFrameFor(points: Pt[]): Frame {
   const xs = points.map((p) => p.x)
   const ys = points.map((p) => p.y)
   const half = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) / 2 + REGION_FRAME_MARGIN
-  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
-  const cx = clamp((Math.min(...xs) + Math.max(...xs)) / 2, 10 + half, 415 - half)
-  const cy = clamp((Math.min(...ys) + Math.max(...ys)) / 2, 10 + half, 415 - half)
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2
+  const cy = (Math.min(...ys) + Math.max(...ys)) / 2
   return { x: cx - half, y: cy - half, size: half * 2, k: (half * 2) / FULL_FRAME.size }
 }
 
