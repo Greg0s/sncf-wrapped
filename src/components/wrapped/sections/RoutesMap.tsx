@@ -61,9 +61,24 @@ export function RoutesMap({ index, label, model, mapRef }: { index: number; labe
       data-sec={index}
       data-sec-id="map"
       style={css(
-        `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(8px, 1.4vh, 14px); padding: clamp(46px, 7vh, 90px) clamp(14px, 4vw, 60px) clamp(16px, 3vh, 50px);`,
+        `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(8px, 1.4vh, 14px); padding: clamp(46px, 7vh, 90px) clamp(14px, 4vw, 60px) clamp(16px, 3vh, 50px); position: relative; overflow: hidden; isolation: isolate;`,
       )}
     >
+      <svg
+        viewBox="0 0 400 110"
+        preserveAspectRatio="none"
+        style={css(`position: absolute; left: -4%; top: 4%; width: 108%; height: auto; opacity: .4; pointer-events: none; z-index: -1;`)}
+      >
+        <path
+          data-draw="0"
+          d="M2 60 C 50 20, 100 20, 120 50 C 136 76, 108 96, 92 76 C 76 56, 110 26, 170 34 C 240 44, 300 90, 398 70"
+          fill="none"
+          stroke="#8DE8FD"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          style={{ stroke: 'var(--ac)' }}
+        />
+      </svg>
       <div data-anim="up" style={css(`font-size: 14px; font-weight: 600; color: #8A93A6; padding-left: 6px;`)}>
         {label}
       </div>

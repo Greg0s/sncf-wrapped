@@ -8,9 +8,24 @@ export function Routes({ routes, heading, index, label }: { routes: RouteRow[]; 
       data-sec={index}
       data-sec-id="routes"
       style={css(
-        `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(6px, 1.2vh, 12px); padding: clamp(46px, 7vh, 90px) clamp(14px, 4vw, 60px) clamp(16px, 3vh, 50px);`,
+        `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(6px, 1.2vh, 12px); padding: clamp(46px, 7vh, 90px) clamp(14px, 4vw, 60px) clamp(16px, 3vh, 50px); position: relative; overflow: hidden; isolation: isolate;`,
       )}
     >
+      <svg
+        viewBox="0 0 400 400"
+        preserveAspectRatio="none"
+        style={css(`position: absolute; inset: 0; width: 100%; height: 100%; opacity: .35; pointer-events: none; z-index: -1;`)}
+      >
+        <path
+          data-draw="0"
+          d="M-4 40 C 90 60, 120 150, 180 170 C 232 188, 250 130, 214 118 C 176 106, 170 190, 230 240 C 290 290, 350 280, 404 380"
+          fill="none"
+          stroke="#8DE8FD"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          style={{ stroke: 'var(--ac)' }}
+        />
+      </svg>
       <div data-anim="up" style={css(`font-size: 14px; font-weight: 600; color: #8A93A6; padding-left: 6px;`)}>
         {label}
       </div>

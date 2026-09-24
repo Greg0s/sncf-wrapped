@@ -8,9 +8,24 @@ export function Cities({ cities, heading, index, label }: { cities: CityRow[]; h
       data-sec={index}
       data-sec-id="cities"
       style={css(
-        `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(8px, 1.4vh, 14px); padding: clamp(46px, 7vh, 90px) clamp(14px, 4vw, 60px) clamp(16px, 3vh, 50px);`,
+        `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(8px, 1.4vh, 14px); padding: clamp(46px, 7vh, 90px) clamp(14px, 4vw, 60px) clamp(16px, 3vh, 50px); position: relative; overflow: hidden; isolation: isolate;`,
       )}
     >
+      <svg
+        viewBox="0 0 110 400"
+        preserveAspectRatio="none"
+        style={css(`position: absolute; right: 11%; top: -4%; height: 108%; width: clamp(80px, 18vw, 220px); opacity: .45; pointer-events: none; z-index: -1;`)}
+      >
+        <path
+          data-draw="0"
+          d="M20 4 C 20 64, 90 80, 80 136 C 72 184, 22 176, 30 140 C 38 104, 96 118, 90 190 C 84 260, 30 280, 46 340 C 54 370, 80 386, 92 398"
+          fill="none"
+          stroke="#8DE8FD"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          style={{ stroke: 'var(--ac)' }}
+        />
+      </svg>
       <div data-anim="up" style={css(`font-size: 14px; font-weight: 600; color: #8A93A6; padding-left: 6px;`)}>
         {label}
       </div>
