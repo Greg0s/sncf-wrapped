@@ -5,8 +5,8 @@ import { REVEAL_SPEED as SP } from './animation'
  * Reveal animations from the mockup (SNCF Wrapped v3), ported as-is: same durations, same curves,
  * same triggers (IntersectionObserver). Elements to animate are identified by data-* attributes:
  *   data-lanim / data-anim = "up" | "scale"  reveal (offset by data-delay, in ms)
- *   data-roll + data-final                   number whose digits scroll
- *   data-roll-suspense = "true"              on data-roll, use the right-to-left growing variant
+ *   data-roll + data-final                   number that counts up from zero to its final value
+ *   data-roll-suspense = "true"              on data-roll, use the slower, held-longer variant
  *   data-roll-cycle = "2023,2025,2026"       on data-roll, loop through these values instead of settling
  *                                             once (teaser: years covered); each change rolls in only the
  *                                             digits that differ ("le cran", mockup 3A)
@@ -53,79 +53,35 @@ export function useLandingReveal(root: RefObject<HTMLElement | null>) {
 
 const rolling = new WeakMap<HTMLElement, number>()
 
-/** Scrambles `el`'s digits at random then settles them, left to right, on `final` over `duration` ms. */
-function scrambleTo(el: HTMLElement, final: string, duration: number, onDone?: () => void) {
+/** Formats `n` with fr-FR thousands grouping (regular spaces), matching `fmtNum`'s output. */
+function groupThousands(n: number): string {
+  return n.toLocaleString('fr-FR').replace(/[  ]/g, ' ')
+}
+
+/** Counts up from 0 to the number in `final` (its digits, ignoring separators) over `duration` ms. */
+function countUpTo(el: HTMLElement, final: string, duration: number, onDone?: () => void) {
   cancelAnimationFrame(rolling.get(el) ?? 0)
-  const chars = final.split('')
-  const digits = chars.map((c, i) => (/\d/.test(c) ? i : -1)).filter((i) => i >= 0)
+  const target = Number(final.replace(/\D/g, '')) || 0
   const t0 = performance.now()
   const step = (now: number) => {
     const p = Math.min(1, (now - t0) / duration)
-    const settled = Math.floor(p * digits.length * 1.05)
-    const out = chars.slice()
-    digits.forEach((di, k) => {
-      if (k >= settled) out[di] = String(Math.floor(Math.random() * 10))
-    })
-    el.textContent = out.join('')
+    el.textContent = p < 1 ? groupThousands(Math.round(target * p)) : final
     if (p < 1 && el.isConnected) rolling.set(el, requestAnimationFrame(step))
-    else {
-      el.textContent = final
-      onDone?.()
-    }
+    else onDone?.()
   }
   rolling.set(el, requestAnimationFrame(step))
 }
 
-/** The digits scroll at random then settle from left to right on the final value. */
+/** The digits count up from zero to the final value. */
 function roll(el: HTMLElement) {
-  scrambleTo(el, el.dataset.final || el.textContent || '', 900 / SP)
+  countUpTo(el, el.dataset.final || el.textContent || '', 900 / SP)
 }
 
 const SUSPENSE_DURATION = 1300 / SP
-const SUSPENSE_GROWTH_SHARE = 0.4 // share of the duration spent growing the number to its final width
 
-/**
- * Suspense variant of `roll`: digits appear and settle right-to-left (instead of all at once,
- * left to right), so the final digit count only becomes clear near the end of the animation.
- * A group separator (thousands space) reveals together with the digit right before it.
- */
+/** Suspense variant of `roll`: same count-up, held a little longer so the number grows into view. */
 function rollSuspense(el: HTMLElement) {
-  cancelAnimationFrame(rolling.get(el) ?? 0)
-  const final = el.dataset.final || el.textContent || ''
-  const chars = final.split('')
-  const digitPositions = chars.map((c, i) => (/\d/.test(c) ? i : -1)).filter((i) => i >= 0)
-  const total = digitPositions.length
-  if (total === 0) {
-    el.textContent = final
-    return
-  }
-  const rankOf = (charIndex: number) => {
-    const digitAt = digitPositions.indexOf(charIndex)
-    if (digitAt >= 0) return total - 1 - digitAt
-    const before = [...digitPositions].reverse().find((i) => i < charIndex)
-    const after = digitPositions.find((i) => i > charIndex)
-    return total - 1 - digitPositions.indexOf(before ?? after ?? digitPositions[0])
-  }
-  const ranks = chars.map((_, i) => rankOf(i))
-  const t0 = performance.now()
-  const step = (now: number) => {
-    const p = Math.min(1, (now - t0) / SUSPENSE_DURATION)
-    const q = Math.min(1, p * 1.05)
-    let firstVisible = chars.length
-    const out = chars.slice()
-    chars.forEach((c, i) => {
-      const rank = ranks[i]
-      const appearAt = (rank / total) * SUSPENSE_GROWTH_SHARE
-      const settleAt = SUSPENSE_GROWTH_SHARE + (rank / total) * (1 - SUSPENSE_GROWTH_SHARE)
-      if (q < appearAt) return
-      firstVisible = Math.min(firstVisible, i)
-      if (/\d/.test(c) && q < settleAt) out[i] = String(Math.floor(Math.random() * 10))
-    })
-    el.textContent = out.slice(firstVisible).join('')
-    if (p < 1 && el.isConnected) rolling.set(el, requestAnimationFrame(step))
-    else el.textContent = final
-  }
-  rolling.set(el, requestAnimationFrame(step))
+  countUpTo(el, el.dataset.final || el.textContent || '', SUSPENSE_DURATION)
 }
 
 // "Le cran" (mockup 3A): only the digits that actually change move, each sliding down from above into
