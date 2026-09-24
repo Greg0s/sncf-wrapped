@@ -58,7 +58,7 @@ export function Budget({ d, index, label }: { d: DisplayData; index: number; lab
           {d.month && (
             <div style={css(`background: #151A25; border-radius: 18px; padding: 13px 16px;`)}>
               <div style={css(`font-size: 12px; color: #8A93A6; margin-bottom: 6px;`)}>Vous avez le plus dépensé en</div>
-              <div style={css(`display: flex; align-items: baseline; gap: 6px;`)}>
+              <div style={css(`display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;`)}>
                 <div style={css(`font-size: 24px; font-weight: 800; letter-spacing: -.03em;`)}>{d.month}</div>
                 {d.monthAmount && <div style={css(`font-size: 12px; color: #8A93A6;`)}>{d.monthAmount}</div>}
               </div>
