@@ -145,9 +145,16 @@ function stepRoll(slots: HTMLElement[], prev: string, next: string): number {
     const slot = slots[charIndex]
     slot.getAnimations({ subtree: true }).forEach((a) => a.cancel())
     const strip = document.createElement('span')
-    strip.style.cssText = 'display:block;will-change:transform;'
-    strip.appendChild(cycleDigit(next[charIndex]))
-    strip.appendChild(cycleDigit(prev[charIndex]))
+    strip.style.cssText = 'display:block;position:relative;will-change:transform;'
+    const nextEl = cycleDigit(next[charIndex])
+    const prevEl = cycleDigit(prev[charIndex])
+    // The outgoing digit is taken out of flow so only the incoming one sizes the slot, from the first
+    // frame to the last. Otherwise the slot briefly shrink-wraps around whichever glyph is wider while
+    // both are present, then snaps to the narrower one the instant the slide ends — the digits visibly
+    // drifting closer together right after they'd already settled.
+    prevEl.style.cssText += 'position:absolute;top:1em;left:0;'
+    strip.appendChild(nextEl)
+    strip.appendChild(prevEl)
     slot.textContent = ''
     slot.appendChild(strip)
     const anim = strip.animate([{ transform: 'translateY(-1em)' }, { transform: 'translateY(0)' }], {
