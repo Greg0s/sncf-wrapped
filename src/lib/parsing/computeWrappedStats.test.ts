@@ -208,7 +208,7 @@ describe('périodes', () => {
     const all = computeWrappedStats(ds, { kind: 'all' })
     expect(all.tripCount).toBe(9)
     expect(all.spend.totalEur).toBe(185.8)
-    expect(all.display).toEqual({ period: '2025 → 2026', big: '2 ans', bigStart: '2025', bigEnd: '2026' })
+    expect(all.display).toEqual({ period: 'de 2025 à 2026', big: '2 ans', bigStart: '2025', bigEnd: '2026' })
     expect(all.spend.monthsSpan).toBe(5) // December 2025 → April 2026
     expect(all.timeline[0].month).toBe('2025-12')
     expect(all.timeline).toHaveLength(5)
