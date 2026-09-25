@@ -4,7 +4,7 @@ A static site that turns the CSV a user gets from SNCF Connect (GDPR data export
 
 ## Non-negotiable constraints
 
-1. **Client-side only.** No user data is stored or sent anywhere. Parsing, computation and rendering all happen in the browser: no upload, no analytics or trackers, no third-party fonts, no persistence. The landing page promises this, so it must stay true. `src/lib/parsing/privacy.test.ts` guards part of it; keep it green.
+1. **Client-side only.** The user's CSV and every trip/statistic derived from it never leave the browser: no upload, no server, no persistence, no third-party fonts. Parsing, computation and rendering all happen in memory. The landing page promises this, so it must stay true. `src/lib/parsing/privacy.test.ts` guards it by scanning `src/` for network APIs and known trackers. The one deliberate exception is GoatCounter (`index.html`, outside `src/`): a self-hosted-friendly, cookie-less page-view counter that only ever sees anonymous page views, never the CSV or anything derived from it. Document any other exception in the legal page (`src/components/legal/LegalPage.tsx`) and in `privacy.test.ts`'s comment before adding it.
 2. **Responsive.** Mobile and desktop both work. The scrollytelling animations must stay smooth and readable on small screens.
 3. **Adaptive rankings.** A user's CSV may hold very few trips. Never show a top N larger than the number of distinct items; degrade the presentation instead (single item, or drop the screen). Logic: `src/lib/parsing/ranking.ts` and `src/lib/wrapped/`.
 4. **No real export in the repo.** `*.csv` is git-ignored and must never go in `public/` (copied to `dist/` and deployed). Test with fictional data.

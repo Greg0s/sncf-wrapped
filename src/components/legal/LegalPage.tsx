@@ -88,21 +88,28 @@ export function LegalPage({ backHome }: { backHome: () => void }) {
         </Section>
 
         <Section title="Traitement des données personnelles">
-          <p style={css(`margin: 0;`)}>Ce site ne collecte, ne stocke et ne transmet aucune donnée personnelle.</p>
+          <p style={css(`margin: 0;`)}>Ce site ne collecte, ne stocke et ne transmet aucune donnée personnelle liée à vos trajets.</p>
           <ul style={css(`margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px;`)}>
             <li>
               Le fichier que vous déposez est lu et traité entièrement par votre navigateur : aucun envoi vers un serveur, aucun stockage, aucun
               partage avec un tiers.
             </li>
-            <li>
-              Aucun compte utilisateur, aucun cookie, aucun outil de mesure d'audience ou de publicité, aucune police ou script tiers chargé depuis
-              un serveur externe.
-            </li>
+            <li>Aucun compte utilisateur, aucune police ou script tiers chargé depuis un serveur externe autre que celui décrit ci-dessous.</li>
             <li>
               La page « Obtenir mes données » ne fait que préremplir, sur votre appareil, un e-mail vers le délégué à la protection des données de
               SNCF Connect : les informations saisies (nom, prénom, e-mail) ne sont jamais transmises à ce site.
             </li>
           </ul>
+          <p style={css(`margin: 0; padding-top: 4px;`)}>
+            <strong>Mesure d'audience.</strong> Ce site utilise{' '}
+            <a href="https://www.goatcounter.com" target="_blank" rel="noopener noreferrer" style={css(`color: #8DE8FD; color: var(--ac);`)}>
+              GoatCounter
+            </a>
+            , un outil de mesure d'audience open source, sans cookie et sans profilage, qui compte uniquement le nombre de visites et de pages
+            vues de façon anonyme et agrégée. Il ne dépose aucun cookie, ne nécessite pas de consentement au sens de la réglementation
+            applicable et n'a jamais accès au fichier que vous déposez ni aux statistiques calculées à partir de celui-ci, qui ne quittent pas
+            votre navigateur.
+          </p>
           <p style={css(`margin: 0; padding-top: 4px;`)}>
             <strong>Journalisation technique par l'hébergeur.</strong> Comme tout hébergeur web, GitHub Pages peut journaliser techniquement
             certaines informations liées aux requêtes (par exemple l'adresse IP) au niveau de son infrastructure, dans le cadre strict de la
@@ -110,8 +117,9 @@ export function LegalPage({ backHome }: { backHome: () => void }) {
             n'exerce aucun contrôle dessus.
           </p>
           <p style={css(`margin: 0;`)}>
-            <strong>Vos droits.</strong> Aucune donnée personnelle n'étant collectée ni conservée par ce site, il n'y a rien à rectifier,
-            supprimer ou exporter auprès de son éditeur. Pour les données que la SNCF détient sur vous, voir la page « Obtenir mes données ».
+            <strong>Vos droits.</strong> Aucune donnée personnelle identifiable n'étant collectée ni conservée par ce site, il n'y a rien à
+            rectifier, supprimer ou exporter auprès de son éditeur. Pour les données que la SNCF détient sur vous, voir la page « Obtenir mes
+            données ».
           </p>
         </Section>
 
