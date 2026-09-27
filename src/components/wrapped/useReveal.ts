@@ -314,6 +314,19 @@ function rollCycle(el: HTMLElement) {
   step()
 }
 
+/*
+ * Visibility from which a screen is active (reveals played). It must be one of the observer's
+ * thresholds, compared with >=: the callback fires as the ratio crosses it, reporting a value just
+ * past it (e.g. .41 on the way out). A screen that snaps out of view stays edge-adjacent (still
+ * "intersecting", ratio 0) and gets no further callback, so that crossing is its only chance to reset.
+ */
+const ACTIVE_RATIO = 0.42
+
+/** Draw-in (or retract) of a [data-draw] line, delayed by its rank within its screen. */
+function drawTransition(rank: number): string {
+  return `stroke-dashoffset ${1.1 / SP}s cubic-bezier(.4,.05,.2,1) ${(0.14 * rank) / SP}s`
+}
+
 const SEGMENT_OFF = 'rgba(241,244,247,.22)'
 // Beat before the map screen's animation starts, so it doesn't fire the instant the screen snaps into view.
 const MAP_PLAY_DELAY_MS = 500
@@ -335,18 +348,41 @@ export function useWrappedScroll(
     const scroller = el?.querySelector<HTMLElement>('[data-scroller]')
     if (!el || !scroller) return
 
+    const lengthOf = (line: SVGGeometryElement) => (line.getTotalLength ? line.getTotalLength() : 140)
     el.querySelectorAll<SVGGeometryElement>('[data-draw]').forEach((line) => {
-      const length = line.getTotalLength ? line.getTotalLength() : 140
+      const length = lengthOf(line)
       line.style.strokeDasharray = String(length)
       line.style.strokeDashoffset = String(length)
-      line.style.transition = `stroke-dashoffset ${1.1 / SP}s cubic-bezier(.4,.05,.2,1) ${(0.14 * Number(line.dataset.draw)) / SP}s`
+      line.style.transition = drawTransition(Number(line.dataset.draw))
     })
     el.querySelectorAll<HTMLElement>('[data-anim]').forEach(hide)
 
-    const reveal = (section: HTMLElement, on: boolean) => {
+    // `up`: the user is scrolling up. Lines then follow the scroll backwards: they draw in from their
+    // end (the bottom, where the screen below's line left off), later ranks first, and a screen being
+    // left upwards retracts its lines towards their start; scrolling down, the other way round.
+    // The dash offset's sign picks the end: +length hides from the end back, −length from the start on.
+    const reveal = (section: HTMLElement, on: boolean, up: boolean) => {
       section.querySelectorAll<HTMLElement>('[data-anim]').forEach((node) => (on ? show(node) : hide(node)))
-      section.querySelectorAll<SVGGeometryElement>('[data-draw]').forEach((line) => {
-        line.style.strokeDashoffset = on ? '0' : String(line.getTotalLength ? line.getTotalLength() : 140)
+      const lines = [...section.querySelectorAll<SVGGeometryElement>('[data-draw]')]
+      const maxRank = Math.max(0, ...lines.map((line) => Number(line.dataset.draw)))
+      lines.forEach((line) => {
+        const length = lengthOf(line)
+        const rank = Number(line.dataset.draw)
+        const hidden = Math.abs(parseFloat(getComputedStyle(line).strokeDashoffset) || 0) >= length - 1
+        if (!on) {
+          // Already hidden: switch ends without a transition, which would sweep the line across.
+          line.style.transition = hidden ? 'none' : drawTransition(rank)
+          line.style.strokeDashoffset = String(up ? length : -length)
+          return
+        }
+        // Fully hidden: jump (unseen) to the end it should grow from. Mid-retract: grow back from there.
+        if (hidden) {
+          line.style.transition = 'none'
+          line.style.strokeDashoffset = String(up ? -length : length)
+          void line.getBoundingClientRect()
+        }
+        line.style.transition = drawTransition(up ? maxRank - rank : rank)
+        line.style.strokeDashoffset = '0'
       })
       section.querySelectorAll<HTMLElement>('[data-bar]').forEach((bar, i) => {
         bar.style.transitionDelay = on ? `${(0.12 * i) / SP}s` : '0s'
@@ -364,7 +400,7 @@ export function useWrappedScroll(
     }
 
     const sections = [...el.querySelectorAll<HTMLElement>('[data-sec]')]
-    sections.forEach((s) => reveal(s, false))
+    sections.forEach((s) => reveal(s, false, true))
 
     let mapPlaying = false
     let mapPlayTimer = 0
@@ -380,8 +416,10 @@ export function useWrappedScroll(
         for (const e of entries) {
           const section = e.target as HTMLElement
           const i = Number(section.dataset.sec)
-          const on = e.isIntersecting && e.intersectionRatio > 0.4
-          reveal(section, on)
+          const on = e.isIntersecting && e.intersectionRatio >= ACTIVE_RATIO
+          // Coming into view from above, or leaving downwards (its top below the viewport's): scrolling up.
+          const up = on ? e.boundingClientRect.top < (e.rootBounds?.top ?? 0) : e.boundingClientRect.top > (e.rootBounds?.top ?? 0)
+          reveal(section, on, up)
           if (section.dataset.secId === 'map') {
             if (on && !mapPlaying && !mapPlayTimer) {
               mapPlayTimer = window.setTimeout(() => {
@@ -413,7 +451,7 @@ export function useWrappedScroll(
           seg.style.background = Number(seg.dataset.seg) <= active ? 'var(--ac)' : SEGMENT_OFF
         })
       },
-      { root: scroller, threshold: [0, 0.42, 0.75] },
+      { root: scroller, threshold: [0, ACTIVE_RATIO, 0.75] },
     )
     sections.forEach((s) => io.observe(s))
     return () => {
