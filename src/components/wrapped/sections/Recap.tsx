@@ -207,7 +207,7 @@ export function Recap({
         `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: clamp(8px, 1.4vh, 16px); padding: clamp(46px, 7vh, 90px) clamp(14px, 4vw, 60px) clamp(14px, 2.6vh, 48px); position: relative; overflow: hidden; isolation: isolate;`,
       )}
     >
-      <ScrollLine spec={SCREEN_LINES.recap} color="var(--ac)" opacity={0.45} />
+      <ScrollLine spec={SCREEN_LINES.recap} />
       <div data-anim="up" style={css(`font-size: 14px; font-weight: 600; color: #8A93A6; text-align: center;`)}>
         {label}
       </div>

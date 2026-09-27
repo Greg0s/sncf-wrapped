@@ -13,7 +13,7 @@ export function Budget({ d, index, label }: { d: DisplayData; index: number; lab
         `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(10px, 1.8vh, 16px); padding: clamp(58px, 9vh, 96px) clamp(14px, 4vw, 60px) clamp(30px, 5vh, 60px); position: relative; overflow: hidden; isolation: isolate;`,
       )}
     >
-      <ScrollLine spec={SCREEN_LINES.budget} color="#F3BB67" opacity={0.45} />
+      <ScrollLine spec={SCREEN_LINES.budget} />
       <div data-anim="up" style={css(`font-size: 14px; font-weight: 600; color: #8A93A6; padding-left: 6px;`)}>
         {label}
       </div>

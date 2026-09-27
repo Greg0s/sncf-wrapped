@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PHI, SCREEN_LINES, buildScrollLine, sampleScrollLine } from './scrollLinePath'
+import { JUNCTION, PHI, SCREEN_LINES, buildScrollLine, laneX, sampleScrollLine } from './scrollLinePath'
 
 // Screen sizes: small phone, phone, tablet, desktop, wide desktop.
 const SIZES: [number, number][] = [
@@ -21,6 +21,25 @@ describe('scroll line', () => {
         expect(Number.isFinite(x) && Number.isFinite(y)).toBe(true)
         expect(x).toBeGreaterThan(-W * 0.1)
         expect(x).toBeLessThan(W * 1.1)
+      }
+    }
+  })
+
+  it.each(SIZES)('every screen line meets its neighbours in the junction lane, heading straight down (%i × %i)', (W, H) => {
+    const Jx = laneX(JUNCTION, W, H)
+    for (const [, spec] of SPECS) {
+      const { points } = sampleScrollLine(spec, W, H)
+      for (const edge of [0, H]) {
+        // Where the stroke crosses the edge: in the junction lane, with no sideways slope, so the next
+        // screen's line picks up right there.
+        const i = points.findIndex(([, y], k) => k > 0 && points[k - 1][1] <= edge && y > edge)
+        expect(i).toBeGreaterThan(0)
+        const [[x0, y0], [x1, y1]] = [points[i - 1], points[i]]
+        // Linear interpolation between samples: within a px or two, well under the stroke width.
+        expect(Math.abs(x0 + ((x1 - x0) * (edge - y0)) / (y1 - y0) - Jx)).toBeLessThan(2)
+        // Chord slope across the edge: only curvature over one sample step (the tangent at the edge
+        // itself is vertical); a line crossing the edge on a slant would show far more.
+        expect(Math.abs((x1 - x0) / (y1 - y0))).toBeLessThan(0.35)
       }
     }
   })

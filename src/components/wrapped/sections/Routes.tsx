@@ -13,7 +13,7 @@ export function Routes({ routes, heading, index, label }: { routes: RouteRow[]; 
         `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(6px, 1.2vh, 12px); padding: clamp(46px, 7vh, 90px) clamp(14px, 4vw, 60px) clamp(16px, 3vh, 50px); position: relative; overflow: hidden; isolation: isolate;`,
       )}
     >
-      <ScrollLine spec={SCREEN_LINES.routes} color="var(--ac)" opacity={0.35} />
+      <ScrollLine spec={SCREEN_LINES.routes} />
       <div data-anim="up" style={css(`font-size: 14px; font-weight: 600; color: #8A93A6; padding-left: 6px;`)}>
         {label}
       </div>

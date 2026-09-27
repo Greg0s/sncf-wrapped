@@ -66,7 +66,7 @@ export function RoutesMap({ index, label, model, mapRef }: { index: number; labe
         `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(8px, 1.4vh, 14px); padding: clamp(46px, 7vh, 90px) clamp(14px, 4vw, 60px) clamp(16px, 3vh, 50px); position: relative; overflow: hidden; isolation: isolate;`,
       )}
     >
-      <ScrollLine spec={SCREEN_LINES.routesMap} color="var(--ac)" opacity={0.4} />
+      <ScrollLine spec={SCREEN_LINES.routesMap} />
       <div data-anim="up" style={css(`font-size: 14px; font-weight: 600; color: #8A93A6; padding-left: 6px;`)}>
         {label}
       </div>
