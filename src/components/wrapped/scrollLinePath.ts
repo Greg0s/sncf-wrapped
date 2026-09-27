@@ -1,19 +1,20 @@
 /*
  * Background line of the wrapped screens (all but Anticipation, whose line threads around its card).
  *
- * The line always runs from the top edge of the screen to its bottom edge, following the scroll. It is
- * built in real pixels from the section's live size (never a stretched viewBox), out of straight runs
- * and true circular arcs joined tangentially, so its curves stay round on any aspect ratio.
+ * A hand-drawn-looking single stroke: it always runs from the top edge of the screen to its bottom edge,
+ * following the scroll, drifting softly between lanes on a gentle wave, and curling into loops that
+ * cross themselves. It is built in real pixels from the section's live size (never a stretched
+ * viewBox) and walked by arc length, so loops keep their shape on any aspect ratio and slope.
  *
- * Proportions follow the golden ratio φ: lanes and turn heights sit at 1/φ⁴, 1/φ², 1/φ, 1 − 1/φ⁴ of the
- * screen, the bend radius is min(W, H) / φ⁴, the loop radius is that radius / φ, and the stroke width
- * is that radius / φ⁶. When a screen is too narrow for a bend, every radius shrinks by the same factor,
- * so the φ ratios hold.
+ * Proportions follow the golden ratio φ: lanes and loop heights sit at golden fractions of the screen
+ * (1/φ⁴, 1/φ³, 1/φ², 1/φ…), the loop radius is min(W, H) / φ⁵ (a small loop is that / φ), a loop spans
+ * φ² radii of line, the wave's amplitude is one loop radius over a wavelength of φ⁴ radii, and the
+ * stroke width is the loop radius / φ⁵.
  */
 
 export const PHI = (1 + Math.sqrt(5)) / 2
 
-/** Golden fractions of the screen, used as lanes (x) and turn heights (y). */
+/** Golden fractions of the screen, used as lanes (x) and heights (y). */
 export const G = {
   /** 1/φ⁴ ≈ .146 */
   edge: PHI ** -4,
@@ -21,7 +22,7 @@ export const G = {
   quarter: PHI ** -3,
   /** 1/φ² ≈ .382 */
   minor: PHI ** -2,
-  /** 1/φ ≈ .618 */
+  /** 1 − 1/φ² ≈ .618 (= 1/φ) */
   major: PHI ** -1,
   /** 1 − 1/φ³ ≈ .764 */
   late: 1 - PHI ** -3,
@@ -29,78 +30,152 @@ export const G = {
   far: 1 - PHI ** -4,
 } as const
 
+/** A curl at height `at` (fraction of H), turning toward `dir` first (1 = right, −1 = left). */
+export type LineLoop = { at: number; dir: 1 | -1; small?: boolean }
 /**
- * A lane change, starting at height `at` (fraction of H) and ending in lane `to` (fraction of W).
- * `loop` adds a crossing curl before the bend, turning away from the target lane.
+ * A line: lanes it passes through, as [height, lane] pairs (fractions of H and W, heights increasing,
+ * first at 0 and last at 1), and its loops.
  */
-export type LineStep = { at: number; to: number; loop?: boolean }
-/** A line: starting lane (fraction of W) and its lane changes, top to bottom. */
-export type LineSpec = { from: number; steps: LineStep[] }
+export type LineSpec = { lanes: [number, number][]; loops: LineLoop[] }
 
 export type BuiltLine = { d: string; strokeWidth: number }
 
 const round = (v: number) => Math.round(v * 10) / 10
+/** Smoothstep: eases 0 → 1 with zero slope at both ends. */
+const ease = (u: number) => {
+  const c = Math.min(1, Math.max(0, u))
+  return c * c * (3 - 2 * c)
+}
 
-/** Builds the SVG path of `spec` for a W × H screen, in pixels. */
-export function buildScrollLine(spec: LineSpec, W: number, H: number): BuiltLine {
-  const base = Math.min(W, H) / PHI ** 4
-  // Shrink every radius together when a lane change is too narrow for it (a bend needs 2R of
-  // horizontal room, a loop needs R to cross its own incoming run).
-  let k = 1
-  let lane = spec.from
-  for (const step of spec.steps) {
-    const dx = Math.abs(step.to - lane) * W
-    if (dx > 0) k = Math.min(k, dx / (step.loop ? base : 2 * base))
-    lane = step.to
+/**
+ * Lane (in px) at height y: soft S-curves between the spec's anchors. Lanes are fractions of a band
+ * centred on the screen, no wider than its height, so the line never lies down flat on wide screens.
+ */
+function laneAt(lanes: [number, number][], y: number, W: number, H: number): number {
+  const band = Math.min(W, H)
+  const px = (f: number) => (W - band) / 2 + f * band
+  const f = y / H
+  if (f <= lanes[0][0]) return px(lanes[0][1])
+  for (let i = 1; i < lanes.length; i++) {
+    const [f0, x0] = lanes[i - 1]
+    const [f1, x1] = lanes[i]
+    if (f <= f1) return px(x0 + (x1 - x0) * ease((f - f0) / (f1 - f0)))
   }
-  const R = base * k
-  const r = R / PHI
-  const strokeWidth = round(Math.min(6, Math.max(2.5, base / PHI ** 6)))
-  const pad = strokeWidth * 2
+  return px(lanes[lanes.length - 1][1])
+}
 
-  let x = spec.from * W
-  let y = -pad
-  const parts = [`M ${round(x)} ${round(y)}`]
-  const to = (px: number, py: number) => `${round(px)} ${round(py)}`
+/** Samples the line top to bottom, in px. Exported for tests. */
+export function sampleScrollLine(spec: LineSpec, W: number, H: number) {
+  const R = Math.min(W, H) / PHI ** 5
+  const strokeWidth = round(Math.min(6, Math.max(2.5, R / PHI ** 5)))
+  const pad = strokeWidth * 2 + R * PHI
+  const waveAmp = R
+  const waveLen = R * PHI ** 4
 
-  for (const step of spec.steps) {
-    const b = step.to * W
-    const dir = Math.sign(b - x)
-    if (dir === 0) continue
-    // Heading down: turning east is counter-clockwise on screen (sweep 0), turning west clockwise (1).
-    const toward = dir > 0 ? 0 : 1
-    const away = 1 - toward
-    if (step.loop) {
-      // Leave room above the curl so it crosses a visible stretch of the incoming run.
-      const y0 = Math.max(step.at * H, y + 2 * r)
-      // 270° curl away from the target: ends one radius above y0, heading toward the target lane,
-      // crossing the incoming vertical run.
-      const cx = x - dir * r
-      parts.push(`L ${to(x, y0)}`, `A ${round(r)} ${round(r)} 0 1 ${away} ${to(cx, y0 - r)}`)
-      parts.push(`L ${to(b - dir * R, y0 - r)}`, `A ${round(R)} ${round(R)} 0 0 ${away} ${to(b, y0 - r + R)}`)
-      y = y0 - r + R
-    } else {
-      const y0 = Math.max(step.at * H, y)
-      parts.push(`L ${to(x, y0)}`, `A ${round(R)} ${round(R)} 0 0 ${toward} ${to(x + dir * R, y0 + R)}`)
-      parts.push(`L ${to(b - dir * R, y0 + R)}`, `A ${round(R)} ${round(R)} 0 0 ${away} ${to(b, y0 + 2 * R)}`)
-      y = y0 + 2 * R
+  // The loop-free line, sampled every px of height, then walked by arc length so a loop keeps its
+  // shape whatever the line's slope.
+  const bx: number[] = []
+  const by: number[] = []
+  const bl: number[] = []
+  for (let y = -pad, l = 0; y <= H + pad; y += 1) {
+    const x = laneAt(spec.lanes, y, W, H) + waveAmp * Math.sin((2 * Math.PI * y) / waveLen)
+    if (bx.length) l += Math.hypot(x - bx[bx.length - 1], 1)
+    bx.push(x)
+    by.push(y)
+    bl.push(l)
+  }
+  const total = bl[bl.length - 1]
+  let cursor = 0
+  const baseAt = (l: number): [number, number] => {
+    while (cursor > 0 && bl[cursor] > l) cursor--
+    while (cursor < bl.length - 2 && bl[cursor + 1] < l) cursor++
+    const f = Math.min(1, Math.max(0, (l - bl[cursor]) / (bl[cursor + 1] - bl[cursor] || 1)))
+    return [bx[cursor] + (bx[cursor + 1] - bx[cursor]) * f, by[cursor] + (by[cursor + 1] - by[cursor]) * f]
+  }
+
+  const loops = spec.loops.map((lp) => {
+    const r = lp.small ? R / PHI : R
+    const i = Math.min(by.length - 2, Math.max(1, Math.round(lp.at * H + pad)))
+    const len = Math.hypot(bx[i + 1] - bx[i - 1], 2)
+    // Local frame at the loop: T along the line, N across it, on the loop's side.
+    const T: [number, number] = [(bx[i + 1] - bx[i - 1]) / len, 2 / len]
+    const N: [number, number] = Math.sign(-T[1]) === lp.dir ? [-T[1], T[0]] : [T[1], -T[0]]
+    // The line advances φ² radii while the curl makes one turn; the curl outruns it mid-turn, so it
+    // crosses itself.
+    return { l: bl[i], r, T, N, span: r * PHI ** 2 }
+  })
+
+  const points: [number, number][] = []
+  const h = Math.max(4, R / PHI ** 3)
+  for (let l = 0; ; ) {
+    let [x, y] = baseAt(Math.min(l, total))
+    let speed = 1
+    for (const lp of loops) {
+      const u = (l - lp.l) / lp.span + 0.5
+      if (u <= 0 || u >= 1) continue
+      // θ = 2πu − sin 2πu: one full turn, starting and ending at rest, so the stroke leaves and
+      // rejoins the line tangentially, without a kink.
+      const th = 2 * Math.PI * u - Math.sin(2 * Math.PI * u)
+      x += lp.r * (lp.T[0] * Math.sin(th) + lp.N[0] * (1 - Math.cos(th)))
+      y += lp.r * (lp.T[1] * Math.sin(th) + lp.N[1] * (1 - Math.cos(th)))
+      speed += (lp.r / lp.span) * 2 * Math.PI * (1 - Math.cos(2 * Math.PI * u))
     }
-    x = b
+    points.push([x, y])
+    if (l >= total) break
+    // Finer steps where the curl moves fast, so the samples stay evenly spaced along the stroke.
+    l = Math.min(total, l + h / speed)
   }
-  parts.push(`L ${to(x, Math.max(H + pad, y))}`)
+  return { points, strokeWidth, loops }
+}
+
+/** Builds the SVG path of `spec` for a W × H screen, in pixels (Catmull-Rom through the samples). */
+export function buildScrollLine(spec: LineSpec, W: number, H: number): BuiltLine {
+  const { points: p, strokeWidth } = sampleScrollLine(spec, W, H)
+  const pt = ([x, y]: [number, number]) => `${round(x)} ${round(y)}`
+  const parts = [`M ${pt(p[0])}`]
+  for (let i = 0; i < p.length - 1; i++) {
+    const a = p[Math.max(0, i - 1)]
+    const b = p[i]
+    const c = p[i + 1]
+    const d = p[Math.min(p.length - 1, i + 2)]
+    const c1: [number, number] = [b[0] + (c[0] - a[0]) / 6, b[1] + (c[1] - a[1]) / 6]
+    const c2: [number, number] = [c[0] - (d[0] - b[0]) / 6, c[1] - (d[1] - b[1]) / 6]
+    parts.push(`C ${pt(c1)}, ${pt(c2)}, ${pt(c)}`)
+  }
   return { d: parts.join(' '), strokeWidth }
 }
 
 /*
- * One line per screen. Loops only start from the inner lanes (minor / major), so their curl, which
- * turns away from the target lane, stays on screen on phones.
+ * One line per screen. Loops sit on inner lanes (or turn inward from outer ones), so their curl stays
+ * on screen on phones.
  */
 export const SCREEN_LINES = {
-  teaser: { from: G.major, steps: [{ at: G.quarter, to: G.edge, loop: true }, { at: G.major, to: G.far }] },
-  kilometers: { from: G.far, steps: [{ at: G.edge, to: G.minor }, { at: G.major, to: G.far, loop: true }] },
-  budget: { from: G.minor, steps: [{ at: G.minor, to: G.far, loop: true }, { at: G.late, to: G.edge }] },
-  cities: { from: G.edge, steps: [{ at: G.quarter, to: G.major }, { at: G.major, to: G.edge, loop: true }] },
-  routes: { from: G.minor, steps: [{ at: G.edge, to: G.far, loop: true }, { at: G.major, to: G.edge }] },
-  routesMap: { from: G.far, steps: [{ at: G.quarter, to: G.edge }, { at: G.late, to: G.far }] },
-  recap: { from: G.edge, steps: [{ at: G.edge, to: G.major }, { at: G.major, to: G.edge, loop: true }] },
+  teaser: {
+    lanes: [[0, G.major], [G.minor, G.edge], [1, G.far]],
+    loops: [{ at: G.quarter, dir: 1 }, { at: G.late, dir: -1, small: true }],
+  },
+  kilometers: {
+    lanes: [[0, G.far], [G.major, G.minor], [1, G.far]],
+    loops: [{ at: G.major, dir: -1 }],
+  },
+  budget: {
+    lanes: [[0, G.minor], [G.major, G.far], [1, G.edge]],
+    loops: [{ at: G.minor, dir: 1 }, { at: G.late, dir: -1, small: true }],
+  },
+  cities: {
+    lanes: [[0, G.edge], [G.minor, G.major], [1, G.edge]],
+    loops: [{ at: G.edge, dir: 1, small: true }, { at: G.major, dir: -1 }],
+  },
+  routes: {
+    lanes: [[0, G.minor], [G.quarter, G.minor], [G.late, G.far], [1, G.major]],
+    loops: [{ at: G.quarter, dir: -1 }],
+  },
+  routesMap: {
+    lanes: [[0, G.far], [G.major, G.edge], [1, G.far]],
+    loops: [{ at: G.late, dir: 1, small: true }],
+  },
+  recap: {
+    lanes: [[0, G.edge], [G.major, G.major], [1, G.edge]],
+    loops: [{ at: G.minor, dir: 1 }],
+  },
 } satisfies Record<string, LineSpec>
