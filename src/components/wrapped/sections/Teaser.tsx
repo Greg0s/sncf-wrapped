@@ -1,4 +1,6 @@
 import { css } from '../../../lib/css'
+import { ScrollLine } from '../ScrollLine'
+import { SCREEN_LINES } from '../scrollLinePath'
 import { Roll } from '../Roll'
 import type { DisplayData } from '../../../lib/wrapped'
 
@@ -8,24 +10,10 @@ export function Teaser({ d, index }: { d: DisplayData; index: number }) {
       data-sec={index}
       data-sec-id="teaser"
       style={css(
-        `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(14px, 2.6vh, 24px); padding: clamp(58px, 9vh, 96px) clamp(18px, 5vw, 80px) clamp(40px, 7vh, 72px); position: relative; overflow: hidden;`,
+        `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(14px, 2.6vh, 24px); padding: clamp(58px, 9vh, 96px) clamp(18px, 5vw, 80px) clamp(40px, 7vh, 72px); position: relative; overflow: hidden; isolation: isolate;`,
       )}
     >
-      <svg
-        viewBox="0 0 400 110"
-        preserveAspectRatio="none"
-        style={css(`position: absolute; left: -4%; bottom: 12%; width: 108%; height: auto; opacity: .5; pointer-events: none;`)}
-      >
-        <path
-          data-draw="1"
-          d="M4 92 C 64 92, 78 34, 138 42 C 186 49, 180 100, 136 92 C 100 85, 112 34, 164 22 C 232 6, 278 62, 342 46 C 372 38, 386 26, 398 18"
-          fill="none"
-          stroke="#8DE8FD"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          style={{ stroke: 'var(--ac)' }}
-        />
-      </svg>
+      <ScrollLine spec={SCREEN_LINES.teaser} color="var(--ac)" opacity={0.5} draw={1} />
       <div data-anim="up" style={css(`font-size: 14px; font-weight: 600; color: #8A93A6;`)}>
         {'SNCF Wrapped — '}
         {d.period}
