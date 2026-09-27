@@ -1,5 +1,6 @@
 import { useLayoutEffect, type MutableRefObject, type RefObject } from 'react'
 import { REVEAL_SPEED as SP } from './animation'
+import { JUNCTION, laneX, lineStrokeWidth } from './scrollLinePath'
 
 /*
  * Reveal animations from the mockup (SNCF Wrapped v3), ported as-is: same durations, same curves,
@@ -56,8 +57,9 @@ export function useLandingReveal(root: RefObject<HTMLElement | null>) {
 const ANT_LINE_RESIZE_DEBOUNCE_MS = 120
 
 /**
- * Anticipation screen: the decorative line running from both screen edges, through the clock icon,
- * around the card. Its path depends on the live layout (card size/position, free space around it), so
+ * Anticipation screen: the decorative line coming down from the top edge, through the clock icon,
+ * around the card and out through the bottom edge. It enters and leaves in the junction lane, like the
+ * other screens' lines (scrollLinePath.ts), so the wrapped reads as one stroke. Its path depends on the live layout (card size/position, free space around it), so
  * it's computed in JS rather than drawn as a fixed SVG path — a port of the mockup's buildAntLine().
  * Runs before `useWrappedScroll` (a child's layout effect fires before its parent's), so by the time
  * that hook measures every [data-draw] line's length, these two already have their real `d`.
@@ -92,8 +94,12 @@ export function useAntLine(root: RefObject<HTMLElement | null>) {
       const lp = Math.max(40, Lx * 0.42)
       const top = ct - 18
       const cyTop = (v: number) => Math.min(v, top)
+      const width = lineStrokeWidth(W, H)
+      const pad = width * 2
+      const Jx = laneX(JUNCTION, W, H)
+      // Comes down from the top edge (heading straight down), sweeps into the mockup's curl, then the clock.
       const a =
-        `M ${r(-30)} ${r(cyTop(Ly + 40 * s))} C ${r(lp * 0.5)} ${r(cyTop(Ly + 60 * s))}, ${r(lp * 0.7)} ${r(Ly - 50 * s)}, ${r(lp)} ${r(cyTop(Ly - 18 * s))}` +
+        `M ${r(Jx)} ${r(-pad)} C ${r(Jx)} ${r(cyTop(Ly - 18 * s) * 0.55)}, ${r(lp * 0.7)} ${r(Ly - 50 * s)}, ${r(lp)} ${r(cyTop(Ly - 18 * s))}` +
         ` C ${r(lp + 28 * s)} ${r(Ly)}, ${r(lp + 14 * s)} ${r(Ly + 26 * s)}, ${r(lp - 2 * s)} ${r(Ly + 12 * s)}` +
         ` C ${r(lp - 16 * s)} ${r(Ly - 4 * s)}, ${r(lp + 30 * s)} ${r(Ly - 16 * s)}, ${r(lp + 70 * s)} ${r(Ly - 8 * s)}` +
         ` C ${r((lp + Lx) / 2 + 40 * s)} ${r(cyTop(Ly + 10 * s))}, ${r(Lx - 30 * s)} ${r(Ly + 4 * s)}, ${r(Lx)} ${r(Ly)}` +
@@ -115,7 +121,8 @@ export function useAntLine(root: RefObject<HTMLElement | null>) {
       if (below >= 50) {
         const u = Math.max(0.35, Math.min(1, (below - 12) / 150))
         const h = Math.max(0.45, Math.min(1, cw / 700))
-        const X = cl + 80 * h
+        // The mockup's curl under the card, shifted so it ends right above the junction lane.
+        const X = Jx - 220 * h
         const Y = (v: number) => r(yMax(cb + v * u))
         const Xh = (v: number) => r(X + v * h)
         b =
@@ -124,11 +131,10 @@ export function useAntLine(root: RefObject<HTMLElement | null>) {
           ` C ${r(X)} ${Y(60)}, ${Xh(60)} ${Y(112)}, ${Xh(200)} ${Y(120)}` +
           ` C ${Xh(250)} ${Y(122)}, ${Xh(294)} ${Y(112)}, ${Xh(292)} ${Y(80)}` +
           ` C ${Xh(290)} ${Y(46)}, ${Xh(238)} ${Y(38)}, ${Xh(220)} ${Y(70)}` +
-          ` C ${Xh(206)} ${Y(96)}, ${Xh(222)} ${Y(138)}, ${Xh(266)} ${Y(142)}` +
-          ` C ${r(Math.max(X + 380 * h, W * 0.5))} ${Y(146)}, ${r(W * 0.8)} ${Y(130)}, ${r(W + 30)} ${Y(118)}`
+          // Out of the curl, down into the junction lane.
+          ` C ${Xh(206)} ${Y(96)}, ${r(Jx)} ${r((Number(Y(70)) + H) / 2)}, ${r(Jx)} ${r(H + pad)}`
       } else {
-        const inY = Math.min(midY + 20, cb - 60)
-        b = head + ` C ${r(cl + cw * 0.3)} ${r(cb - 60)}, ${r(cl + cw * 0.85)} ${r(inY)}, ${r(W + 30)} ${r(midY)}`
+        b = head + ` C ${r(cl + cw * 0.3)} ${r(cb - 60)}, ${r(Jx)} ${r((cb + H) / 2)}, ${r(Jx)} ${r(H + pad)}`
       }
 
       const pa = bg.querySelector<SVGPathElement>('[data-ant-a]')
@@ -140,7 +146,7 @@ export function useAntLine(root: RefObject<HTMLElement | null>) {
         if (!p) continue
         const shown = p.style.strokeDashoffset === '0' || p.style.strokeDashoffset === '0px'
         p.setAttribute('d', d)
-        p.setAttribute('stroke-width', String(r(4.5 * s)))
+        p.setAttribute('stroke-width', String(width))
         const length = p.getTotalLength()
         p.style.strokeDasharray = String(length)
         p.style.strokeDashoffset = shown ? '0' : String(length)
