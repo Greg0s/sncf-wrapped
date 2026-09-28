@@ -7,6 +7,10 @@ import { describe, expect, it } from 'vitest'
  * No file of the application (outside tests and development scripts) may use a network API or a
  * dependency that emits one. If a legitimate need arises (e.g. loading a static asset), add it here
  * explicitly, with justification, after verifying that none of the user's data goes through it.
+ *
+ * This scan only covers src/. The GoatCounter analytics script lives in index.html on purpose: it
+ * only ever sees anonymous page views, never the CSV or anything computed from it (see CLAUDE.md
+ * and docs/architecture.md).
  */
 
 const SRC = resolve(__dirname, '../..')

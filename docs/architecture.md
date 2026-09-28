@@ -53,7 +53,11 @@ The mockup (`SNCF Wrapped v3.dc.html`, outside the repo) was converted to JSX by
 
 ## Privacy design
 
-Nothing leaves the browser: no `fetch`/XHR, no analytics, no third-party fonts (Schibsted Grotesk is self-hosted), no `localStorage`; the imported data lives in React state only. The stations referential is a static chunk loaded with a dynamic `import()`. `privacy.test.ts` fails if a network API appears in application code. An `ErrorBoundary` shows a message (and discards the file from memory) instead of a blank page.
+Nothing derived from the user's data leaves the browser: no `fetch`/XHR, no third-party fonts (Schibsted Grotesk is self-hosted), no `localStorage`; the imported data lives in React state only. The stations referential is a static chunk loaded with a dynamic `import()`. `privacy.test.ts` fails if a network API or tracker appears in application code under `src/`.
+
+The one exception is page-view analytics: a GoatCounter `<script>` in `index.html` (outside `src/`, so outside the test's scan), a self-hosted-friendly, cookie-less counter. It only sees anonymous page views — it has no access to the CSV or anything computed from it, which live entirely in React state and never reach `index.html`'s scope.
+
+An `ErrorBoundary` shows a message (and discards the file from memory) instead of a blank page.
 
 ## Testing
 
