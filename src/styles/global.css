@@ -118,4 +118,17 @@ a:hover { color: #FFFFFF; border-bottom-color: #FFFFFF; }
 
 @media (prefers-reduced-motion: reduce) {
   .tuto-hero, .tuto-flow > * { animation: none !important; }
+  .logo-intro { animation: none !important; }
+}
+
+/*
+ * Landing reveals (useLandingReveal): the build prerenders the landing to HTML, so its blocks are in the
+ * page before React loads. Start them in the same hidden state `hide()` sets, so they don't flash in
+ * then out at hydration. Only when scripting is on: without JS (or for a crawler reading the HTML), the
+ * content stays visible.
+ */
+@media (scripting: enabled) {
+  [data-lanim] { opacity: 0; }
+  [data-lanim='up'] { transform: translateY(24px); }
+  [data-lanim='scale'] { transform: scale(.97); }
 }

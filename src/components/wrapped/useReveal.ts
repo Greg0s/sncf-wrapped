@@ -1,4 +1,4 @@
-import { useLayoutEffect, type MutableRefObject, type RefObject } from 'react'
+import { useEffect, useLayoutEffect, type MutableRefObject, type RefObject } from 'react'
 import { REVEAL_SPEED as SP } from './animation'
 import { JUNCTION, laneX, lineStrokeWidth } from './scrollLinePath'
 
@@ -33,9 +33,16 @@ function show(el: HTMLElement) {
   el.style.transform = 'none'
 }
 
-/** Landing: each [data-lanim] block appears once, when it enters the screen. */
+// The landing is prerendered at build time (scripts/prerender.tsx), where layout effects never run and
+// React warns about them: fall back to the (equally inert) useEffect there.
+const useClientLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
+
+/**
+ * Landing: each [data-lanim] block appears once, when it enters the screen. Its hidden starting state is
+ * also in global.css, for the prerendered HTML shown before this runs.
+ */
 export function useLandingReveal(root: RefObject<HTMLElement | null>) {
-  useLayoutEffect(() => {
+  useClientLayoutEffect(() => {
     const elements = [...(root.current?.querySelectorAll<HTMLElement>('[data-lanim]') ?? [])]
     elements.forEach(hide)
     const io = new IntersectionObserver(

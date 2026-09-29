@@ -26,7 +26,7 @@ CSV file ─▶ decode ─▶ parseSncfCsv ─▶ buildTripDataset ─▶ comput
 | `src/components/Logo.tsx` | The brand mark (landing header, shareable card); its line draws itself once, on the landing's first appearance |
 | `src/components/debug/` | Calculation panel, reachable with `?debug` |
 | `public/` | Copied as-is into `dist/`: the favicon set (`favicon.svg`, the same drawing as `Logo.tsx`, plus PNG fallbacks). Never user data |
-| `scripts/` | `build-stations.mjs` (referential), `inspect-csv.ts` (console), `make-sample-csv.ts` (fictional exports) |
+| `scripts/` | `build-stations.mjs` (referential), `inspect-csv.ts` (console), `make-sample-csv.ts` (fictional exports), `prerender.tsx` (landing → static HTML, see below) |
 
 ## Decisions (validated with the owner, 2026-09-19)
 
@@ -40,6 +40,13 @@ Details of the CSV side are in `csv-format.md`.
 - **Cities** group stations of one commune (INSEE code) and take the common name prefix ("Lyon Part Dieu" → "Lyon"). Known limit: a single-station city keeps its full name ("Bordeaux Saint-Jean"); accepted.
 - **Adaptive screens**: a screen without data is removed and the others renumbered; rankings shrink; headings switch to singular/tie wording. All in `buildWrappedView`.
 - **Map**: `projectToFranceMap` is an exact affine fit of the mockup's schematic map. The frame zooms when all cities are close; the France outline is only drawn at moderate zoom. A route reaching a foreign city (real coordinates — see `data/README.md`) is drawn as if it truly reached that position, then cut and faded (gradient) exactly where it crosses the outline actually on screen (the region's when zoomed on one, France's otherwise) — see `foreignCut` in `mapModel.ts`. `regionOf` (a point matching no bundled French region) is how a foreign city is told apart from a domestic one.
+
+## Prerendering (SEO/GEO)
+
+`npm run build` ends with `scripts/prerender.tsx`: it renders `<App />` with `react-dom/server` and writes the markup into `dist/index.html`'s `#root`, so crawlers that don't run JS (Bing, AI crawlers) read the landing's text. `main.tsx` then hydrates it (`hydrateRoot`), except for `?debug`, which starts from an empty root. Only the initial, data-free state is rendered: the landing with no file imported. Rules for anything the landing renders:
+
+- No `window`/`document`/`matchMedia` during render (effects are fine): the build has no DOM, and the client's first render must produce the same markup. Viewer-dependent choices go in CSS (e.g. `prefers-reduced-motion` for the logo intro).
+- The `[data-lanim]` reveals' hidden starting state is duplicated in `global.css` under `@media (scripting: enabled)`: no flash before hydration, and the content stays visible without JS.
 
 ## Porting the mockup
 
