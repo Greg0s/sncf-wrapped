@@ -16,11 +16,13 @@ let introPlayed = false
 
 /**
  * `intro` draws the line on the mark's first appearance (landing header), unless the visitor prefers
- * reduced motion. Anywhere else, and on later appearances, the mark is simply there, fully drawn.
+ * reduced motion (`.logo-intro` in global.css: a CSS media query rather than `matchMedia`, so the
+ * prerendered landing and its hydration agree). Anywhere else, and on later appearances, the mark is
+ * simply there, fully drawn.
  */
 export function Logo({ size, intro = false }: { size: number; intro?: boolean }) {
   // Decided once, at mount: the flag flips while the intro is still running and must not cut it short.
-  const [draw] = useState(() => intro && !introPlayed && !window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const [draw] = useState(() => intro && !introPlayed)
   useEffect(() => {
     if (intro) introPlayed = true
   }, [intro])
@@ -37,6 +39,7 @@ export function Logo({ size, intro = false }: { size: number; intro?: boolean })
         stroke="#0E1219"
         strokeWidth="36"
         pathLength={1}
+        className={draw ? 'logo-intro' : undefined}
         style={draw ? css(`stroke-dasharray: 1; animation: logoDraw ${1.1 / SP}s cubic-bezier(.4,.05,.2,1) ${0.15 / SP}s backwards;`) : undefined}
       />
     </svg>

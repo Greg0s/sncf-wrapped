@@ -2,6 +2,8 @@
 
 Pitfalls this project already hit. Add a lesson only if it is non-obvious and would bite again: symptom → cause → rule, at most 3 lines. Newest first.
 
+- **The landing is prerendered at build time (`scripts/prerender.tsx`) and hydrated.** Reading `window`/`matchMedia` while rendering crashes the build or makes hydration mismatch (in production React the server markup silently wins). → Keep landing render code DOM-free; decide viewer-specific things in effects or CSS media queries.
+
 - **Telling a foreign city apart from a domestic one on the map** looked like it needed a new data flag threaded through the referential/dataset/model. It didn't: `regionOf(lat, lon) === null` (already used to pick the map's region background) is exactly that test, since every bundled French region's boundary already covers all domestic ground. → Prefer deriving a classification from existing geometry over adding a parallel flag that can drift out of sync with it.
 
 - **A region's outline (screen 06's map background) looked cut on one side** (e.g. Auvergne-Rhône-Alpes, cut right). Cause: the frame is sized from the *cities* in view, not from the region drawn behind them — a wide region around a tight local cluster overflows the frame and gets clipped by the SVG viewBox, leaving a straight, un-region-shaped edge. → Once a region is chosen as background, size the frame (`tightFrameFor`) around the region's own outline points too, not just the cities.

@@ -15,6 +15,9 @@ type Imported = Extract<ImportResult, { ok: true }>
 const NO_TRIPS = "Aucun trajet effectué dans ce fichier : il ne contient que des départs à venir ou des réservations non payées."
 const errorMessage = (e: ParseError) => (e.code === 'no-valid-rows' ? NO_TRIPS : e.message)
 
+/** `?debug` opens the calculation panel. Always false when prerendering (no `window` at build time). */
+export const isDebug = () => typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('debug')
+
 /**
  * Journey: landing → CSV import (read in the browser) → wrapped. State lives only in memory: nothing is
  * sent or stored (no localStorage, no request). The calculation validation panel stays reachable
@@ -22,7 +25,7 @@ const errorMessage = (e: ParseError) => (e.code === 'no-valid-rows' ? NO_TRIPS :
  */
 export default function App() {
   const [session, setSession] = useState(0) // remounting the journey also clears imported data
-  if (new URLSearchParams(window.location.search).has('debug')) return <DebugPanel />
+  if (isDebug()) return <DebugPanel />
   return (
     <ErrorBoundary onReset={() => setSession((n) => n + 1)}>
       <Journey key={session} />
