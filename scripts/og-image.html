@@ -1,0 +1,52 @@
+<!doctype html>
+<!--
+  Source of public/og.png, the static link-preview image (Open Graph / Twitter Card).
+  Generic on purpose: it must never contain anything derived from a user's export (CLAUDE.md constraint #1).
+  Regenerate after `npm ci`: open this file in Chromium at a 1200x630 viewport and screenshot it,
+  e.g. `npx playwright screenshot --viewport-size=1200,630 file://$PWD/scripts/og-image.html public/og.png`.
+  The font comes from the local @fontsource package, never from a third party.
+-->
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<style>
+  @font-face { font-family: 'Schibsted Grotesk'; font-weight: 600; src: url('../node_modules/@fontsource/schibsted-grotesk/files/schibsted-grotesk-latin-600-normal.woff2') format('woff2'); }
+  @font-face { font-family: 'Schibsted Grotesk'; font-weight: 800; src: url('../node_modules/@fontsource/schibsted-grotesk/files/schibsted-grotesk-latin-800-normal.woff2') format('woff2'); }
+  html, body { margin: 0; }
+  body { width: 1200px; height: 630px; background: #0E1219; color: #F1F4F7; font-family: 'Schibsted Grotesk', sans-serif; -webkit-font-smoothing: antialiased; }
+  .card { position: absolute; inset: 40px; background: #1B2130; border-radius: 40px; overflow: hidden; padding: 56px 64px; box-sizing: border-box; display: flex; flex-direction: column; }
+  .brand { display: flex; align-items: center; gap: 16px; font-weight: 800; font-size: 30px; letter-spacing: -.02em; }
+  .kicker { margin-top: auto; font-weight: 600; font-size: 24px; letter-spacing: .04em; color: #8DE8FD; }
+  h1 { margin: 16px 0 0; font-weight: 800; font-size: 92px; line-height: .94; letter-spacing: -.045em; max-width: 11ch; }
+  .foot { margin-top: 28px; font-weight: 600; font-size: 24px; color: #AEB7C6; }
+  .line { position: absolute; right: -40px; top: 40px; width: 640px; height: auto; opacity: .55; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <svg class="line" viewBox="0 0 420 120" fill="none">
+      <defs>
+        <linearGradient id="fade" x1="0" y1="0" x2="60" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#fff" stop-opacity="0" />
+          <stop offset="1" stop-color="#fff" stop-opacity="1" />
+        </linearGradient>
+        <mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="120"><rect width="420" height="120" fill="url(#fade)" /></mask>
+      </defs>
+      <path d="M4 96 C 60 96, 74 40, 132 48 C 178 55, 172 104, 130 96 C 96 89, 108 38, 158 26 C 224 10, 268 66, 330 50 C 372 39, 392 22, 414 16" stroke="#8DE8FD" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="8 10" mask="url(#m)" />
+    </svg>
+    <div class="brand">
+      <svg width="52" height="52" viewBox="0 0 392 392" fill="none">
+        <clipPath id="tile"><rect width="392" height="392" rx="86" /></clipPath>
+        <g clip-path="url(#tile)">
+          <rect width="392" height="392" fill="#8DE8FD" />
+          <path d="M-71.5 244.973C32.3333 268.973 278.5 300.974 297.5 168.473C317.372 29.891 132 49.9734 132 151.973C132 253.973 218.909 369.459 474.5 300.973" stroke="#0E1219" stroke-width="36" />
+        </g>
+      </svg>
+      SNCF Wrapped
+    </div>
+    <div class="kicker">Rétrospective de vos trajets en train</div>
+    <h1>Le palmarès de vos années de voyage</h1>
+    <div class="foot">La distance parcourue, l'argent dépensé… Et plus encore</div>
+  </div>
+</body>
+</html>
