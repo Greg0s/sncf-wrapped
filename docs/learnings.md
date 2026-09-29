@@ -2,6 +2,8 @@
 
 Pitfalls this project already hit. Add a lesson only if it is non-obvious and would bite again: symptom → cause → rule, at most 3 lines. Newest first.
 
+- **`import.meta.env.BASE_URL` is `/` under Vitest**, not the config's `/sncf-wrapped/` (vite-node, used by the prerender, does get the real base). → Tests of path helpers compare against `BASE_URL`, and `prerender.tsx` checks the base against the built asset paths.
+
 - **The landing is prerendered at build time (`scripts/prerender.tsx`) and hydrated.** Reading `window`/`matchMedia` while rendering crashes the build or makes hydration mismatch (in production React the server markup silently wins). → Keep landing render code DOM-free; decide viewer-specific things in effects or CSS media queries.
 
 - **Telling a foreign city apart from a domestic one on the map** looked like it needed a new data flag threaded through the referential/dataset/model. It didn't: `regionOf(lat, lon) === null` (already used to pick the map's region background) is exactly that test, since every bundled French region's boundary already covers all domestic ground. → Prefer deriving a classification from existing geometry over adding a parallel flag that can drift out of sync with it.

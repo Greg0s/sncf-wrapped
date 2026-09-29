@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { css } from '../../lib/css'
+import { linkClick, pathOf } from '../../lib/routes'
 
 /*
  * Legal notice + privacy policy in one page, reachable from a footer link. Content only: no state, no
@@ -23,9 +24,9 @@ export function LegalPage({ backHome }: { backHome: () => void }) {
           `display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 4px; max-width: 1180px; margin: 0 auto;`,
         )}
       >
-        <button
-          type="button"
-          onClick={backHome}
+        <a
+          href={pathOf('landing')}
+          onClick={linkClick(backHome)}
           style={css(
             `font-family: 'Schibsted Grotesk', sans-serif; font-size: 14px; font-weight: 600; color: #F1F4F7; background: #1B2130; border: none; border-radius: 999px; padding: 11px 18px; cursor: pointer; transition: background .2s ease; display: inline-flex; align-items: center; gap: 8px;`,
           )}
@@ -36,7 +37,7 @@ export function LegalPage({ backHome }: { backHome: () => void }) {
             <path d="M11 18l-6-6 6-6" />
           </svg>
           <span>Retour</span>
-        </button>
+        </a>
       </header>
       <main style={css(`max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: clamp(12px, 2vw, 20px);`)}>
         <section style={css(`background: #1B2130; border-radius: 28px; padding: clamp(22px, 4.5vw, 44px);`)}>

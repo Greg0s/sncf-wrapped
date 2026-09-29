@@ -20,13 +20,14 @@ CSV file ─▶ decode ─▶ parseSncfCsv ─▶ buildTripDataset ─▶ comput
 | `src/lib/parsing/computeWrappedStats.ts` | Every number the screens show, for one period |
 | `src/lib/parsing/ranking.ts` | Adaptive top-N (`rankTop`): never more rows than distinct items |
 | `src/lib/wrapped/` | Display model: texts, which screens exist, star/map geometry (`buildWrappedView`) |
+| `src/lib/routes.ts` | Public pages' URLs, titles and descriptions; link and history helpers |
 | `src/lib/css.ts` | Turns the mockup's inline CSS strings into React `style` objects |
 | `src/components/wrapped/` | The 8 screens, `useReveal.ts` (all scroll/reveal animations), `Wrapped.tsx` |
 | `src/components/landing/`, `data/` | Landing + import modal, and the "get your data" (GDPR e-mail) page |
 | `src/components/Logo.tsx` | The brand mark (landing header, shareable card); its line draws itself once, on the landing's first appearance |
 | `src/components/debug/` | Calculation panel, reachable with `?debug` |
 | `public/` | Copied as-is into `dist/`: the favicon set (`favicon.svg`, the same drawing as `Logo.tsx`, plus PNG fallbacks). Never user data |
-| `scripts/` | `build-stations.mjs` (referential), `inspect-csv.ts` (console), `make-sample-csv.ts` (fictional exports), `prerender.tsx` (landing → static HTML, see below) |
+| `scripts/` | `build-stations.mjs` (referential), `inspect-csv.ts` (console), `make-sample-csv.ts` (fictional exports), `prerender.tsx` (public pages → static HTML, see below) |
 
 ## Decisions (validated with the owner, 2026-09-19)
 
@@ -43,7 +44,9 @@ Details of the CSV side are in `csv-format.md`.
 
 ## Prerendering (SEO/GEO)
 
-`npm run build` ends with `scripts/prerender.tsx`: it renders `<App />` with `react-dom/server` and writes the markup into `dist/index.html`'s `#root`, so crawlers that don't run JS (Bing, AI crawlers) read the landing's text. `main.tsx` then hydrates it (`hydrateRoot`), except for `?debug`, which starts from an empty root. Only the initial, data-free state is rendered: the landing with no file imported. Rules for anything the landing renders:
+`npm run build` ends with `scripts/prerender.tsx`: for each public page of `src/lib/routes.ts` (landing, `obtenir-mes-donnees/`, `mentions-legales/`) it renders `<App route=… />` with `react-dom/server` into its own `dist/<path>/index.html`, with that page's `<title>`, description and canonical, so crawlers that don't run JS (Bing, AI crawlers) read each page's text. GitHub Pages has no rewrites; one file per URL (rather than a `404.html` fallback) keeps HTTP 200. `main.tsx` then hydrates it (`hydrateRoot`) when `#root`'s `data-route` matches the URL; otherwise (`?debug`, or a server answering with another page's file) it starts from an empty root. Only data-free states are rendered, with no file imported.
+
+Navigation between pages uses `<a href>` (crawlable, and a modified click still opens a new tab) intercepted by `linkClick` for in-place `history.pushState`; `App` listens to `popstate` for back/forward. The wrapped view has no URL (it holds the user's data): it gets its own history entry at the landing's URL, so "back" leaves it, and it is never restored after a reload. Rules for anything these pages render:
 
 - No `window`/`document`/`matchMedia` during render (effects are fine): the build has no DOM, and the client's first render must produce the same markup. Viewer-dependent choices go in CSS (e.g. `prefers-reduced-motion` for the logo intro).
 - The `[data-lanim]` reveals' hidden starting state is duplicated in `global.css` under `@media (scripting: enabled)`: no flash before hydration, and the content stays visible without JS.
