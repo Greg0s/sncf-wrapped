@@ -4,16 +4,6 @@ import { linkClick, pathOf } from "../../lib/routes";
 import { Logo } from "../Logo";
 import { useLandingReveal } from "../wrapped/useReveal";
 
-const BANNER_ITEMS = [
-  "Lecture 100% locale",
-  "#SNCFwrapped",
-  "Projet non officiel",
-];
-// Repeated several times per half: on wide screens, a single pass of the 3 phrases is narrower than the
-// pill, so the marquee would run out of content and visibly snap back before looping (`translateX(-50%)`
-// needs both halves to overflow the container to read as seamless).
-const BANNER_HALF = Array.from({ length: 4 }, () => BANNER_ITEMS).flat();
-
 const BLURRED_ANSWERS = [
   {
     label: "Votre ville la plus visitée",
@@ -181,36 +171,6 @@ export function Landing({
             </div>
           </div>
         </section>
-        <div
-          style={css(
-            `background: #1B2130; border-radius: 999px; overflow: hidden; padding: 9px 0;`,
-          )}
-        >
-          <div
-            style={css(
-              `display: flex; width: max-content; animation: marquee 34s linear infinite; font-size: 13px; font-weight: 500; color: #AEB7C6; white-space: nowrap;`,
-            )}
-          >
-            {[0, 1].map((half) => (
-              <div
-                key={half}
-                style={css(`display: flex; align-items: center;`)}
-              >
-                {BANNER_HALF.map((text, i) => (
-                  <span
-                    key={i}
-                    style={css(`display: flex; align-items: center;`)}
-                  >
-                    <span style={css(`padding: 0 18px;`)}>{text}</span>
-                    <span style={css(`color: #8DE8FD; color: var(--ac);`)}>
-                      •
-                    </span>
-                  </span>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
         <section
           data-lanim="up"
           style={css(
