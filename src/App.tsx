@@ -7,9 +7,10 @@ import { Landing } from './components/landing/Landing'
 import { LegalPage } from './components/legal/LegalPage'
 import { Wrapped } from './components/wrapped/Wrapped'
 import { computeWrappedStats, importSncfCsv, type ImportResult, type ParseError } from './lib/parsing'
+import { applyHead, pathOf, routeOf, type Route } from './lib/routes'
 import { ACCENTS, accentFor, buildWrappedView, plural } from './lib/wrapped'
 
-type View = 'landing' | 'data' | 'legal' | 'wrapped'
+type View = Route | 'wrapped'
 type Imported = Extract<ImportResult, { ok: true }>
 
 const NO_TRIPS = "Aucun trajet effectué dans ce fichier : il ne contient que des départs à venir ou des réservations non payées."
@@ -21,29 +22,48 @@ export const isDebug = () => typeof window !== 'undefined' && new URLSearchParam
 /**
  * Journey: landing → CSV import (read in the browser) → wrapped. State lives only in memory: nothing is
  * sent or stored (no localStorage, no request). The calculation validation panel stays reachable
- * via ?debug.
+ * via ?debug. The landing, data-request and legal pages have their own URLs (`lib/routes.ts`); the wrapped
+ * view doesn't, so it can never be deep-linked. `route` is the page to render when prerendering (no `window`).
  */
-export default function App() {
+export default function App({ route = 'landing' }: { route?: Route }) {
   const [session, setSession] = useState(0) // remounting the journey also clears imported data
   if (isDebug()) return <DebugPanel />
   return (
     <ErrorBoundary onReset={() => setSession((n) => n + 1)}>
-      <Journey key={session} />
+      <Journey key={session} route={route} />
     </ErrorBoundary>
   )
 }
 
-function Journey() {
-  const [view, setView] = useState<View>('landing')
+function Journey({ route }: { route: Route }) {
+  // In the browser, the URL decides; it matches the prerendered file served for it, so hydration agrees.
+  const [view, setView] = useState<View>(() => (typeof window === 'undefined' ? route : routeOf(window.location.pathname)))
   const [modal, setModal] = useState(false)
   const [status, setStatus] = useState<ImportStatus>({ status: 'idle' })
   const [imported, setImported] = useState<Imported | null>(null)
   const [periodIndex, setPeriodIndex] = useState(0)
   const request = useRef(0) // ignore the response for a file that was replaced in the meantime
 
+  const hasWrapped = useRef(false)
+  useEffect(() => {
+    hasWrapped.current = imported !== null
+  }, [imported])
+
   useEffect(() => {
     window.scrollTo(0, 0)
+    if (view !== 'wrapped') applyHead(view)
   }, [view])
+
+  // Back/forward. The wrapped view has its own history entry at the landing's URL (see openWrapped), so
+  // "back" from it returns to the landing; forward only restores it while its data is still in memory.
+  useEffect(() => {
+    const onPop = () => {
+      setView(history.state?.wrapped && hasWrapped.current ? 'wrapped' : routeOf(window.location.pathname))
+      setModal(false)
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
 
   const handleFile = async (file: File) => {
     const id = ++request.current
@@ -96,12 +116,17 @@ function Journey() {
     }
   })
 
-  const openData = () => {
-    setView('data')
+  const go = (to: Route) => {
+    if (window.location.pathname !== pathOf(to)) history.pushState(null, '', pathOf(to))
+    setView(to)
     setModal(false)
   }
-  const openLegal = () => {
-    setView('legal')
+  const openData = () => go('data')
+  const openLegal = () => go('legal')
+  const backHome = () => go('landing')
+  const openWrapped = () => {
+    history.pushState({ wrapped: true }, '', pathOf('landing'))
+    setView('wrapped')
     setModal(false)
   }
   const closeModal = () => setModal(false)
@@ -125,10 +150,7 @@ function Journey() {
                   setImported(null)
                   setStatus({ status: 'idle' })
                 }}
-                onGo={() => {
-                  setView('wrapped')
-                  setModal(false)
-                }}
+                onGo={openWrapped}
                 onNoData={openData}
               />
             )
@@ -136,13 +158,13 @@ function Journey() {
         />
       )}
       {view === 'data' && (
-        <DataRequestPage backHome={() => setView('landing')} openLegal={openLegal} />
+        <DataRequestPage backHome={backHome} openLegal={openLegal} />
       )}
-      {view === 'legal' && <LegalPage backHome={() => setView('landing')} />}
+      {view === 'legal' && <LegalPage backHome={backHome} />}
       {view === 'wrapped' && wrappedView && (
         // Keyed by period: switching period from inside the wrapped remounts the whole scrollytelling
         // journey (fresh scroll position, reveal animations, map player) instead of patching it in place.
-        <Wrapped key={periodIndex} view={wrappedView} onBack={() => setView('landing')} periods={periods} />
+        <Wrapped key={periodIndex} view={wrappedView} onBack={() => history.back()} periods={periods} />
       )}
     </div>
   )

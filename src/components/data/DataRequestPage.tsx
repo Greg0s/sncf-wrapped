@@ -1,5 +1,6 @@
 import { useRef, useState, type ChangeEvent } from 'react'
 import { css } from '../../lib/css'
+import { linkClick, pathOf } from '../../lib/routes'
 
 /*
  * "Get your data": helps draft the GDPR request to SNCF Connect. First name, last name and email are
@@ -99,9 +100,9 @@ export function DataRequestPage({
           `display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 4px; max-width: 1180px; margin: 0 auto;`,
         )}
       >
-        <button
-          type="button"
-          onClick={backHome}
+        <a
+          href={pathOf('landing')}
+          onClick={linkClick(backHome)}
           style={css(
             `font-family: 'Schibsted Grotesk', sans-serif; font-size: 14px; font-weight: 600; color: #F1F4F7; background: #1B2130; border: none; border-radius: 999px; padding: 11px 18px; cursor: pointer; transition: background .2s ease; display: inline-flex; align-items: center; gap: 8px;`,
           )}
@@ -112,7 +113,7 @@ export function DataRequestPage({
             <path d="M11 18l-6-6 6-6" />
           </svg>
           <span>Retour</span>
-        </button>
+        </a>
       </header>
       <main style={css(`max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: clamp(12px, 2vw, 20px);`)}>
         <section
@@ -444,15 +445,15 @@ export function DataRequestPage({
               Greg
             </a>
           </span>
-          <button
-            type="button"
-            onClick={openLegal}
+          <a
+            href={pathOf('legal')}
+            onClick={linkClick(openLegal)}
             style={css(
               `font-family: 'Schibsted Grotesk', sans-serif; font-size: 13px; color: #6C768A; background: transparent; border: none; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px;`,
             )}
           >
             Mentions légales
-          </button>
+          </a>
         </footer>
       </main>
     </div>

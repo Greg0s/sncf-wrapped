@@ -1,27 +1,56 @@
-// Prerenders the landing into dist/index.html after `vite build`, so crawlers that don't run JS (Bing,
-// GPTBot, ClaudeBot, PerplexityBot, Common Crawl…) read the page's text; the browser then hydrates it
-// (src/main.tsx). Only data-free markup is rendered here: the App's initial state is the landing, with
-// no file imported. The wrapped view stays 100 % client-side (CLAUDE.md constraint #1).
+// Prerenders the site's public pages to static HTML after `vite build`, so crawlers that don't run JS
+// (Bing, GPTBot, ClaudeBot, PerplexityBot, Common Crawl…) read their text; the browser then hydrates it
+// (src/main.tsx). One file per route of src/lib/routes.ts (dist/index.html, dist/obtenir-mes-donnees/
+// index.html…), each with its own title, description and canonical: GitHub Pages has no rewrites, and a
+// 404.html fallback would answer HTTP 404. Only data-free markup is rendered here, with no file imported.
+// The wrapped view has no URL and stays 100 % client-side (CLAUDE.md constraint #1).
 //   npm run build (runs it) — or, on an existing build: vite-node scripts/prerender.tsx
-import { readFileSync, writeFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
 import { StrictMode } from 'react'
 import { renderToString } from 'react-dom/server'
 import App from '../src/App'
+import { canonicalOf, ROUTES, type Route } from '../src/lib/routes'
 
-const file = resolve(import.meta.dirname, '../dist/index.html')
+const dist = resolve(import.meta.dirname, '../dist')
 const EMPTY_ROOT = '<div id="root"></div>'
 
-const html = readFileSync(file, 'utf8')
-if (!html.includes(EMPTY_ROOT)) throw new Error(`${file}: no empty ${EMPTY_ROOT} to fill (already prerendered?)`)
+const template = readFileSync(resolve(dist, 'index.html'), 'utf8')
+if (!template.includes(EMPTY_ROOT)) throw new Error(`dist/index.html: no empty ${EMPTY_ROOT} to fill (already prerendered?)`)
 
-// Same tree as src/main.tsx, so hydration matches.
-const markup = renderToString(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
-if (!markup.includes('<h1')) throw new Error('Prerendered landing has no <h1>: did the initial view change?')
+// Links and canonicals are built from Vite's base: make sure vite-node picked up the build's, not '/'.
+if (!template.includes(`src="${import.meta.env.BASE_URL}assets/`)) throw new Error(`BASE_URL ${import.meta.env.BASE_URL} doesn't match the build's asset paths`)
 
-writeFileSync(file, html.replace(EMPTY_ROOT, `<div id="root">${markup}</div>`))
-console.log(`Prerendered the landing into ${file} (${(markup.length / 1024).toFixed(1)} kB of HTML)`)
+const attr = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
+
+/** Swaps the landing's head values (from index.html) for the route's; fails if index.html drifted from ROUTES. */
+function head(html: string, route: Route): string {
+  const [from, to] = [ROUTES.landing, ROUTES[route]]
+  const swaps: [string, string, number][] = [
+    [`>${from.title}<`, `>${attr(to.title)}<`, 1], // <title>
+    [`content="${from.title}"`, `content="${attr(to.title)}"`, 2], // og:title, twitter:title
+    [`content="${from.description}"`, `content="${attr(to.description)}"`, 3],
+    [`href="${canonicalOf('landing')}"`, `href="${canonicalOf(route)}"`, 1],
+    [`content="${canonicalOf('landing')}"`, `content="${canonicalOf(route)}"`, 1], // og:url
+  ]
+  for (const [a, b, n] of swaps) {
+    const found = html.split(a).length - 1
+    if (found !== n) throw new Error(`index.html: expected ${n} × ${a}, found ${found}. Keep it in sync with src/lib/routes.ts.`)
+    html = html.replaceAll(a, b)
+  }
+  return html
+}
+
+for (const route of Object.keys(ROUTES) as Route[]) {
+  // Same tree as src/main.tsx, so hydration matches.
+  const markup = renderToString(
+    <StrictMode>
+      <App route={route} />
+    </StrictMode>,
+  )
+  if (!markup.includes('<h1')) throw new Error(`Prerendered ${route} page has no <h1>: did its view change?`)
+  const file = resolve(dist, ROUTES[route].slug, 'index.html')
+  mkdirSync(dirname(file), { recursive: true })
+  writeFileSync(file, head(template, route).replace(EMPTY_ROOT, `<div id="root" data-route="${route}">${markup}</div>`))
+  console.log(`Prerendered ${route} into ${file} (${(markup.length / 1024).toFixed(1)} kB of HTML)`)
+}

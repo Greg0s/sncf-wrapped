@@ -1,5 +1,6 @@
 import { useRef, type ReactNode } from "react";
 import { css } from "../../lib/css";
+import { linkClick, pathOf } from "../../lib/routes";
 import { Logo } from "../Logo";
 import { useLandingReveal } from "../wrapped/useReveal";
 
@@ -65,16 +66,16 @@ export function Landing({
             SNCF Wrapped
           </span>
         </div>
-        <button
-          type="button"
-          onClick={openData}
+        <a
+          href={pathOf("data")}
+          onClick={linkClick(openData)}
           style={css(
-            `font-family: 'Schibsted Grotesk', sans-serif; font-size: 14px; font-weight: 600; color: #F1F4F7; background: #1B2130; border: none; border-radius: 999px; padding: 11px 18px; cursor: pointer; transition: background .2s ease;`,
+            `font-family: 'Schibsted Grotesk', sans-serif; font-size: 14px; font-weight: 600; color: #F1F4F7; background: #1B2130; border: none; border-radius: 999px; padding: 11px 18px; cursor: pointer; transition: background .2s ease; display: inline-block;`,
           )}
           className="hv-bg-262E40"
         >
           Obtenir mes données
-        </button>
+        </a>
       </header>
       <main
         style={css(
@@ -309,15 +310,15 @@ export function Landing({
               Une demande d'accès à vos données personnelles suffit. Vous
               recevrez un fichier listant vos trajets.
             </p>
-            <button
-              type="button"
-              onClick={openData}
+            <a
+              href={pathOf("data")}
+              onClick={linkClick(openData)}
               style={css(
                 `align-self: flex-start; font-family: 'Schibsted Grotesk', sans-serif; font-size: 14px; font-weight: 600; color: #8DE8FD; background: transparent; border: none; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; color: var(--ac);`,
               )}
             >
               Faire la demande
-            </button>
+            </a>
           </div>
           <div
             data-lanim="up"
@@ -473,15 +474,15 @@ export function Landing({
             Contient des données SNCF Open Data (licence ODbL) et IGN Admin
             Express (Licence Ouverte / Etalab)
           </span>
-          <button
-            type="button"
-            onClick={openLegal}
+          <a
+            href={pathOf("legal")}
+            onClick={linkClick(openLegal)}
             style={css(
               `font-family: 'Schibsted Grotesk', sans-serif; font-size: 13px; color: #6C768A; background: transparent; border: none; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px;`,
             )}
           >
             Mentions légales
-          </button>
+          </a>
         </footer>
       </main>
       {modal}
