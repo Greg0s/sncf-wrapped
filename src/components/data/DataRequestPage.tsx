@@ -1,6 +1,7 @@
 import { useRef, useState, type ChangeEvent } from 'react'
 import { css } from '../../lib/css'
 import { linkClick, pathOf } from '../../lib/routes'
+import { DATA_REQUEST_STEPS } from '../../lib/structuredData'
 
 /*
  * "Get your data": helps draft the GDPR request to SNCF Connect. First name, last name and email are
@@ -173,10 +174,8 @@ export function DataRequestPage({
                 1
               </div>
             )}
-            <h3 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>Envoyez la demande</h3>
-            <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>
-              Indiquez vos informations et envoyez l'email prérempli en moins de 30s.
-            </p>
+            <h3 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>{DATA_REQUEST_STEPS[0].name}</h3>
+            <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>{DATA_REQUEST_STEPS[0].text}</p>
           </div>
           <div
             className="tuto-step2"
@@ -201,8 +200,8 @@ export function DataRequestPage({
                 2
               </div>
             )}
-            <h3 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>Attendez la réponse</h3>
-            <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>Sous 1 mois maximum, souvent 2 semaines environ.</p>
+            <h3 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>{DATA_REQUEST_STEPS[1].name}</h3>
+            <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>{DATA_REQUEST_STEPS[1].text}</p>
           </div>
           <div
             className="tuto-step3"
@@ -217,10 +216,8 @@ export function DataRequestPage({
             >
               3
             </div>
-            <h3 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>Revenez importer</h3>
-            <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>
-              Déposez le fichier reçu ici, et votre récap se génère aussitôt.
-            </p>
+            <h3 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>{DATA_REQUEST_STEPS[2].name}</h3>
+            <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>{DATA_REQUEST_STEPS[2].text}</p>
           </div>
           {notSent && (
             <section

@@ -1,7 +1,7 @@
 // Prerenders the site's public pages to static HTML after `vite build`, so crawlers that don't run JS
 // (Bing, GPTBot, ClaudeBot, PerplexityBot, Common Crawl…) read their text; the browser then hydrates it
 // (src/main.tsx). One file per route of src/lib/routes.ts (dist/index.html, dist/obtenir-mes-donnees/
-// index.html…), each with its own title, description and canonical: GitHub Pages has no rewrites, and a
+// index.html…), each with its own title, description, canonical and JSON-LD (src/lib/structuredData.ts): GitHub Pages has no rewrites, and a
 // 404.html fallback would answer HTTP 404. Only data-free markup is rendered here, with no file imported.
 // The wrapped view has no URL and stays 100 % client-side (CLAUDE.md constraint #1).
 //   npm run build (runs it) — or, on an existing build: vite-node scripts/prerender.tsx
@@ -11,6 +11,7 @@ import { StrictMode } from 'react'
 import { renderToString } from 'react-dom/server'
 import App from '../src/App'
 import { canonicalOf, ROUTES, type Route } from '../src/lib/routes'
+import { jsonLdScriptOf } from '../src/lib/structuredData'
 
 const dist = resolve(import.meta.dirname, '../dist')
 const EMPTY_ROOT = '<div id="root"></div>'
@@ -38,7 +39,8 @@ function head(html: string, route: Route): string {
     if (found !== n) throw new Error(`index.html: expected ${n} × ${a}, found ${found}. Keep it in sync with src/lib/routes.ts.`)
     html = html.replaceAll(a, b)
   }
-  return html
+  if (html.split('</head>').length !== 2) throw new Error('index.html: expected exactly one </head>')
+  return html.replace('</head>', `${jsonLdScriptOf(route)}</head>`)
 }
 
 for (const route of Object.keys(ROUTES) as Route[]) {
