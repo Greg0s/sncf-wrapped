@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import stationData from './data/gares.json'
-import { createStationIndex, unresolvedPlace } from './stations'
+import { createStationIndex, STATION_ALIASES, unresolvedPlace } from './stations'
 import type { StationData } from './types'
 
 const index = createStationIndex(stationData as unknown as StationData)
@@ -42,6 +42,23 @@ describe('resolve', () => {
   it("retrouve une gare dont le libellé SNCF est plus court que le nom officiel (« PARIS BERCY »)", () => {
     expect(index.resolve('PARIS BERCY')).toMatchObject({ kind: 'station', via: 'prefix', city: 'Paris', name: 'Paris Bercy' }) // CSV label, not the official name
     expect(index.resolve('PARIS BERCY')?.cityKey).toBe(index.resolve('PARIS GARE DE LYON')?.cityKey)
+  })
+
+  it('traduit les libellés SNCF Connect usuels vers la gare officielle (« PARIS NORD »)', () => {
+    expect(index.resolve('PARIS NORD')).toMatchObject({ kind: 'station', via: 'exact', name: 'Paris Gare du Nord', city: 'Paris' })
+    expect(index.resolve('PARIS LYON')).toMatchObject({ via: 'exact', name: 'Paris Gare de Lyon' })
+    expect(index.resolve('NICE VILLE')).toMatchObject({ via: 'exact', name: 'Nice' })
+    expect(index.resolve('VALENCE TGV')).toMatchObject({ via: 'exact', name: 'Valence TGV Rhône-Alpes Sud' })
+    expect(index.resolve('LE CREUSOT MONTCEAU MONTCHANIN')).toMatchObject({ via: 'exact', name: 'Le Creusot - Montceau-les-Mines - Montchanin TGV' })
+    expect(index.resolve('PARIS NORD GARE ROUTIERE')).toMatchObject({ via: 'stripped', name: 'Paris Gare du Nord' })
+  })
+
+  it('ne garde que des alias qui pointent vers une gare du référentiel', () => {
+    const names = new Set((stationData as unknown as StationData).stations.map((s) => s[0]))
+    for (const [label, official] of Object.entries(STATION_ALIASES)) {
+      expect(names.has(official), `${label} → ${official}`).toBe(true)
+      expect(index.resolve(label)?.via, label).toBe('exact')
+    }
   })
 
   it('rattache un arrêt de car à la gare de la ville', () => {
