@@ -7,8 +7,31 @@ const BUS_SUFFIX = / (GARE ROUTIERE|G ROUTIERE|ROUTIERE|GARE BUS)$/
 const MIN_CITY_PREFIX_LENGTH = 4
 
 /**
+ * SNCF Connect labels that differ from the referential's official name and would otherwise fall back
+ * to an approximation (usually the city centre). Keys are compared after `normalizeStationName`,
+ * values must be exact station names of `gares.json` (checked by the tests). Grow it as exports come in.
+ */
+export const STATION_ALIASES: Readonly<Record<string, string>> = {
+  'PARIS NORD': 'Paris Gare du Nord',
+  'PARIS LYON': 'Paris Gare de Lyon',
+  'PARIS MONTPARNASSE 1 ET 2': 'Paris Montparnasse',
+  'PARIS MONTPARNASSE HALL 1 2': 'Paris Montparnasse',
+  'AEROPORT CDG 2 TGV': 'Aéroport Charles de Gaulle 2 TGV',
+  'VALENCE TGV': 'Valence TGV Rhône-Alpes Sud',
+  'LE CREUSOT MONTCEAU MONTCHANIN': 'Le Creusot - Montceau-les-Mines - Montchanin TGV',
+  'BOULOGNE VILLE': 'Boulogne-sur-Mer',
+  'DIJON VILLE': 'Dijon',
+  'LA ROCHELLE VILLE': 'La Rochelle',
+  'METZ VILLE': 'Metz',
+  'MULHOUSE VILLE': 'Mulhouse',
+  'NANCY VILLE': 'Nancy',
+  'NICE VILLE': 'Nice',
+  'VALENCE VILLE': 'Valence',
+}
+
+/**
  * Resolution index "SNCF label → station/city + coordinates", built on the bundled referential.
- * Resolution order: exact name → without the "gare routière" suffix → station name starting with the label
+ * Resolution order: exact name or known alias → without the "gare routière" suffix → station name starting with the label
  * ("PARIS BERCY" → Paris Bercy Bourgogne…) → city name as a prefix ("SAINT ETIENNE CHTX" → Saint-Étienne).
  */
 export function createStationIndex(data: StationData): StationIndex {
@@ -19,6 +42,10 @@ export function createStationIndex(data: StationData): StationIndex {
     stationNames.push(key)
     if (!stationByName.has(key)) stationByName.set(key, i)
   })
+  for (const [label, official] of Object.entries(STATION_ALIASES)) {
+    const i = stationByName.get(normalizeStationName(official))
+    if (i !== undefined) stationByName.set(normalizeStationName(label), i)
+  }
 
   const citiesByKey = new Map<string, number[]>()
   const stationCount = Array.from({ length: data.cities.length }, () => 0)
