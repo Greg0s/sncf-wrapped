@@ -4,6 +4,7 @@
 // index.html…), each with its own title, description, canonical and JSON-LD (src/lib/structuredData.ts): GitHub Pages has no rewrites, and a
 // 404.html fallback would answer HTTP 404. Only data-free markup is rendered here, with no file imported.
 // The wrapped view has no URL and stays 100 % client-side (CLAUDE.md constraint #1).
+// Also writes dist/sitemap.xml from the same routes (src/lib/sitemap.ts).
 //   npm run build (runs it) — or, on an existing build: vite-node scripts/prerender.tsx
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
@@ -11,6 +12,7 @@ import { StrictMode } from 'react'
 import { renderToString } from 'react-dom/server'
 import App from '../src/App'
 import { canonicalOf, ROUTES, type Route } from '../src/lib/routes'
+import { sitemapXml } from '../src/lib/sitemap'
 import { jsonLdScriptOf } from '../src/lib/structuredData'
 
 const dist = resolve(import.meta.dirname, '../dist')
@@ -56,3 +58,6 @@ for (const route of Object.keys(ROUTES) as Route[]) {
   writeFileSync(file, head(template, route).replace(EMPTY_ROOT, `<div id="root" data-route="${route}">${markup}</div>`))
   console.log(`Prerendered ${route} into ${file} (${(markup.length / 1024).toFixed(1)} kB of HTML)`)
 }
+
+writeFileSync(resolve(dist, 'sitemap.xml'), sitemapXml())
+console.log(`Wrote the sitemap of ${Object.keys(ROUTES).length} pages into ${resolve(dist, 'sitemap.xml')}`)
