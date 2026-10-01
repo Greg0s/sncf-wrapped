@@ -34,7 +34,7 @@ export function Cities({ cities, heading, index, label }: { cities: CityRow[]; h
         {cities.map((v, i) => (
           <Fragment key={i}>
             <div style={css(`padding: clamp(6px, 1.1vh, 12px) 0; display: flex; align-items: baseline; gap: clamp(10px, 2.4vw, 20px);`)}>
-              <span style={css(`font-size: 13px; color: #6C768A; flex: 0 0 auto; font-weight: 600;`)}>{v.rank}</span>
+              <span style={css(`font-size: 13px; color: #727D92; flex: 0 0 auto; font-weight: 600;`)}>{v.rank}</span>
               <div style={css(`flex: 1 1 auto; min-width: 0;`)}>
                 <div style={css(`display: flex; align-items: baseline; gap: 10px; justify-content: space-between; flex-wrap: wrap;`)}>
                   <span

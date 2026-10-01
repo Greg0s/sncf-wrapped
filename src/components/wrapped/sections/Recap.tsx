@@ -368,7 +368,7 @@ export function Recap({
                       {cardCities.map((v, i) => (
                         <Fragment key={i}>
                           <div style={css(`display: flex; align-items: baseline; gap: 6px;`)}>
-                            <span style={css(`flex: 0 0 auto; width: 22px; font-size: 12px; font-weight: 700; color: #6C768A;`)}>{v.n}</span>
+                            <span style={css(`flex: 0 0 auto; width: 22px; font-size: 12px; font-weight: 700; color: #727D92;`)}>{v.n}</span>
                             <span
                               style={css(
                                 `flex: 1 1 auto; min-width: 0; font-size: 16px; font-weight: 700; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`,
@@ -393,7 +393,7 @@ export function Recap({
                       {cardRoutes.map((r, i) => (
                         <Fragment key={i}>
                           <div style={css(`display: flex; align-items: baseline; gap: 6px;`)}>
-                            <span style={css(`flex: 0 0 auto; width: 22px; font-size: 12px; font-weight: 700; color: #6C768A;`)}>{r.n}</span>
+                            <span style={css(`flex: 0 0 auto; width: 22px; font-size: 12px; font-weight: 700; color: #727D92;`)}>{r.n}</span>
                             <span
                               style={css(
                                 `flex: 1 1 auto; min-width: 0; font-size: 16px; font-weight: 700; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`,
@@ -476,7 +476,7 @@ export function Recap({
                       {cardCities.map((v, i) => (
                         <Fragment key={i}>
                           <div style={css(`display: flex; align-items: baseline; gap: 6px;`)}>
-                            <span style={css(`flex: 0 0 auto; width: 22px; font-size: 12px; font-weight: 700; color: #6C768A;`)}>{v.n}</span>
+                            <span style={css(`flex: 0 0 auto; width: 22px; font-size: 12px; font-weight: 700; color: #727D92;`)}>{v.n}</span>
                             <span
                               style={css(
                                 `flex: 1 1 auto; min-width: 0; font-size: 16px; font-weight: 700; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`,
@@ -501,7 +501,7 @@ export function Recap({
                       {cardRoutes.map((r, i) => (
                         <Fragment key={i}>
                           <div style={css(`display: flex; align-items: baseline; gap: 6px;`)}>
-                            <span style={css(`flex: 0 0 auto; width: 22px; font-size: 12px; font-weight: 700; color: #6C768A;`)}>{r.n}</span>
+                            <span style={css(`flex: 0 0 auto; width: 22px; font-size: 12px; font-weight: 700; color: #727D92;`)}>{r.n}</span>
                             <span
                               style={css(
                                 `flex: 1 1 auto; min-width: 0; font-size: 16px; font-weight: 700; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`,
@@ -609,7 +609,7 @@ export function Recap({
                       {cardCities.map((v, i) => (
                         <Fragment key={i}>
                           <div style={css(`display: flex; align-items: baseline; gap: 6px;`)}>
-                            <span style={css(`flex: 0 0 auto; width: 22px; font-size: 12px; font-weight: 700; color: #6C768A;`)}>{v.n}</span>
+                            <span style={css(`flex: 0 0 auto; width: 22px; font-size: 12px; font-weight: 700; color: #727D92;`)}>{v.n}</span>
                             <span
                               style={css(
                                 `flex: 1 1 auto; min-width: 0; font-size: 16px; font-weight: 700; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`,
@@ -634,7 +634,7 @@ export function Recap({
                       {cardRoutes.map((r, i) => (
                         <Fragment key={i}>
                           <div style={css(`display: flex; align-items: baseline; gap: 6px;`)}>
-                            <span style={css(`flex: 0 0 auto; width: 22px; font-size: 12px; font-weight: 700; color: #6C768A;`)}>{r.n}</span>
+                            <span style={css(`flex: 0 0 auto; width: 22px; font-size: 12px; font-weight: 700; color: #727D92;`)}>{r.n}</span>
                             <span
                               style={css(
                                 `flex: 1 1 auto; min-width: 0; font-size: 16px; font-weight: 700; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`,
@@ -775,7 +775,7 @@ export function Recap({
         </div>
         {/* The share and download buttons have no text state of their own now: progress and the share
             fallback result show up here, in place of the export size. */}
-        <span aria-live="polite" style={css(`font-size: 12px; color: #6C768A; text-align: center;`)}>
+        <span aria-live="polite" style={css(`font-size: 12px; color: #727D92; text-align: center;`)}>
           {statusLabel ?? `PNG · ${fmt.dims}`}
         </span>
       </div>
