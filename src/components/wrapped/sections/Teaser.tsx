@@ -10,7 +10,7 @@ export function Teaser({ d, index }: { d: DisplayData; index: number }) {
       data-sec={index}
       data-sec-id="teaser"
       style={css(
-        `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(14px, 2.6vh, 24px); padding: clamp(58px, 9vh, 96px) clamp(18px, 5vw, 80px) clamp(40px, 7vh, 72px); position: relative; overflow: hidden; isolation: isolate;`,
+        `min-height: 100dvh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(14px, 2.6vh, 24px); padding: clamp(58px, 9vh, 96px) clamp(18px, 5vw, 80px) clamp(40px, 7vh, 72px); position: relative; overflow: hidden; isolation: isolate;`,
       )}
     >
       <ScrollLine spec={SCREEN_LINES.teaser} draw={1} />

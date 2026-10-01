@@ -84,7 +84,7 @@ export function Wrapped({ view, onBack, periods }: { view: WrappedView; onBack: 
         ref={scrollerRef}
         data-scroller="true"
         style={css(
-          `height: 100svh; overflow-y: auto; overflow-x: hidden; scroll-snap-type: y mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch;`,
+          `height: 100dvh; overflow-y: auto; overflow-x: hidden; scroll-snap-type: y mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch;`,
         )}
       >
         {view.sections.map(section)}
