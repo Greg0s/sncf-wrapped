@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, type MutableRefObject, type RefObject } from 'react'
-import { REVEAL_SPEED as SP } from './animation'
+import { REVEAL_SPEED as SP, prefersReducedMotion } from './animation'
 import { JUNCTION, laneX, lineStrokeWidth } from './scrollLinePath'
 
 /*
@@ -396,7 +396,10 @@ export function useWrappedScroll(
         bar.style.width = on ? `${bar.dataset.bar}%` : '0%'
       })
       section.querySelectorAll<HTMLElement>('[data-roll]').forEach((node) => {
-        if (on) {
+        if (on && prefersReducedMotion()) {
+          stopCycle(node)
+          node.textContent = node.dataset.final || ''
+        } else if (on) {
           if (node.dataset.rollCycle) rollCycle(node)
           else (node.dataset.rollSuspense === 'true' ? rollSuspense : roll)(node)
         } else {
@@ -457,6 +460,11 @@ export function useWrappedScroll(
         el.querySelectorAll<HTMLElement>('[data-seg]').forEach((seg) => {
           seg.style.background = Number(seg.dataset.seg) <= active ? 'var(--ac)' : SEGMENT_OFF
         })
+        const progress = el.querySelector<HTMLElement>('[role="progressbar"]')
+        if (progress) {
+          progress.setAttribute('aria-valuenow', String(active + 1))
+          progress.setAttribute('aria-valuetext', `Écran ${active + 1} sur ${sections.length}`)
+        }
       },
       { root: scroller, threshold: [0, ACTIVE_RATIO, 0.75] },
     )

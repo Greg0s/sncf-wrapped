@@ -15,6 +15,7 @@ import { useStoryTapNavigation, useWrappedScroll } from './useReveal'
 /**
  * Wrapped: the mockup's screens, in vertical scroll-snap, fed by the display model.
  * Screens with no data are absent from `view.sections`; the progress bar follows their actual count.
+ * Its ARIA value is kept in sync with the active screen by useWrappedScroll, not by React.
  */
 export function Wrapped({ view, onBack, periods }: { view: WrappedView; onBack: () => void; periods: ImportPeriod[] }) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -65,7 +66,15 @@ export function Wrapped({ view, onBack, periods }: { view: WrappedView; onBack: 
           </svg>
           <span>Retour</span>
         </button>
-        <div style={css(`display: flex; gap: 4px; flex: 1 1 auto;`)}>
+        <div
+          role="progressbar"
+          aria-label="Progression"
+          aria-valuemin={1}
+          aria-valuemax={view.sections.length}
+          aria-valuenow={1}
+          aria-valuetext={`Écran 1 sur ${view.sections.length}`}
+          style={css(`display: flex; gap: 4px; flex: 1 1 auto;`)}
+        >
           {view.sections.map((s, i) => (
             <div key={s.id} data-seg={i} style={css(`height: 3px; flex: 1; border-radius: 999px; background: rgba(241,244,247,.22); transition: background .4s;`)} />
           ))}
