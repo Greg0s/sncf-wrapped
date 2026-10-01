@@ -118,6 +118,14 @@ a:hover { color: #FFFFFF; border-bottom-color: #FFFFFF; }
 @media (prefers-reduced-motion: reduce) {
   .tuto-hero, .tuto-flow > * { animation: none !important; }
   .logo-intro { animation: none !important; }
+  /* Wrapped (useWrappedScroll): reveals, line drawing, bars and progress segments switch state instantly. */
+  [data-anim], [data-draw], [data-bar], [data-seg] { transition: none !important; }
+}
+
+/* Text for screen readers only (e.g. the real value behind a rolling number, see Roll.tsx). */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
 
 /*

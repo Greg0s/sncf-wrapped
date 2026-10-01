@@ -59,6 +59,7 @@ The mockup (`SNCF Wrapped v3.dc.html`, outside the repo) was converted to JSX by
 - The per-period accent colour is the CSS variable `--ac`, set on the app root (`accentFor`).
 - `style-hover`/`style-focus` became the `hv-*` / `focus-accent` classes in `src/styles/global.css`.
 - Animations use `data-*` attributes read by `useReveal.ts` (speed `REVEAL_SPEED = 0.6`, the mockup's default). Those styles are set on the DOM by hand, so keep them out of the JSX `style` props.
+- Reduced motion (`prefers-reduced-motion: reduce`): the wrapped's reveals, line drawing, bars and progress segments switch instantly (`global.css`), rolling numbers show their final value and the map shows the whole period (`prefersReducedMotion()` in `animation.ts`, read when an animation starts). A rolling number's animated text is `aria-hidden`; a `.sr-only` copy carries its real value(s).
 - Component props mirror the mockup's data shape (`DisplayData` = its `sets()` entries).
 
 ## Privacy design

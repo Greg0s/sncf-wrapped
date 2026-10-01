@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useId, useImperativeHandle, useRef, useState, type Ref } from 'react'
 import { css } from '../../../lib/css'
+import { prefersReducedMotion } from '../animation'
 import { ScrollLine } from '../ScrollLine'
 import { SCREEN_LINES } from '../scrollLinePath'
 import { CORSICA_OUTLINE, FRANCE_OUTLINE, evaluateMap, showsOutline, type MapModel } from '../../../lib/wrapped'
@@ -26,6 +27,11 @@ export function RoutesMap({ index, label, model, mapRef }: { index: number; labe
   }
   const play = () => {
     cancelAnimationFrame(raf.current)
+    // Reduced motion: show the finished map (every route drawn) instead of playing it month by month.
+    if (prefersReducedMotion()) {
+      setP(months)
+      return
+    }
     // Each month plays for its own duration (see `monthDurationsMs`): boundaries[i] is the elapsed
     // time (ms) at which month i ends, so a given elapsed time falls in exactly one month's span.
     const durations = model.monthDurationsMs
