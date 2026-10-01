@@ -10,7 +10,7 @@ export function Routes({ routes, heading, index, label }: { routes: RouteRow[]; 
       data-sec={index}
       data-sec-id="routes"
       style={css(
-        `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(6px, 1.2vh, 12px); padding: clamp(46px, 7vh, 90px) clamp(14px, 4vw, 60px) clamp(16px, 3vh, 50px); position: relative; overflow: hidden; isolation: isolate;`,
+        `min-height: 100dvh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(6px, 1.2vh, 12px); padding: clamp(46px, 7vh, 90px) clamp(14px, 4vw, 60px) clamp(16px, 3vh, 50px); position: relative; overflow: hidden; isolation: isolate;`,
       )}
     >
       <ScrollLine spec={SCREEN_LINES.routes} />

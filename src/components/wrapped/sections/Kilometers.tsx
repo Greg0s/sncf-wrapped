@@ -10,7 +10,7 @@ export function Kilometers({ d, star, index, label }: { d: DisplayData; star: Wr
       data-sec={index}
       data-sec-id="km"
       style={css(
-        `min-height: 100svh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(10px, 1.8vh, 16px); padding: clamp(58px, 9vh, 96px) clamp(14px, 4vw, 60px) clamp(30px, 5vh, 60px); position: relative; overflow: hidden; isolation: isolate;`,
+        `min-height: 100dvh; scroll-snap-align: start; background: #0E1219; display: flex; flex-direction: column; justify-content: center; gap: clamp(10px, 1.8vh, 16px); padding: clamp(58px, 9vh, 96px) clamp(14px, 4vw, 60px) clamp(30px, 5vh, 60px); position: relative; overflow: hidden; isolation: isolate;`,
       )}
     >
       <ScrollLine spec={SCREEN_LINES.kilometers} />
