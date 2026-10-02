@@ -174,7 +174,7 @@ export function DataRequestPage({
                 1
               </div>
             )}
-            <h3 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>{DATA_REQUEST_STEPS[0].name}</h3>
+            <h2 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>{DATA_REQUEST_STEPS[0].name}</h2>
             <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>{DATA_REQUEST_STEPS[0].text}</p>
           </div>
           <div
@@ -200,7 +200,7 @@ export function DataRequestPage({
                 2
               </div>
             )}
-            <h3 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>{DATA_REQUEST_STEPS[1].name}</h3>
+            <h2 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>{DATA_REQUEST_STEPS[1].name}</h2>
             <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>{DATA_REQUEST_STEPS[1].text}</p>
           </div>
           <div
@@ -216,7 +216,7 @@ export function DataRequestPage({
             >
               3
             </div>
-            <h3 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>{DATA_REQUEST_STEPS[2].name}</h3>
+            <h2 style={css(`margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em;`)}>{DATA_REQUEST_STEPS[2].name}</h2>
             <p style={css(`margin: 0; font-size: 14px; line-height: 1.5; color: #AEB7C6;`)}>{DATA_REQUEST_STEPS[2].text}</p>
           </div>
           {notSent && (
