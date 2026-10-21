@@ -427,7 +427,7 @@ export function DataRequestPage({
         </div>
         <footer
           style={css(
-            `display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; font-size: 13px; color: #6C768A; padding: 8px 6px 0;`,
+            `display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; font-size: 13px; color: #727D92; padding: 8px 6px 0;`,
           )}
         >
           <span>
@@ -436,7 +436,7 @@ export function DataRequestPage({
               href="https://gregoiretinn.es"
               target="_blank"
               rel="noopener noreferrer"
-              style={css(`color: #6C768A; text-decoration: underline; border-bottom: none; transition: opacity .2s ease;`)}
+              style={css(`color: #727D92; text-decoration: underline; border-bottom: none; transition: opacity .2s ease;`)}
               className="hv-opacity-80"
             >
               Greg
@@ -446,7 +446,7 @@ export function DataRequestPage({
             href={pathOf('legal')}
             onClick={linkClick(openLegal)}
             style={css(
-              `font-family: 'Schibsted Grotesk', sans-serif; font-size: 13px; color: #6C768A; background: transparent; border: none; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px;`,
+              `font-family: 'Schibsted Grotesk', sans-serif; font-size: 13px; color: #727D92; background: transparent; border: none; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px;`,
             )}
           >
             Mentions légales

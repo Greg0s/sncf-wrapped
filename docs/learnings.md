@@ -2,6 +2,7 @@
 
 Pitfalls this project already hit. Add a lesson only if it is non-obvious and would bite again: symptom → cause → rule, at most 3 lines. Newest first.
 
+- **The muted secondary-text gray (`#6C768A`) only reached 4.1:1 against the page background (`#0E1219`)**, under WCAG AA's 4.5:1 floor for text below 18px/14px-bold — not visibly broken, so nothing flagged it. → Brightened to `#727D92` (4.52:1); a scan-based test (`contrast.test.ts`) now locks this in rather than relying on a one-off audit.
 - **`import.meta.env.BASE_URL` is `/` under Vitest**, not the config's `/sncf-wrapped/` (vite-node, used by the prerender, does get the real base). → Tests of path helpers compare against `BASE_URL`, and `prerender.tsx` checks the base against the built asset paths.
 
 - **The landing is prerendered at build time (`scripts/prerender.tsx`) and hydrated.** Reading `window`/`matchMedia` while rendering crashes the build or makes hydration mismatch (in production React the server markup silently wins). → Keep landing render code DOM-free; decide viewer-specific things in effects or CSS media queries.

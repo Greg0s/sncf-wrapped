@@ -36,7 +36,7 @@ export function Routes({ routes, heading, index, label }: { routes: RouteRow[]; 
                 `background: #1B2130; border-radius: 20px; padding: clamp(7px, 1.2vh, 14px) clamp(14px, 2.6vw, 22px); display: flex; flex-wrap: wrap; gap: 8px clamp(12px, 2.6vw, 24px); align-items: center;`,
               )}
             >
-              <span style={css(`font-size: 13px; color: #6C768A; font-weight: 600; flex: 0 0 auto;`)}>{r.rank}</span>
+              <span style={css(`font-size: 13px; color: #727D92; font-weight: 600; flex: 0 0 auto;`)}>{r.rank}</span>
               <div style={css(`flex: 1 1 150px; min-width: 0; display: flex; align-items: center; gap: 8px;`)}>
                 <span style={css(`width: 9px; height: 9px; border-radius: 50%; background: #8DE8FD; flex: 0 0 auto; background: var(--ac);`)} />
                 <span

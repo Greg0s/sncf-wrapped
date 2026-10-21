@@ -138,7 +138,7 @@ export function LegalPage({ backHome }: { backHome: () => void }) {
 
         <footer
           style={css(
-            `display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; font-size: 13px; color: #6C768A; padding: 8px 6px 0;`,
+            `display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; font-size: 13px; color: #727D92; padding: 8px 6px 0;`,
           )}
         >
           <span>
@@ -147,7 +147,7 @@ export function LegalPage({ backHome }: { backHome: () => void }) {
               href="https://gregoiretinn.es"
               target="_blank"
               rel="noopener noreferrer"
-              style={css(`color: #6C768A; text-decoration: underline; border-bottom: none; transition: opacity .2s ease;`)}
+              style={css(`color: #727D92; text-decoration: underline; border-bottom: none; transition: opacity .2s ease;`)}
               className="hv-opacity-80"
             >
               Greg
