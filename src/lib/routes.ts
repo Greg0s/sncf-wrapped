@@ -9,8 +9,8 @@ import type { MouseEvent } from 'react'
 
 export type Route = 'landing' | 'data' | 'legal'
 
-export const SITE_ORIGIN = 'https://greg0s.github.io'
-const BASE = import.meta.env.BASE_URL // '/sncf-wrapped/'
+export const SITE_ORIGIN = 'https://sncfwrapped.mintymoon.app'
+const BASE = import.meta.env.BASE_URL // '/'
 
 export const ROUTES: Record<Route, { slug: string; title: string; description: string }> = {
   landing: {
@@ -33,7 +33,7 @@ export const ROUTES: Record<Route, { slug: string; title: string; description: s
   },
 }
 
-/** Path of a route, under Vite's base: `/sncf-wrapped/mentions-legales/`. */
+/** Path of a route, under Vite's base: `/mentions-legales/`. */
 export const pathOf = (route: Route) => BASE + ROUTES[route].slug
 
 export const canonicalOf = (route: Route) => SITE_ORIGIN + pathOf(route)

@@ -4,7 +4,7 @@
 
 *Read this in English: [README.en.md](README.en.md)*
 
-🔗 **[greg0s.github.io/sncf-wrapped](https://greg0s.github.io/sncf-wrapped/)**
+🔗 **[sncfwrapped.mintymoon.app](https://sncfwrapped.mintymoon.app/)**
 
 Votre année sur les rails, façon « Wrapped » : importez l'export de vos données personnelles SNCF Connect et découvrez vos kilomètres, votre budget, vos villes, vos itinéraires et votre façon de réserver, écran par écran, avec une carte à partager.
 
@@ -31,7 +31,7 @@ npm ci
 npm run dev
 ```
 
-Le site est servi sur <http://localhost:5173/sncf-wrapped/>. Ajoutez `?debug` à l'adresse pour le panneau qui détaille les calculs.
+Le site est servi sur <http://localhost:5173/>. Ajoutez `?debug` à l'adresse pour le panneau qui détaille les calculs.
 
 | Commande | Rôle |
 | --- | --- |
