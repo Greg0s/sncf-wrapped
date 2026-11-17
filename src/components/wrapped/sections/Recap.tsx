@@ -710,6 +710,7 @@ export function Recap({
             type="button"
             onClick={handleDownload}
             disabled={downloading}
+            data-umami-event="recap-download"
             className="act-cta hv-cta"
             style={css(
               `font-family: 'Schibsted Grotesk', sans-serif; display: inline-flex; align-items: center; font-weight: 700; color: #0E1219; background: #8DE8FD; border: none; border-radius: 999px; cursor: pointer; white-space: nowrap; transition: transform .18s ease, filter .2s ease; background: var(--ac); opacity: ${downloading ? 0.7 : 1};`,
@@ -728,6 +729,7 @@ export function Recap({
             disabled={sharing}
             title="Partager"
             aria-label="Partager"
+            data-umami-event="recap-share"
             className="act-icon hv-bg-333D54 hv-lift-2"
             style={css(
               `font-family: 'Schibsted Grotesk', sans-serif; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; color: #F1F4F7; background: #262E40; border: none; border-radius: 50%; padding: 0; cursor: pointer; transition: background .2s ease, transform .18s ease; opacity: ${sharing ? 0.7 : 1};`,

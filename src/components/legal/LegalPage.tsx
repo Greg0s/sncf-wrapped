@@ -110,10 +110,12 @@ export function LegalPage({ backHome }: { backHome: () => void }) {
             <a href="https://umami.is" target="_blank" rel="noopener noreferrer" style={css(`color: #8DE8FD; color: var(--ac);`)}>
               Umami
             </a>
-            , deux outils de mesure d'audience sans cookie et sans profilage, qui comptent uniquement le nombre de visites et de pages vues de
-            façon anonyme et agrégée. Ils ne déposent aucun cookie, ne nécessitent pas de consentement au sens de la réglementation applicable
-            et n'ont jamais accès au fichier que vous déposez ni aux statistiques calculées à partir de celui-ci, qui ne quittent pas votre
-            navigateur.
+            , deux outils de mesure d'audience sans cookie et sans profilage, chargés uniquement sur le site en production (jamais en
+            développement). Ils comptent le nombre de visites et de pages vues de façon anonyme et agrégée, ainsi que quelques clics sur des
+            boutons de l'interface (par exemple « voir mon récap », « télécharger », « partager ») afin de savoir quelles fonctionnalités sont
+            utilisées — ce comptage ne contient ni donnée personnelle ni information tirée de votre fichier. Ils ne déposent aucun cookie, ne
+            nécessitent pas de consentement au sens de la réglementation applicable et n'ont jamais accès au fichier que vous déposez ni aux
+            statistiques calculées à partir de celui-ci, qui ne quittent pas votre navigateur.
           </p>
           <p style={css(`margin: 0; padding-top: 4px;`)}>
             <strong>Journalisation technique par l'hébergeur.</strong> Comme tout hébergeur web, GitHub Pages peut journaliser techniquement
