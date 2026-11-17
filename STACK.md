@@ -48,7 +48,7 @@ Project context: see [CLAUDE.md](CLAUDE.md). Constraints shaping every choice be
 
 **Rationale:** Free, already tied to the existing GitHub repo (`Greg0s/sncf-wrapped`), and sufficient since the site is fully static after build. No backend to host, so no server cost or maintenance.
 
-*Implementation watch-out:* a GitHub Pages project site (`greg0s.github.io/sncf-wrapped`) is served under a subpath — remember to set `base: '/sncf-wrapped/'` in `vite.config.ts`.
+*Implementation watch-out:* the site is served from a custom domain (`sncfwrapped.mintymoon.app`) at the root, so `base: '/'` in `vite.config.ts`. `public/CNAME` carries the domain into every build's artifact, since GitHub Pages' Actions deployment doesn't read the custom domain from repo settings — only from a `CNAME` file in the published artifact.
 
 ---
 
@@ -114,6 +114,6 @@ The project is now scaffolded. What differs from this document:
 - **Styling**: neither Tailwind nor another CSS framework; the mockup's inline styles are kept (`src/lib/css.ts`).
 - **Map**: schematic SVG from the mockup (affine projection of the coordinates), not `react-simple-maps`.
 - **Fonts**: Schibsted Grotesk self-hosted (`@fontsource`), no third-party font service.
-- **Image export** (`html-to-image`): not done yet, see issue #3. **Pages deployment**: see issue #10.
+- **Image export** (`html-to-image`): not done yet, see issue #3. **Pages deployment**: see issue #10. **Custom domain**: moved from `greg0s.github.io/sncf-wrapped` to `sncfwrapped.mintymoon.app`, served at the root.
 
 Up-to-date architecture: `docs/architecture.md`.

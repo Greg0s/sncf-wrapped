@@ -10,7 +10,7 @@ import type { ImportPeriod } from '../../landing/ImportModal'
 
 // Deployed site, echoed in a shared link/text — never derived from window.location (a preview or
 // local build must still point users at the real site).
-const SITE_URL = 'https://greg0s.github.io/sncf-wrapped/'
+const SITE_URL = 'https://sncfwrapped.mintymoon.app/'
 
 // Formats of the shareable card: preview dimensions (px) and exported image size (exportW/exportH).
 // iconW/iconH size the little format-shape glyph on the desktop format buttons below.
@@ -423,7 +423,7 @@ export function Recap({
                   </div>
                 </div>
                 <span style={css(`flex: 0 0 auto; font-size: 9px; font-weight: 600; color: #8A93A6; white-space: nowrap;`)}>
-                  greg0s.github.io/sncf-wrapped
+                  sncfwrapped.mintymoon.app
                 </span>
               </div>
             </>
@@ -556,7 +556,7 @@ export function Recap({
                   </div>
                 </div>
                 <span style={css(`flex: 0 0 auto; font-size: 9px; font-weight: 600; color: #8A93A6; white-space: nowrap;`)}>
-                  greg0s.github.io/sncf-wrapped
+                  sncfwrapped.mintymoon.app
                 </span>
               </div>
             </>
@@ -691,7 +691,7 @@ export function Recap({
                   </div>
                 </div>
                 <span style={css(`flex: 0 0 auto; font-size: 9px; font-weight: 600; color: #8A93A6; white-space: nowrap;`)}>
-                  greg0s.github.io/sncf-wrapped
+                  sncfwrapped.mintymoon.app
                 </span>
               </div>
             </>

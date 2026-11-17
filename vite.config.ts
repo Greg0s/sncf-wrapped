@@ -1,9 +1,9 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
 
-// Site de projet GitHub Pages : servi sous /sncf-wrapped/ (cf. STACK.md §6)
+// Déployé sous un domaine personnalisé, servi à la racine (cf. STACK.md §6)
 export default defineConfig({
-  base: '/sncf-wrapped/',
+  base: '/',
   plugins: [react()],
   test: {
     environment: 'node',

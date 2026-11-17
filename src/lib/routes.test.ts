@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { canonicalOf, pathOf, routeOf, SITE_ORIGIN } from './routes'
 
-// Vitest serves at '/', the build at '/sncf-wrapped/': the paths follow whichever base is in effect.
+// Paths follow whichever base is in effect (both '/' in this project, but the helpers don't assume it).
 const B = import.meta.env.BASE_URL
 
 describe('routes', () => {
