@@ -292,6 +292,7 @@ export function DataRequestPage({
                 <button
                   type="button"
                   onClick={sendMail}
+                  data-umami-event="data-request-send"
                   style={css(
                     `font-family: 'Schibsted Grotesk', sans-serif; font-size: 17px; font-weight: 700; color: #0E1219; background: #8DE8FD; border: none; border-radius: 999px; padding: 16px 30px; cursor: pointer; transition: transform .18s ease, filter .2s ease; background: var(--ac);`,
                   )}

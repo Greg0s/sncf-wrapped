@@ -202,6 +202,7 @@ export function ImportModal({
               <button
                 type="button"
                 onClick={go}
+                data-umami-event="import-submit"
                 style={css(
                   `font-family: 'Schibsted Grotesk', sans-serif; font-size: 17px; font-weight: 700; color: #0E1219; background: #8DE8FD; border: none; border-radius: 999px; padding: 14px 24px; cursor: pointer; transition: transform .18s ease, filter .2s ease; background: var(--ac);`,
                 )}

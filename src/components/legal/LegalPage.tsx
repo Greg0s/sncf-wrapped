@@ -105,11 +105,17 @@ export function LegalPage({ backHome }: { backHome: () => void }) {
             <strong>Mesure d'audience.</strong> Ce site utilise{' '}
             <a href="https://www.goatcounter.com" target="_blank" rel="noopener noreferrer" style={css(`color: #8DE8FD; color: var(--ac);`)}>
               GoatCounter
+            </a>{' '}
+            et{' '}
+            <a href="https://umami.is" target="_blank" rel="noopener noreferrer" style={css(`color: #8DE8FD; color: var(--ac);`)}>
+              Umami
             </a>
-            , un outil de mesure d'audience open source, sans cookie et sans profilage, qui compte uniquement le nombre de visites et de pages
-            vues de façon anonyme et agrégée. Il ne dépose aucun cookie, ne nécessite pas de consentement au sens de la réglementation
-            applicable et n'a jamais accès au fichier que vous déposez ni aux statistiques calculées à partir de celui-ci, qui ne quittent pas
-            votre navigateur.
+            , deux outils de mesure d'audience sans cookie et sans profilage, chargés uniquement sur le site en production (jamais en
+            développement). Ils comptent le nombre de visites et de pages vues de façon anonyme et agrégée, ainsi que quelques clics sur des
+            boutons de l'interface (par exemple « voir mon récap », « télécharger », « partager ») afin de savoir quelles fonctionnalités sont
+            utilisées — ce comptage ne contient ni donnée personnelle ni information tirée de votre fichier. Ils ne déposent aucun cookie, ne
+            nécessitent pas de consentement au sens de la réglementation applicable et n'ont jamais accès au fichier que vous déposez ni aux
+            statistiques calculées à partir de celui-ci, qui ne quittent pas votre navigateur.
           </p>
           <p style={css(`margin: 0; padding-top: 4px;`)}>
             <strong>Journalisation technique par l'hébergeur.</strong> Comme tout hébergeur web, GitHub Pages peut journaliser techniquement

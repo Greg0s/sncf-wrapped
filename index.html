@@ -27,8 +27,26 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <!-- Anonymous, cookie-less page-view counter. See CLAUDE.md constraint #1 and docs/architecture.md. -->
-    <script data-goatcounter="https://sncf-wrapped.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+    <!--
+      GoatCounter and Umami: anonymous, cookie-less audience measurement. See CLAUDE.md constraint #1
+      and docs/architecture.md. Injected only on the production domain, never in dev or a preview
+      deployment, so local work never shows up in the stats.
+    -->
+    <script>
+      if (location.hostname === 'sncfwrapped.mintymoon.app') {
+        var gc = document.createElement('script')
+        gc.async = true
+        gc.src = 'https://gc.zgo.at/count.js'
+        gc.dataset.goatcounter = 'https://sncf-wrapped.goatcounter.com/count'
+        document.head.appendChild(gc)
+
+        var um = document.createElement('script')
+        um.defer = true
+        um.src = 'https://umami-y1mc.vercel.app/script.js'
+        um.dataset.websiteId = '04be92d7-14a2-4c44-ae1a-d03e4513a9a7'
+        document.head.appendChild(um)
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
