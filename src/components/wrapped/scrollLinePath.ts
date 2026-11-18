@@ -8,28 +8,20 @@
  * cross themselves. It is built in real pixels from the section's live size (never a stretched
  * viewBox) and walked by arc length, so loops keep their shape on any aspect ratio and slope.
  *
- * Proportions follow the golden ratio φ: lanes and loop heights sit at golden fractions of the screen
- * (1/φ⁴, 1/φ³, 1/φ², 1/φ…), the loop radius is min(W, H) / φ⁵ (a small loop is that / φ), a loop spans
- * φ² radii of line, the wave spans one loop radius over about φ⁴ radii (a whole number of waves per
- * screen), and the stroke width is the loop radius / φ⁵.
+ * Proportions are plain fractions of the screen, picked by eye rather than derived from a formula, so
+ * each screen's line can read as its own gesture instead of a repeated pattern. A loop can be a small,
+ * round curl, or — by default — a bigger, pin-shaped one: narrow where it meets the line, rounding out
+ * into a wide belly, the way a hand-drawn loop or a map pin reads.
  */
 
-export const PHI = (1 + Math.sqrt(5)) / 2
-
-/** Golden fractions of the screen, used as lanes (x) and heights (y). */
-export const G = {
-  /** 1/φ⁴ ≈ .146 */
-  edge: PHI ** -4,
-  /** 1/φ³ ≈ .236 */
-  quarter: PHI ** -3,
-  /** 1/φ² ≈ .382 */
-  minor: PHI ** -2,
-  /** 1 − 1/φ² ≈ .618 (= 1/φ) */
-  major: PHI ** -1,
-  /** 1 − 1/φ³ ≈ .764 */
-  late: 1 - PHI ** -3,
-  /** 1 − 1/φ⁴ ≈ .854 */
-  far: 1 - PHI ** -4,
+/** Plain fractions of the screen, used as lanes (x) and heights (y). */
+export const LANE = {
+  edge: 0.16,
+  quarter: 0.26,
+  minor: 0.4,
+  major: 0.58,
+  late: 0.72,
+  far: 0.84,
 } as const
 
 /** A curl at height `at` (fraction of H), turning toward `dir` first (1 = right, −1 = left). */
@@ -63,11 +55,11 @@ export function laneX(f: number, W: number, H: number): number {
  * edge in this lane, heading straight down, so the lines of the whole wrapped read as a single stroke
  * (whatever screens are dropped for lack of data).
  */
-export const JUNCTION = G.major
+export const JUNCTION = LANE.major
 
-/** Stroke width of the wrapped line on a W × H screen: the loop radius / φ⁵. */
+/** Stroke width of the wrapped line on a W × H screen, a thin fraction of the shorter side. */
 export function lineStrokeWidth(W: number, H: number): number {
-  return round(Math.min(6, Math.max(2.5, Math.min(W, H) / PHI ** 10)))
+  return round(Math.min(6, Math.max(2.5, Math.min(W, H) / 120)))
 }
 
 /** Lane (in px) at height y: soft S-curves between the spec's anchors. */
@@ -83,15 +75,20 @@ function laneAt(lanes: [number, number][], y: number, W: number, H: number): num
   return px(lanes[lanes.length - 1][1])
 }
 
+// How much a (non-small) loop's radius breathes over its turn: narrow (1 − PIN_BULGE) where it meets
+// the line, widest (1 + PIN_BULGE) on the far side — a rounded pin/teardrop rather than a plain circle.
+export const PIN_BULGE = 0.55
+
 /** Samples the line top to bottom, in px. Exported for tests. */
 export function sampleScrollLine(spec: LineSpec, W: number, H: number) {
-  const R = Math.min(W, H) / PHI ** 5
+  const R = Math.min(W, H) / 11
   const strokeWidth = lineStrokeWidth(W, H)
-  const pad = strokeWidth * 2 + R * PHI
+  const pad = strokeWidth * 2 + R * 1.6
+
   // A whole number of waves over the screen, as 1 − cos: no offset and no slope at the top and bottom
   // edges, so the line meets its neighbours' in the junction lane, heading straight down.
   const waveAmp = R / 2
-  const waves = Math.max(1, Math.round(H / (R * PHI ** 4)))
+  const waves = Math.max(1, Math.round(H / (R * 7)))
 
   // The loop-free line, sampled every px of height, then walked by arc length so a loop keeps its
   // shape whatever the line's slope.
@@ -115,19 +112,22 @@ export function sampleScrollLine(spec: LineSpec, W: number, H: number) {
   }
 
   const loops = spec.loops.map((lp) => {
-    const r = lp.small ? R / PHI : R
+    const pin = !lp.small
+    const baseR = lp.small ? R * 0.6 : R
     const i = Math.min(by.length - 2, Math.max(1, Math.round(lp.at * H + pad)))
     const len = Math.hypot(bx[i + 1] - bx[i - 1], 2)
     // Local frame at the loop: T along the line, N across it, on the loop's side.
     const T: [number, number] = [(bx[i + 1] - bx[i - 1]) / len, 2 / len]
     const N: [number, number] = Math.sign(-T[1]) === lp.dir ? [-T[1], T[0]] : [T[1], -T[0]]
-    // The line advances φ² radii while the curl makes one turn; the curl outruns it mid-turn, so it
+    // The line advances ~2.6 radii while the curl makes one turn; the curl outruns it mid-turn, so it
     // crosses itself.
-    return { l: bl[i], r, T, N, span: r * PHI ** 2 }
+    const span = baseR * 2.6
+    // `r` reported here is the loop's largest reach (used for sizing/testing), not the formula's base.
+    return { l: bl[i], r: pin ? baseR * (1 + PIN_BULGE) : baseR, baseR, pin, T, N, span }
   })
 
   const points: [number, number][] = []
-  const h = Math.max(4, R / PHI ** 3)
+  const h = Math.max(4, R / 4)
   for (let l = 0; ; ) {
     let [x, y] = baseAt(Math.min(l, total))
     let speed = 1
@@ -137,8 +137,9 @@ export function sampleScrollLine(spec: LineSpec, W: number, H: number) {
       // θ = 2πu − sin 2πu: one full turn, starting and ending at rest, so the stroke leaves and
       // rejoins the line tangentially, without a kink.
       const th = 2 * Math.PI * u - Math.sin(2 * Math.PI * u)
-      x += lp.r * (lp.T[0] * Math.sin(th) + lp.N[0] * (1 - Math.cos(th)))
-      y += lp.r * (lp.T[1] * Math.sin(th) + lp.N[1] * (1 - Math.cos(th)))
+      const r = lp.pin ? lp.baseR * (1 - PIN_BULGE * Math.cos(th)) : lp.baseR
+      x += r * (lp.T[0] * Math.sin(th) + lp.N[0] * (1 - Math.cos(th)))
+      y += r * (lp.T[1] * Math.sin(th) + lp.N[1] * (1 - Math.cos(th)))
       speed += (lp.r / lp.span) * 2 * Math.PI * (1 - Math.cos(2 * Math.PI * u))
     }
     points.push([x, y])
@@ -173,31 +174,31 @@ export function buildScrollLine(spec: LineSpec, W: number, H: number): BuiltLine
 const J = JUNCTION
 export const SCREEN_LINES = {
   teaser: {
-    lanes: [[0, J], [G.minor, G.edge], [G.late, G.far], [1, J]],
-    loops: [{ at: G.quarter, dir: 1 }, { at: G.late, dir: -1, small: true }],
+    lanes: [[0, J], [0.38, 0.18], [0.78, 0.82], [1, J]],
+    loops: [{ at: 0.3, dir: 1 }, { at: 0.76, dir: -1, small: true }],
   },
   kilometers: {
-    lanes: [[0, J], [G.minor, G.far], [G.late, G.minor], [1, J]],
-    loops: [{ at: G.major, dir: -1 }],
+    lanes: [[0, J], [0.36, 0.8], [0.76, 0.34], [1, J]],
+    loops: [{ at: 0.58, dir: -1 }],
   },
   budget: {
-    lanes: [[0, J], [G.major, G.edge], [1, J]],
-    loops: [{ at: G.minor, dir: 1 }, { at: G.late, dir: -1, small: true }],
+    lanes: [[0, J], [0.6, 0.2], [1, J]],
+    loops: [{ at: 0.4, dir: 1 }, { at: 0.74, dir: -1, small: true }],
   },
   cities: {
-    lanes: [[0, J], [G.minor, G.edge], [1, J]],
-    loops: [{ at: G.edge, dir: 1, small: true }, { at: G.major, dir: -1 }],
+    lanes: [[0, J], [0.34, 0.18], [1, J]],
+    loops: [{ at: 0.17, dir: 1, small: true }, { at: 0.6, dir: -1 }],
   },
   routes: {
-    lanes: [[0, J], [G.quarter, J], [G.late, G.far], [1, J]],
-    loops: [{ at: G.quarter, dir: -1 }],
+    lanes: [[0, J], [0.26, J], [0.74, 0.82], [1, J]],
+    loops: [{ at: 0.28, dir: -1 }],
   },
   routesMap: {
-    lanes: [[0, J], [G.major, G.edge], [1, J]],
-    loops: [{ at: G.late, dir: 1, small: true }],
+    lanes: [[0, J], [0.6, 0.2], [1, J]],
+    loops: [{ at: 0.72, dir: 1, small: true }],
   },
   recap: {
-    lanes: [[0, J], [G.minor, G.edge], [G.late, G.far], [1, J]],
-    loops: [{ at: G.minor, dir: 1 }],
+    lanes: [[0, J], [0.36, 0.2], [0.76, 0.82], [1, J]],
+    loops: [{ at: 0.42, dir: 1 }],
   },
 } satisfies Record<string, LineSpec>
