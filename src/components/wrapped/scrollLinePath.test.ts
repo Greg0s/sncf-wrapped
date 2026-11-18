@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { JUNCTION, PHI, SCREEN_LINES, buildScrollLine, laneX, sampleScrollLine } from './scrollLinePath'
+import { JUNCTION, PIN_BULGE, SCREEN_LINES, buildScrollLine, laneX, sampleScrollLine } from './scrollLinePath'
 
 // Screen sizes: small phone, phone, tablet, desktop, wide desktop.
 const SIZES: [number, number][] = [
@@ -56,10 +56,10 @@ describe('scroll line', () => {
     }
   })
 
-  it('sizes loops from the screen, keeping φ between big and small ones', () => {
+  it('sizes loops from the screen, with small ones smaller than pin-shaped ones', () => {
     const { loops } = sampleScrollLine(SCREEN_LINES.teaser, 390, 844)
-    expect(loops[0].r).toBeCloseTo(390 / PHI ** 5, 5)
-    expect(loops[0].r / loops[1].r).toBeCloseTo(PHI, 5)
+    expect(loops[0].r).toBeCloseTo((390 / 11) * (1 + PIN_BULGE), 2)
+    expect(loops[0].r).toBeGreaterThan(loops[1].r)
   })
 
   it('makes each loop cross itself', () => {
