@@ -1,14 +1,41 @@
+import { useEffect, useRef, type RefObject } from "react";
 import { css } from "../../lib/css";
 
-/** The looping, silent portrait demo clip, with its still poster for prefers-reduced-motion (see global.css). */
-function PromoClip({ style }: { style: string }) {
+/**
+ * Plays the clip only while it is on screen. When it leaves the viewport it pauses and rewinds, so it is already
+ * back on its first frame (the poster) when it returns: the restart is never seen.
+ */
+function useVisiblePlayback(ref: RefObject<HTMLVideoElement>) {
+  useEffect(() => {
+    const video = ref.current;
+    if (!video || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+          video.currentTime = 0;
+        }
+      },
+      { threshold: 0.2 },
+    );
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, [ref]);
+}
+
+/** The looping, silent demo clip, with its still poster for prefers-reduced-motion (see global.css). */
+function PromoClip({ style, name, poster }: { style: string; name: string; poster: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useVisiblePlayback(ref);
   return (
     <>
-      <video className="promo-video" style={css(style)} autoPlay loop muted playsInline poster="/media/promo/desktop-bg-poster.jpg" aria-hidden="true">
-        <source src="/media/promo/mobile-bg.webm" type="video/webm" />
-        <source src="/media/promo/mobile-bg.mp4" type="video/mp4" />
+      <video ref={ref} className="promo-video" style={css(style)} autoPlay loop muted playsInline preload="auto" poster={poster} aria-hidden="true">
+        <source src={`/media/promo/${name}.webm`} type="video/webm" />
+        <source src={`/media/promo/${name}.mp4`} type="video/mp4" />
       </video>
-      <img className="promo-video-poster" style={css(style)} src="/media/promo/desktop-bg-poster.jpg" alt="" />
+      <img className="promo-video-poster" style={css(style)} src={poster} alt="" />
     </>
   );
 }
@@ -25,17 +52,14 @@ export function PhoneMockup({ className }: { className: string }) {
       )}
     >
       <div style={css(`position: relative; width: 100%; height: 100%; border-radius: 20px; overflow: hidden; background: #0E1219;`)}>
-        <PromoClip style={FILL} />
+        <PromoClip style={FILL} name="mobile-bg" poster="/media/promo/desktop-bg-poster.jpg" />
       </div>
     </div>
   );
 }
 
 /** Mobile placement: its own card right after the hero, in the same format as the other landing sections. */
-export function PromoSection({ className, crop = false }: { className: string; crop?: boolean }) {
-  const frame = crop
-    ? `position: relative; width: 100%; aspect-ratio: 4 / 5; border-radius: 20px; overflow: hidden; background: #0E1219;`
-    : `position: relative; width: min(100%, 260px); margin: 0 auto; aspect-ratio: 9 / 19.5; border-radius: 20px; overflow: hidden; background: #0E1219;`;
+export function PromoSection({ className }: { className: string }) {
   return (
     <section
       className={className}
@@ -46,8 +70,8 @@ export function PromoSection({ className, crop = false }: { className: string; c
         Un aperçu de votre wrapped.
       </h2>
       <p style={css(`margin: 0 0 20px; font-size: 15px; color: #AEB7C6;`)}>Avec des trajets fictifs, en quelques secondes.</p>
-      <div style={css(frame)}>
-        <PromoClip style={crop ? `${FILL} object-position: 50% 42%;` : FILL} />
+      <div style={css(`position: relative; width: 100%; aspect-ratio: 4 / 5; border-radius: 20px; overflow: hidden; background: #0E1219;`)}>
+        <PromoClip style={FILL} name="crop-45" poster="/media/promo/crop-45-poster.jpg" />
       </div>
     </section>
   );
