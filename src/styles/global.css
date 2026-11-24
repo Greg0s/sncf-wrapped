@@ -122,6 +122,21 @@ a:hover { color: #FFFFFF; border-bottom-color: #FFFFFF; }
   [data-anim], [data-draw], [data-bar], [data-seg] { transition: none !important; }
 }
 
+/* Hero promo clip (PhoneMockup): a still poster replaces the loop under prefers-reduced-motion. */
+.promo-video-poster { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .promo-video { display: none; }
+  .promo-video-poster { display: block; }
+}
+
+/* Hero phone mockup (PhoneMockup): the desktop placement needs room beside the text; below that, the compact inline one takes over. */
+.hero-promo-desktop { display: block; }
+.hero-promo-mobile { display: none; }
+@media (max-width: 760px) {
+  .hero-promo-desktop { display: none; }
+  .hero-promo-mobile { display: block; }
+}
+
 /* Text for screen readers only (e.g. the real value behind a rolling number, see Roll.tsx). */
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;

@@ -2,6 +2,7 @@ import { useRef, type ReactNode } from "react";
 import { css } from "../../lib/css";
 import { linkClick, pathOf } from "../../lib/routes";
 import { Logo } from "../Logo";
+import { PhoneMockup } from "./PhoneMockup";
 import { useLandingReveal } from "../wrapped/useReveal";
 
 const BLURRED_ANSWERS = [
@@ -126,6 +127,7 @@ export function Landing({
               )}
             />
           </svg>
+          <PhoneMockup className="hero-promo-desktop" />
           <div
             style={css(
               `position: relative; display: flex; flex-direction: column; gap: clamp(16px, 3vw, 24px); max-width: 720px;`,
@@ -170,6 +172,7 @@ export function Landing({
                 Voir mon récap
               </button>
             </div>
+            <PhoneMockup className="hero-promo-mobile" compact />
           </div>
         </section>
         <section
