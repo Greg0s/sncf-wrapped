@@ -2,7 +2,7 @@ import { useRef, type ReactNode } from "react";
 import { css } from "../../lib/css";
 import { linkClick, pathOf } from "../../lib/routes";
 import { Logo } from "../Logo";
-import { PhoneMockup } from "./PhoneMockup";
+import { PhoneMockup, PromoSection } from "./PhoneMockup";
 import { useLandingReveal } from "../wrapped/useReveal";
 
 const BLURRED_ANSWERS = [
@@ -172,9 +172,9 @@ export function Landing({
                 Voir mon récap
               </button>
             </div>
-            <PhoneMockup className="hero-promo-mobile" compact />
           </div>
         </section>
+        <PromoSection className="hero-promo-mobile" />
         <section
           data-lanim="up"
           style={css(
